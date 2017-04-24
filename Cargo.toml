@@ -1,0 +1,30 @@
+[package]
+name = "adi_screen"
+version = "0.1.0"
+authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.tech>"]
+description = """
+        The adi_screen library enables the programmer to render onto a \
+	computer screen or phone screen.  It can be used for either video games\
+	, computer applications or phone apps.
+"""
+keywords = [ "vulkan", "graphics", "gui", "hardware", "rendering" ]
+categories = [
+	"gui", "game-engines", "hardware-support", "multimedia::video",
+	"rendering::graphics-api"
+]
+license = "MIT"
+documentation = "http://plopgrizzly.tech/adi_screen/"
+homepage = "http://plopgrizzly.tech/adi_screen/"
+repository = "https://github.com/plopgrizzly/adi_screen/"
+readme = "README.md"
+exclude = [
+	"examples/*", "docs/*", ".gitignore", "TODO", "glsl/*", "gen-spv.sh"
+]
+
+build = "build.rs"
+
+[dependencies]
+adi_clock = "0.1.1"
+
+[build-dependencies.gcc]
+version = "0.3.38"
