@@ -1,0 +1,48 @@
+~ Next Release
+
+	adi_screen 0.1.0
+		* Make sure Windows port still works.
+		* Vulkan initialization written in Rust.
+
+~ Before 1.0.0 ~
+
+~ Add Support & Change API.
+
+	adi_screen 0.x.0
+		* Implement Wayland Support
+
+	adi_screen 0.x.0
+		* Implement Android Support
+
+	adi_screen 0.x.0
+		* Implement Raspberry Pi Direct to Display Support
+
+	adi_screen 0.x.0
+		* Implement OpenGL + MacOS support
+
+	adi_screen 0.x.0
+		* Implement WebAssembly + OpenGL support
+
+	adi_screen 0.x.0
+		* Implement OpenGL backwards compatibility for Windows.
+
+~ Bug Fixes & Internal Improvements.
+
+	adi_screen 0.x.y
+		* Drop gcc-rs dependency and write all of the C code in Rust
+
+	adi_screen 0.x.y
+		* Better way to change to and from validation layers
+
+	adi_screen 0.x.y
+		* Make scrolling fast work on windows ( increments of 120 )
+
+	adi_screen 0.x.y
+		* Fix vkBeginCommandBuffer occasionally not being called when
+			it's needed.
+
+~ After 1.0.0 ~
+
+	adi_screen 1.0.x
+		* Figure out a way to statically link Vulkan / Write Loader in
+			Rust. ( Don't require dynamically linked vulkan.o file )

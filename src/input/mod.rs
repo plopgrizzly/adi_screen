@@ -1,6 +1,6 @@
 /**
- * Aldaron's Device Interface - "input/mod.rs"
- * Copyright 2017 (c) Jeron Lau - Licensed under the GNU GENERAL PUBLIC LICENSE
+ * adi_screen - Aldaron's Device Interface - Screen - "input/mod.rs"
+ * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
 use std::fmt;

@@ -43,9 +43,6 @@ impl Screen {
 	pub fn new(name: &str, icon: &'static [u8], shaders: &[vw::Shader])
 		-> (Screen, Vec<Style>)
 	{
-		println!("ADI - Aldaron's Device Interface / Screen");
-		println!("Version: 0.1.0, Backend: Vulkan");
-
 		let native = ffi::native_window(name, icon);
 		let vw = vw::open(name, &native);
 		let size = (640, 360);

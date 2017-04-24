@@ -1,7 +1,13 @@
 /**
- * adi_screen - Aldaron's Device Interface - Screen - "ffi/vulkan.rs"
+ * adi_screen - Aldaron's Device Interface - Screen - "ffi/vulkan/mod.rs"
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
+
+mod create_instance;
+pub use self::create_instance::create_instance;
+
+pub struct VkInstance { pub value: usize }
+
 
 use std::fmt;
 use std::{u64,usize};
@@ -9,6 +15,7 @@ use std::{u64,usize};
 
 // use screen::vw::Vw;
 
+type LazyPointer = usize;
 type VkDeviceMemory = u64;
 // type VkDescriptorSet = u64;
 // type VkDescriptorSetLayout = u64;
@@ -17,12 +24,33 @@ type VkDeviceMemory = u64;
 type VkDevice = usize;
 type VkCommandBuffer = usize;
 
-// type VkVoid = u8; // Arbitrary Type
 // type VkStructureType = u32; // Size of enum is 4 bytes
 // type VkFlags = u32;
 
 // const MAX_ELEMENTS : usize = usize::MAX;
 const VK_WHOLE_SIZE : u64 = !0; // Bitwise complement of 0
+
+#[repr(C)]
+enum VkStructureType {
+	ApplicationInfo = 0,
+	InstanceCreateInfo = 1,
+//	DeviceQueueCreateInfo = 2,
+//	DeviceCreateInfo = 3,
+//	MemoryAllocateInfo = 5,
+//	BufferCreateInfo = 12,
+//	ImageCreateInfo = 14,
+//	ImageViewCreateInfo = 15,
+//	PipelineCacheCreateInfo = 17,
+//	PipelineLayoutCreateInfo = 30,
+//	SamplerCreateInfo = 31,
+//	DescriptorSetLayoutCreateInfo = 32,
+//	RenderPassCreateInfo = 38,
+//	CommandPoolCreateInfo = 39,
+//	SwapchainCreateInfo = 1000001000,
+//	XcbSurfaceCreateInfo = 1000005000,
+//	AndroidSurfaceCreateInfo = 1000008000,
+//	Win32SurfaceCreateInfo = 1000009000,
+}
 
 #[repr(C)]
 #[allow(dead_code)] // Never used because value set by vulkan.
@@ -99,12 +127,13 @@ extern {
 	fn vkUnmapMemory(device: VkDevice, memory: VkDeviceMemory) -> ();
 }
 
-/* fn check_error(name: &str, error: VkResult) {
+// TODO: Do nothing if checks are disabled.
+fn check_error(name: &str, error: VkResult) {
 	match error {
 		VkResult::Success => {},
 		_ => panic!("{} Failed {}", name, error),
 	}
-} */
+}
 
 pub fn copy_memory(vk_device: VkDevice, vk_memory: VkDeviceMemory, data: &[f32]) {
 //	let len : usize = data.length();

@@ -1,12 +1,9 @@
 /**
- * Aldaron's Device Interface - "input/keyboard.rs"
- * Copyright 2017 (c) Jeron Lau - Licensed under the GNU GENERAL PUBLIC LICENSE
+ * adi_screen - Aldaron's Device Interface - Screen - "input/keyboard.rs"
+ * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
 use input::Key;
-
-// Note: The following keys are removed as they are not on all keyboards:
-//	SCROLL_LOCK, MENU, PAUSE
 
 // Non-Printing Characters
 const ESCAPE : Key = Key::Escape;

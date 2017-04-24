@@ -1520,8 +1520,11 @@ void vw_close(vw_t wrapper) {
 	vw_vulkan_swapchain_delete(&wrapper);
 }
 
-vw_t vw_open(const char* title, const vw_window_t* window) {
-	vw_t wrapper = vw_vulkan(title); // Initialize Vulkan
+vw_t vw_open(VkInstance inst, const char* title, const vw_window_t* window) {
+//	vw_t wrapper = vw_vulkan(title); // Initialize Vulkan
+	vw_t wrapper;
+	wrapper.instance = inst;
+
 	vw_vulkan_window(&wrapper, *window); // Link window to Vk
 	vw_vulkan_gpu(&wrapper); // Link GPU to Vulkan Instance
 	vw_vulkan_device(&wrapper); // Link Logical Device to Vulkan

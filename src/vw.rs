@@ -297,7 +297,7 @@ pub struct VwLinkedInstance {
 }
 
 extern {
-	fn vw_open(a: *const u8, c: *const NativeWindow) -> Vw;
+	fn vw_open(i: usize, a: *const u8, c: *const NativeWindow) -> Vw;
 	fn vw_vulkan_shape(a: *mut VwShape, b: Vw, c: *const f32, d: u32) -> ();
 	fn vw_vulkan_texture(a: *mut Vw, b: u32, c: u32, d: *const u8, e: u8,
 		f: u8, g: u8, h: u8) -> Texture;
@@ -319,7 +319,8 @@ extern {
 }
 
 pub fn open(window_name: &str, native: &NativeWindow) -> Vw {
-	unsafe { vw_open(string::native(window_name).as_ptr(), native) }
+	let inst = vulkan::create_instance(window_name).value;
+	unsafe { vw_open(inst, string::native(window_name).as_ptr(), native) }
 }
 
 pub fn make_styles(screen: &mut Screen, extrashaders: &[Shader]) -> Vec<Style> {

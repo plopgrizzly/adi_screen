@@ -118,4 +118,3 @@ void vw_vulkan_draw_begin(vw_t* vulkan, float r, float g, float b);
 void vw_vulkan_draw_shape(vw_t*, vw_shape_t*, const float*, vw_instance_t);
 void vw_vulkan_draw_update(vw_t* vulkan);
 void vw_close(vw_t wrapper);
-vw_t vw_open(const char*, const vw_window_t*);
