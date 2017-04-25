@@ -41,7 +41,7 @@ type VkC = u32; // Size of enum is 4 bytes
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct Vw {
-	instance: VkInstance, // Vulkan instance
+	pub instance: VkInstance, // Vulkan instance
 	surface: VkSurface, // Surface that we render to.
 	present_queue_index: u32,
 	present_queue: VkQueue,
@@ -297,7 +297,8 @@ pub struct VwLinkedInstance {
 }
 
 extern {
-	fn vw_open(i: usize, a: *const u8, c: *const NativeWindow) -> Vw;
+	fn vw_open(instance: usize, surface: u64, a: *const u8,
+		c: *const NativeWindow) -> Vw;
 	fn vw_vulkan_shape(a: *mut VwShape, b: Vw, c: *const f32, d: u32) -> ();
 	fn vw_vulkan_texture(a: *mut Vw, b: u32, c: u32, d: *const u8, e: u8,
 		f: u8, g: u8, h: u8) -> Texture;
@@ -319,8 +320,12 @@ extern {
 }
 
 pub fn open(window_name: &str, native: &NativeWindow) -> Vw {
-	let inst = vulkan::create_instance(window_name).value;
-	unsafe { vw_open(inst, string::native(window_name).as_ptr(), native) }
+	let instance = vulkan::Instance::create(window_name);
+	let surface = vulkan::Surface::create(&instance, native);
+	unsafe {
+		vw_open(instance.native, surface.native,
+			string::native(window_name).as_ptr(), native)
+	}
 }
 
 pub fn make_styles(screen: &mut Screen, extrashaders: &[Shader]) -> Vec<Style> {

@@ -68,28 +68,6 @@ vw_t vw_vulkan(const char* title) {
 	return vulkan;
 }
 
-static inline void vw_vulkan_window(vw_t* vulkan, vw_window_t window) {
-	#if defined(VK_USE_PLATFORM_XCB_KHR)
-	VkXcbSurfaceCreateInfoKHR surface_ci = { 
-		.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR,
-		.connection = window.connection,
-		.window = window.window,
-	};
-	vw_vulkan_error("Could not create surface.", vkCreateXcbSurfaceKHR(
-		vulkan->instance, &surface_ci, NULL, &vulkan->surface));
-	#elif defined(VK_USE_PLATFORM_WIN32_KHR)
-	VkWin32SurfaceCreateInfoKHR surface_ci = {
-		.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
-		.pNext = NULL,
-		.flags = 0,
-		.hinstance = window.connection,
-		.hwnd = window.window,
-	};
-	vw_vulkan_error("Could not create surface.", vkCreateWin32SurfaceKHR(
-		vulkan->instance, &surface_ci, NULL, &vulkan->surface));
-	#endif
-}
-
 static inline void vw_vulkan_gpu(vw_t* vulkan) {
 	uint32_t num_gpus = 0;
 //	PFN_vkEnumeratePhysicalDevices vk_enumerate_physical_devices = (void *)
@@ -1520,12 +1498,14 @@ void vw_close(vw_t wrapper) {
 	vw_vulkan_swapchain_delete(&wrapper);
 }
 
-vw_t vw_open(VkInstance inst, const char* title, const vw_window_t* window) {
+vw_t vw_open(VkInstance inst, VkSurfaceKHR surface, const char* title,
+	const vw_window_t* window)
+{
 //	vw_t wrapper = vw_vulkan(title); // Initialize Vulkan
 	vw_t wrapper;
 	wrapper.instance = inst;
+	wrapper.surface = surface;
 
-	vw_vulkan_window(&wrapper, *window); // Link window to Vk
 	vw_vulkan_gpu(&wrapper); // Link GPU to Vulkan Instance
 	vw_vulkan_device(&wrapper); // Link Logical Device to Vulkan
 	vw_vulkan_queue(&wrapper); // Link Device Queue to Vulkan

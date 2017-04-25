@@ -3,11 +3,52 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
+use ffi::NativeWindow;
+
 mod create_instance;
-pub use self::create_instance::create_instance;
+mod create_surface;
+mod destroy;
 
-pub struct VkInstance { pub value: usize }
+// VkInstance
+pub struct Instance { pub native: usize }
+impl Instance {
+	pub fn create(app_name: &str) -> Instance {
+		Instance { native: create_instance::create_instance(app_name) }
+	}
+}
+// TODO: This drop causes crash because Instance goes out of scope when passed
+//       to the FFI.
+/* impl Drop for Instance {
+	fn drop(&mut self) -> () {
+		let instance = self.native;
 
+		destroy::instance(instance);
+	}
+} */
+
+// VkSurface
+#[allow(dead_code)]
+pub struct Surface { pub native: u64, instance: usize }
+impl Surface {
+	pub fn create(instance: &Instance, nw: &NativeWindow) -> Surface {
+		let instance = instance.native;
+
+		Surface {
+			native: create_surface::create_surface(instance, nw),
+			instance: instance,
+		}
+	}
+}
+// TODO: This drop causes crash because Surface goes out of scope when passed
+//       to the FFI.
+/* impl Drop for Surface {
+	fn drop(&mut self) -> () {
+		let surface = self.native;
+		let instance = self.instance;
+
+		destroy::surface(instance, surface);
+	}
+} */
 
 use std::fmt;
 use std::{u64,usize};
@@ -47,9 +88,12 @@ enum VkStructureType {
 //	RenderPassCreateInfo = 38,
 //	CommandPoolCreateInfo = 39,
 //	SwapchainCreateInfo = 1000001000,
-//	XcbSurfaceCreateInfo = 1000005000,
-//	AndroidSurfaceCreateInfo = 1000008000,
-//	Win32SurfaceCreateInfo = 1000009000,
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+	SurfaceCreateInfo = 1000005000, // XCB
+#[cfg(target_os = "windows")]
+	SurfaceCreateInfo = 1000009000, // Win32
+#[cfg(target_os = "android")]
+	SurfaceCreateInfo = 1000008000, // Android
 }
 
 #[repr(C)]

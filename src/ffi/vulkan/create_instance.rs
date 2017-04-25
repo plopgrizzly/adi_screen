@@ -6,11 +6,7 @@
 
 use std::ptr::null;
 use std::ffi::CString;
-use super::VkStructureType;
-use super::LazyPointer;
-use super::VkInstance;
-use super::check_error;
-use super::VkResult;
+use super::{ LazyPointer, VkResult, VkStructureType, check_error };
 use VERSION;
 
 #[cfg(any(target_os = "linux", target_os = "macos"))]
@@ -59,7 +55,7 @@ extern {
 		-> VkResult;
 }
 
-pub fn create_instance(app_name: &str) -> VkInstance {
+pub fn create_instance(app_name: &str) -> usize {
 	let mut instance = 0;
 
 	let program_name : *const i8 = CString::new(app_name)
@@ -93,7 +89,7 @@ pub fn create_instance(app_name: &str) -> VkInstance {
 		},
 	};
 
-	check_error( "Failed to create vulkan instance.", unsafe {
+	check_error("Failed to create vulkan instance.", unsafe {
 		vkCreateInstance(&instance_create_info, 0, &mut instance)
 	});
 
@@ -101,5 +97,5 @@ pub fn create_instance(app_name: &str) -> VkInstance {
 	println!("adi_screen: Engine: {}", VERSION);
 	println!("adi_screen: Backend: {}", VULKAN_VERSION.1);
 
-	VkInstance { value: instance }
+	instance
 }

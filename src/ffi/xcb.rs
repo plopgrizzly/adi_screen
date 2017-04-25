@@ -14,7 +14,7 @@ use std::vec::Vec;
 use super::shared;
 
 type XcbVoid = u8;
-pub type XcbConnection = XcbVoid;
+type LazyPointer = usize;
 
 #[repr(C)]
 pub struct XcbScreen {
@@ -105,7 +105,7 @@ const MWH : u16 = shared::MWH as u16;
 #[repr(C)]
 #[derive(Copy, Clone)]
 pub struct NativeWindow {
-	pub connection: *mut XcbConnection,
+	pub connection: LazyPointer,
 	pub screen: *mut XcbScreen,
 	pub window: u32,
 }
@@ -113,27 +113,27 @@ pub struct NativeWindow {
 #[link(name = "xcb")]
 extern {
 	fn xcb_connect(displayname: *const i8, screenp: *const i32)
-		-> *mut XcbConnection;
-	fn xcb_get_setup(c: *mut XcbConnection) -> *mut XcbVoid;
+		-> LazyPointer;
+	fn xcb_get_setup(c: LazyPointer) -> *mut XcbVoid;
 	fn xcb_setup_roots_iterator(setup: *mut XcbVoid) -> XcbScreenIterator;
-	fn xcb_generate_id(c: *mut XcbConnection) -> u32;
-	fn xcb_create_window(c: *mut XcbConnection, depth: u8, wid: u32,
+	fn xcb_generate_id(c: LazyPointer) -> u32;
+	fn xcb_create_window(c: LazyPointer, depth: u8, wid: u32,
 		parent: u32, x: i16, y: i16, width: u16, height: u16,
 		border_width: u16, _class: u16, visual: u32, value_mask: u32,
 		value_list: *mut ValueList) -> u32;
-	fn xcb_intern_atom(c: *mut XcbConnection, only_if_exists: u8,
+	fn xcb_intern_atom(c: LazyPointer, only_if_exists: u8,
 		name_len: u16, name: *const i8) -> u32;
-	fn xcb_intern_atom_reply(c: *mut XcbConnection, cookie: u32,
+	fn xcb_intern_atom_reply(c: LazyPointer, cookie: u32,
 		e: *mut XcbVoid) -> *mut XcbInternAtomReply;
-	fn xcb_change_property(c: *mut XcbConnection, mode: u8, window: u32,
+	fn xcb_change_property(c: LazyPointer, mode: u8, window: u32,
 		property: u32, t: u32, format: u8, data_len: u32,
 		data: *const u32) -> u32;
-	fn xcb_send_event(c: *mut XcbConnection, p: u8, dest: u32,
+	fn xcb_send_event(c: LazyPointer, p: u8, dest: u32,
 		event_mask: u32, event: *const XcbClientMessageEvent) -> ();
-	fn xcb_map_window(c: *mut XcbConnection, window: u32) -> u32;
-	fn xcb_flush(c: *mut XcbConnection) -> i32;
-	fn xcb_poll_for_event(c: *mut XcbConnection) -> *mut XcbGenericEvent;
-	fn xcb_disconnect(c: *mut XcbConnection) -> ();
+	fn xcb_map_window(c: LazyPointer, window: u32) -> u32;
+	fn xcb_flush(c: LazyPointer) -> i32;
+	fn xcb_poll_for_event(c: LazyPointer) -> *mut XcbGenericEvent;
+	fn xcb_disconnect(c: LazyPointer) -> ();
 	//
 	fn free(p: *mut XcbVoid);
 }
@@ -170,10 +170,10 @@ pub fn toggle_fullscreen(window: &NativeWindow) {
 
 pub fn native_window(title: &str, icon:&'static [u8]) -> NativeWindow {
 	let icon = Image::load(icon);
-	let connection : *mut _ = unsafe {
+	let connection = unsafe {
 		xcb_connect(std::ptr::null(), std::ptr::null())
 	};
-	if connection.is_null() {
+	if connection == 0 {
 		panic!("Couldn't connect to X Server.");
 	}
 	let setup = unsafe { xcb_get_setup(connection) };

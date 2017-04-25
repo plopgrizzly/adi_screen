@@ -23,7 +23,7 @@ type VkDescriptorSetLayout = u64;
 type VkBuffer = u64;
 type VkSampler = u64;
 type VkCommandPool = u64;
-type VkSurface = u64;
+// VkSurface create_surface.rs
 type VkSwapchain = u64;
 type VkImageView = u64;
 type VkFunction = unsafe extern "C" fn() -> ();
@@ -61,32 +61,7 @@ struct VkQueueFamilyProperties {
 	minImageTransferGranularity: VkExtent3D,
 }
 
-#[repr(C)]
-struct VkXcbSurfaceCreateInfo {
-	sType: VkStructureType,
-	pNext: *const VkVoid,
-	flags: VkFlags,
-	connection: *mut VkVoid,
-	window: u32,
-}
-
-#[repr(C)]
-struct VkWin32SurfaceCreateInfo {
-	sType: VkStructureType,
-	pNext: *const VkVoid,
-	flags: VkFlags,
-	// TODO
-//	hinstance: HINSTANCE,
-//	hwnd: HWND,
-}
-
-#[repr(C)]
-struct VkAndroidSurfaceCreateInfo {
-	sType: VkStructureType,
-	pNext: *const VkVoid,
-	flags: VkFlags,
-	window: *mut ANativeWindow,
-}
+// create_surface.rs
 
 #[repr(C)]
 struct VkDeviceQueueCreateInfo {
@@ -668,20 +643,11 @@ extern {
 		-> usize;
 	fn vkGetDeviceProcAddr(device: VkDevice, pname: *const i8) -> usize;
 // Xcb - Linux / Mac
-	fn vkCreateXcbSurfaceKHR(instance : VkInstance,
-		pCreateInfo: *const VkXcbSurfaceCreateInfo,
-		pAllocator: *const VkAllocationCallbacks,
-		surface: *mut VkSurface) -> VkResult;
+
 // Windows
-	fn vkCreateWin32SurfaceKHR(instance : VkInstance,
-		pCreateInfo: *const VkWin32SurfaceCreateInfo,
-		pAllocator: *const VkAllocationCallbacks,
-		surface: *mut VkSurface) -> VkResult;
+
 // Android
-	fn vkCreateAndroidSurfaceKHR(instance : VkInstance,
-		pCreateInfo: *const VkAndroidSurfaceCreateInfo,
-		pAllocator: *const VkAllocationCallbacks,
-		surface: *mut VkSurface) -> VkResult;
+
 	//
 	fn vkCreateDevice(physicalDevice: VkPhysicalDevice,
 		pCreateInfo: *const VkDeviceCreateInfo,
@@ -983,20 +949,7 @@ pub fn init(app_name:&str) -> Vulkan {
 }
 
 pub fn init_swapchain(vkc: &mut Vulkan, native: &mut super::NativeWindow) {
-	let mut e : VkResult;
-	let surface_create_info = VkXcbSurfaceCreateInfo {
-		sType: VkStructureType::XcbSurfaceCreateInfo,
-		pNext: null(),
-		flags: 0,
-		connection: native.connection as *mut _,
-		window: native.window,
-	};
-	let mut surface : VkSurface = 0;
-	check_error("init_swapchain(): vkCreateXcbSurfaceKHR", unsafe {
-		vkCreateXcbSurfaceKHR(vkc.instance, &surface_create_info,
-			null(), &mut surface)
-	});
-	println!("vkCreateXcbSurfaceKHR() completed!");
+	// create_surface.rs
 
 	let mut queue_gfx = -1;
 	let mut queue_present = -1;
