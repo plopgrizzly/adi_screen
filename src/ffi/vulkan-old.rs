@@ -38,13 +38,7 @@ enum ANativeWindow {}
 
 // create_instance.rs
 
-#[repr(C)]
-#[derive(Copy, Clone)]
-struct VkExtent3D {
-	width: u32,
-	height: u32,
-	depth: u32,
-}
+// select_gpu.rs
 
 #[repr(C)]
 struct VkExtent2D {
@@ -52,40 +46,11 @@ struct VkExtent2D {
 	height: u32,
 }
 
-#[repr(C)]
-#[derive(Copy, Clone)]
-struct VkQueueFamilyProperties {
-	queueFlags: VkFlags,
-	queueCount: u32,
-	timestampValidBits: u32,
-	minImageTransferGranularity: VkExtent3D,
-}
+// select_gpu.rs
 
 // create_surface.rs
 
-#[repr(C)]
-struct VkDeviceQueueCreateInfo {
-	sType: VkStructureType,
-	pNext: *const VkVoid,
-	flags: VkFlags,
-	queueFamilyIndex: u32,
-	queueCount: u32,
-	pQueuePriorities: *const f32,
-}
-
-#[repr(C)]
-struct VkDeviceCreateInfo {
-	sType: VkStructureType,
-	pNext: *const VkVoid,
-	flags: VkFlags,
-	queueCreateInfoCount: u32,
-	pQueueCreateInfos: *const VkDeviceQueueCreateInfo,
-	enabledLayerCount: u32,
-	ppEnabledLayerNames: *const *const i8,
-	enabledExtensionCount: u32,
-	ppEnabledExtensionNames: *const *const i8,
-	pEnabledFeatures: *const VkVoid,
-}
+// create_gpu_interface.rs
 
 #[repr(C)]
 #[derive(PartialEq, Copy, Clone)]
@@ -263,13 +228,7 @@ struct VkPhysicalDeviceMemoryProperties {
 	memoryHeaps : [VkMemoryHeap; 16],
 }
 
-#[repr(C)]
-struct VkCommandPoolCreateInfo {
-	sType: VkStructureType,
-	pNext: *const VkVoid,
-	flags: VkFlags,
-	queueFamilyIndex: u32,
-}
+// create_command_buffer.rs
 
 #[repr(C)]
 struct VkSurfaceCapabilities {
@@ -632,13 +591,7 @@ type VkAcquireNextImage = unsafe extern "C" fn(
 
 #[link(name = "vulkan")]
 extern {
-	fn vkEnumeratePhysicalDevices(instance : VkInstance,
-		pPhysicalDeviceCount : *mut u32,
-		pPhysicalDevices: *mut VkPhysicalDevice) -> VkResult;
-	fn vkGetPhysicalDeviceQueueFamilyProperties(
-		physicalDevice: VkPhysicalDevice,
-		pQueueFamilyPropertyCount: *mut u32,
-		pQueueFamilyProperties: *mut VkQueueFamilyProperties) -> ();
+	// select_gpu.rs
 	fn vkGetInstanceProcAddr(instance : VkInstance, pname: *const i8)
 		-> usize;
 	fn vkGetDeviceProcAddr(device: VkDevice, pname: *const i8) -> usize;
@@ -648,20 +601,12 @@ extern {
 
 // Android
 
-	//
-	fn vkCreateDevice(physicalDevice: VkPhysicalDevice,
-		pCreateInfo: *const VkDeviceCreateInfo,
-		pAllocator: *const VkAllocationCallbacks,
-		pDevice: *mut VkDevice) -> VkResult;
-	fn vkGetDeviceQueue(physicalDevice: VkPhysicalDevice,
-		queueFamilyIndex: u32, queueIndex: u32, pQueue: *mut VkQueue)
-		-> ();
+	// create_gpu_interface.rs
+	
+	// create_queue.rs
 	fn vkGetPhysicalDeviceMemoryProperties(physicalDevice: VkPhysicalDevice,
 		pMemoryProperties: *mut VkPhysicalDeviceMemoryProperties) -> ();
-	fn vkCreateCommandPool(device: VkDevice,
-		pCreateInfo: *const VkCommandPoolCreateInfo,
-		pAllocator: *const VkAllocationCallbacks,
-		pCommandPool: *mut VkCommandPool) -> VkResult;
+	// create_command_buffer.rs
 	fn vkCreateImageView(device: VkDevice,
 		pCreateInfo: *const VkImageViewCreateInfo,
 		pAllocator: *const VkAllocationCallbacks,
@@ -864,6 +809,8 @@ fn load_texture(vkc: &Vulkan, ppm_data: &'static [u8]) -> VulkanTexture {
 
 pub fn init(app_name:&str) -> Vulkan {
 	// vkCreateInstance()
+
+	// select_gpu.rs
 
 	// Get GPU object.
 	let mut num_gpus : u32 = 0;

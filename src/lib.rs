@@ -79,7 +79,7 @@ impl Screen {
 	}
 
 	pub fn cleanup(&mut self) -> () {
-		vw::close(self.vw);
+		vw::close(&mut self.vw);
 		ffi::cleanup(&mut self.window);
 	}
 

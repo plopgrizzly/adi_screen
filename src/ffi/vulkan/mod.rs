@@ -5,7 +5,11 @@
 
 use ffi::NativeWindow;
 
+mod create_command_buffer;
+mod create_gpu;
+mod create_gpu_interface;
 mod create_instance;
+mod create_queue;
 mod create_surface;
 mod destroy;
 
@@ -50,6 +54,57 @@ impl Surface {
 	}
 } */
 
+// VkPhysicalDevice
+pub struct Gpu { pub native: usize, pub present_queue_index: u32 }
+impl Gpu {
+	pub fn create(surface: &Surface) -> Gpu {
+		let instance = surface.instance;
+		let surface = surface.native;
+		let gpu = create_gpu::create_gpu(instance, surface);
+
+		Gpu { native: gpu.0, present_queue_index: gpu.1 }
+	}
+}
+
+// VkDevice
+pub struct GpuInterface { pub native: usize }
+impl GpuInterface {
+	pub fn create(gpu: &Gpu) -> GpuInterface {
+		let present_queue_index = gpu.present_queue_index;
+		let gpu = gpu.native;
+
+		GpuInterface {
+			native: create_gpu_interface::create_gpu_interface(gpu,
+				present_queue_index)
+		}
+	}
+}
+
+pub struct Queue { pub native: usize }
+impl Queue {
+	pub fn create(gpu_interface: &GpuInterface, gpu: &Gpu) -> Queue {
+		let present_queue_index = gpu.present_queue_index;
+		let gpu_interface = gpu_interface.native;
+
+		Queue {
+			native: create_queue::create_queue(gpu_interface,
+				present_queue_index)
+		}
+	}
+}
+
+pub struct CommandBuffer { pub native: usize, pub command_pool: u64 }
+impl CommandBuffer {
+	pub fn create(gpu_interface: &GpuInterface,gpu: &Gpu) -> CommandBuffer {
+		let present_queue_index = gpu.present_queue_index;
+		let gpu_interface = gpu_interface.native;
+		let cmd_buffer = create_command_buffer::create_command_buffer(
+			gpu_interface, present_queue_index);
+
+		CommandBuffer{ native: cmd_buffer.0,command_pool: cmd_buffer.1 }
+	}
+}
+
 use std::fmt;
 use std::{u64,usize};
 // use std::ptr::null_mut;
@@ -75,8 +130,8 @@ const VK_WHOLE_SIZE : u64 = !0; // Bitwise complement of 0
 enum VkStructureType {
 	ApplicationInfo = 0,
 	InstanceCreateInfo = 1,
-//	DeviceQueueCreateInfo = 2,
-//	DeviceCreateInfo = 3,
+	DeviceQueueCreateInfo = 2,
+	DeviceCreateInfo = 3,
 //	MemoryAllocateInfo = 5,
 //	BufferCreateInfo = 12,
 //	ImageCreateInfo = 14,
@@ -86,7 +141,8 @@ enum VkStructureType {
 //	SamplerCreateInfo = 31,
 //	DescriptorSetLayoutCreateInfo = 32,
 //	RenderPassCreateInfo = 38,
-//	CommandPoolCreateInfo = 39,
+	CommandPoolCreateInfo = 39,
+	CommandBufferAllocateInfo = 40,
 //	SwapchainCreateInfo = 1000001000,
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 	SurfaceCreateInfo = 1000005000, // XCB
@@ -171,13 +227,16 @@ extern {
 	fn vkUnmapMemory(device: VkDevice, memory: VkDeviceMemory) -> ();
 }
 
-// TODO: Do nothing if checks are disabled.
+#[cfg(feature = "checks")]
 fn check_error(name: &str, error: VkResult) {
 	match error {
 		VkResult::Success => {},
 		_ => panic!("{} Failed {}", name, error),
 	}
 }
+
+#[cfg(not(feature = "checks"))]
+fn check_error(_: &str, _: VkResult) { }
 
 pub fn copy_memory(vk_device: VkDevice, vk_memory: VkDeviceMemory, data: &[f32]) {
 //	let len : usize = data.length();

@@ -28,3 +28,7 @@ adi_clock = "0.1.1"
 
 [build-dependencies.gcc]
 version = "0.3.38"
+
+[features]
+checks = []
+validation = []

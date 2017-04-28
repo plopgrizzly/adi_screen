@@ -9,7 +9,7 @@ use transforms::Matrix;
 
 use Screen;
 use image::{ Image };
-use ffi::{ NativeWindow, vulkan, string };
+use ffi::{ NativeWindow, vulkan };
 
 type VkInstance = usize;
 type VkQueue = usize;
@@ -39,7 +39,7 @@ pub type VkPipeline = u64;
 type VkC = u32; // Size of enum is 4 bytes
 
 #[repr(C)]
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone)] // TODO: don't copy this.
 pub struct Vw {
 	pub instance: VkInstance, // Vulkan instance
 	surface: VkSurface, // Surface that we render to.
@@ -191,7 +191,9 @@ impl Shape {
 		}
 	}
 
-	pub fn animate(&mut self, i: usize, texture: *const Texture, matrix: &Matrix) {
+	pub fn animate(&mut self, i: usize, texture: *const Texture,
+		matrix: &Matrix)
+	{
 		unsafe {
 			vw_vulkan_txuniform(&((*self.screen).vw),
 				&mut self.instances[i].instance, texture,
@@ -200,7 +202,7 @@ impl Shape {
 		self.matrix(i, matrix);
 	}
 
-/*	pub fn add(mut self, texture: *const Texture, matrix: &Matrix) -> Shape {
+/*	pub fn add(mut self, texture: *const Texture, matrix: &Matrix) -> Shape{
 		let mem = VwLinkedInstance {
 			instance: unsafe {
 				vw_vulkan_uniforms((*self.screen).vw,
@@ -297,8 +299,6 @@ pub struct VwLinkedInstance {
 }
 
 extern {
-	fn vw_open(instance: usize, surface: u64, a: *const u8,
-		c: *const NativeWindow) -> Vw;
 	fn vw_vulkan_shape(a: *mut VwShape, b: Vw, c: *const f32, d: u32) -> ();
 	fn vw_vulkan_texture(a: *mut Vw, b: u32, c: u32, d: *const u8, e: u8,
 		f: u8, g: u8, h: u8) -> Texture;
@@ -307,25 +307,58 @@ extern {
 	fn vw_vulkan_pipeline(z: *mut Style, a: *mut Vw, b: *const Shader,
 		c: u32);
 	fn vw_vulkan_draw_begin(v: *mut Vw, r: f32, g: f32, b: f32) -> ();
-	fn vw_vulkan_txuniform(vw: *const Vw, b: *mut VwInstance, c: *const Texture,
-		d: u8) -> ();
-	fn vw_vulkan_uniforms(a: *const Vw, b: &VwShape, c: *const Texture, d: u8)
-		-> VwInstance;
+	fn vw_vulkan_txuniform(vw: *const Vw, b: *mut VwInstance,
+		c: *const Texture, d: u8) -> ();
+	fn vw_vulkan_uniforms(a: *const Vw, b: &VwShape, c: *const Texture,
+		d: u8) -> VwInstance;
 	fn vw_vulkan_draw_shape(v: *mut Vw, s: *const VwShape, e: *const f32,
 		f: VwInstance) -> ();
 	fn vw_vulkan_draw_update(v: *mut Vw) -> ();
 	fn vw_vulkan_resize(v: *mut Vw) -> ();
 	fn vw_vulkan_swapchain_delete(v: *mut Vw) -> ();
-	fn vw_close(wrapper: Vw) -> ();
 }
 
 pub fn open(window_name: &str, native: &NativeWindow) -> Vw {
 	let instance = vulkan::Instance::create(window_name);
 	let surface = vulkan::Surface::create(&instance, native);
+	let gpu = vulkan::Gpu::create(&surface);
+	let gpu_interface = vulkan::GpuInterface::create(&gpu);
+	let queue = vulkan::Queue::create(&gpu_interface, &gpu);
+	let command_buffer = vulkan::CommandBuffer::create(&gpu_interface,&gpu);
+
+	let mut vw = Vw {
+		instance: instance.native,
+		surface: surface.native,
+		present_queue_index: gpu.present_queue_index,
+		present_queue: queue.native,
+		gpu: gpu.native,
+		device: gpu_interface.native,
+		command_buffer: command_buffer.native,
+		swapchain: 0,
+		width: 0, height: 0,
+		present_images: [0, 0],
+		frame_buffers: [0, 0],
+		color_format: 0,
+		image_count: 0,
+		submit_fence: 0,
+		present_image_views: [0, 0],
+		depth_image: 0,
+		depth_image_view: 0,
+		depth_image_memory: 0,
+		render_pass: 0,
+		next_image_index: 0,
+		presenting_complete_sem: 0,
+		rendering_complete_sem: 0,
+		offsets: 0,
+		command_pool: 0, // TODO: not needed.
+		do_draw: 0,
+	};
+
 	unsafe {
-		vw_open(instance.native, surface.native,
-			string::native(window_name).as_ptr(), native)
+		vw_vulkan_resize(&mut vw);
 	}
+
+	vw
 }
 
 pub fn make_styles(screen: &mut Screen, extrashaders: &[Shader]) -> Vec<Style> {
@@ -368,6 +401,6 @@ pub fn draw_update(screen: &mut Screen) {
 	unsafe { vw_vulkan_draw_update(&mut screen.vw); }
 }
 
-pub fn close(vw: Vw) {
-	unsafe { vw_close(vw); }
+pub fn close(vw: &mut Vw) {
+	unsafe { vw_vulkan_swapchain_delete(vw); }
 }

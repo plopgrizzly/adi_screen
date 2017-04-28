@@ -3,8 +3,8 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
-#[cfg(not(target_os = "windows"))]
-use std::ffi::CString;
+// #[cfg(not(target_os = "windows"))]
+// use std::ffi::CString;
 
 // Windows uses UTF-16
 #[cfg(target_os = "windows")]
@@ -20,7 +20,7 @@ pub fn native(what: &str) -> Vec<u8> {
 }
 
 // Everything else uses UTF-8
-#[cfg(not(target_os = "windows"))]
+/*#[cfg(not(target_os = "windows"))]
 pub fn native(what: &str) -> Vec<u8> {
 	CString::new(what).unwrap().into_bytes()
-}
+}*/
