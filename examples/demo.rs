@@ -5,36 +5,35 @@
 
 extern crate adi_screen;
 
-use adi_screen::transforms::{ Matrix };
+use adi_screen::Transform;
 use adi_screen::{ Sprite, Screen, Texture };
-use adi_screen::gui::{ Button };
+use adi_screen::gui::Button;
 use adi_screen::input::Input;
-
-struct SpriteContext { }
+use adi_screen::{ SHADER_COLOR, SHADER_TEXTURE };
 
 struct Context {
 	screen: Screen,
-	image: Sprite<SpriteContext>,
-	triangle: Sprite<SpriteContext>,
-	button: Sprite<Button>,
+	image: Sprite,
+	triangle: Sprite,
+	button: Button,
 }
 
 fn draw(context: &mut Context) {
-	let disp = context.screen.full_smooth_pulse(4.0);
+	let disp = context.screen.full_smooth_pulse(8.0);
 	let disp2 = context.screen.full_linear_pulse(4.0);
-	let matrix = Matrix::identity()
-//		.rotate(disp, 0.0, 0.0)
+
+	Transform::create()
 		.translate(-0.5, -0.5, 0.0)//5.0 * disp)
 		.translate(disp * 1.0, 0.0, 0.0)
-		.set_perspective(90.0);
-
-	let matrix2 = Matrix::identity()
+		.rotate(0.0, 0.0, disp)
+		.perspective(90.0)
+		.on(&mut context.screen, &context.triangle, 0);
+	Transform::create()
 		.translate(-0.5, 0.5, 0.0)//5.0 * disp)
 		.translate(disp2 * 1.0, 0.0, 0.0)
-		.set_perspective(90.0);
-
-	context.triangle.matrix(&mut context.screen, 0, &matrix);
-	context.triangle.matrix(&mut context.screen, 1, &matrix2);
+		.perspective(90.0)
+		.on(&mut context.screen, &context.triangle, 1);
+	// Render onto the screen.
 	context.screen.render((disp, 0.0, disp));
 }
 
@@ -62,13 +61,10 @@ fn input(context: &mut Context, message: Input) {
 		Input::Pause => println!("Pause ( Lose Focus )"),
 		Input::Back => println!("Back"),
 	};
-	context.button.run(&mut context.screen, message);
-}
-
-fn logo_input(_: &mut Screen, _: &mut Sprite<SpriteContext>, _: usize, _: Input)
-	-> isize
-{
-	-1
+	let pressed = context.button.get(&mut context.screen, message);
+	if pressed {
+		println!("button been pressed!");
+	}
 }
 
 fn main() {
@@ -103,12 +99,12 @@ fn main() {
 		-1.0, -0.5, 0.0, 1.0,	0.0, 1.0, 1.0, 1.0,
 	];
 	// Matrices
-	let sm = Matrix::identity().scale(0.1, 0.1, 1.0);
-	let im = Matrix::identity();
-	let jm = Matrix::identity().scale(0.5, 0.5, 1.0);
+	let sm = Transform::create().scale(0.1, 0.1, 1.0).orthographic();
+	let im = Transform::create().orthographic();
+	let jm = Transform::create().scale(0.5, 0.5, 1.0).orthographic();
 	// Open window
-	let (mut screen, styles) = Screen::new("Demo",
-		include_bytes!("res/logo.ppm"), &[]);
+	let icon = include_bytes!("res/logo.ppm");
+	let mut screen = Screen::create("Demo", icon, &[]);
 
 	let texture = [
 		Texture::opaque(&mut screen, include_bytes!("res/logo.ppm")),
@@ -117,24 +113,23 @@ fn main() {
 	];
 println!("TEX..");
 	// Make sprites
-	Sprite::textured(&mut screen, &v_image, &styles[1], logo_input)
-		.texcopy(&mut screen, &jm, &texture[0], SpriteContext {});
+	Sprite::textured(&mut screen, &v_image, SHADER_TEXTURE)
+		.texcopy(&mut screen, &jm, &texture[0]);
 	let mut context = Context {
-		button: Button::add(&mut screen, &styles[1], (0.5, 0.5)),
+		button: Button::create(&mut screen, (0.5, 0.5)),
 		triangle: Sprite::colored(&mut screen, &v_triangle,
-			&styles[0], logo_input),
-		image: Sprite::textured(&mut screen, &v_image, &styles[1],
-			logo_input),
+			SHADER_COLOR),
+		image: Sprite::textured(&mut screen, &v_image, SHADER_TEXTURE),
 		screen: screen,
 //		time: Time::now(),
 	};
-	Sprite::colored(&mut context.screen, &v_square, &styles[0], logo_input)
-		.copy(&mut context.screen, &sm, SpriteContext {});
-	context.triangle.copy(&mut context.screen, &im, SpriteContext {});
-	context.triangle.copy(&mut context.screen, &im, SpriteContext {});
+	Sprite::colored(&mut context.screen, &v_square, SHADER_COLOR)
+		.copy(&mut context.screen, &sm);
+	context.triangle.copy(&mut context.screen, &im);
+	context.triangle.copy(&mut context.screen, &im);
 
-	context.image.texcopy(&mut context.screen, &im, &texture[1], SpriteContext {});
-	context.image.animate(&mut context.screen, 0, &texture[0], &im);
+	context.image.texcopy(&mut context.screen, &im, &texture[1]);
+	context.image.animate(&mut context.screen, 0, &texture[0]);
 
 	loop {
 		let message = Input::get(&mut context.screen);

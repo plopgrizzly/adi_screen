@@ -5,8 +5,6 @@
 
 use std::ptr::null_mut;
 
-use transforms::Matrix;
-
 use Screen;
 use image::{ Image };
 use ffi::{ NativeWindow, vulkan };
@@ -77,13 +75,15 @@ pub struct Shader {
 }
 
 impl Shader {
-	pub fn new(screen: &Screen, vert: &'static [u8], frag:&'static [u8],
+	pub fn create(vw: &Vw, vert: &'static [u8], frag:&'static [u8],
 		textures: u32) -> Shader
 	{
 		let mut shader = Shader { vertex: 0, fragment: 0,
 			textures: textures };
-		unsafe { vw_vulkan_shader(&mut shader, screen.vw, &vert[0],
-			vert.len() as u32, &frag[0], frag.len() as u32); }
+		unsafe {
+			vw_vulkan_shader(&mut shader, *vw, &vert[0],
+				vert.len() as u32, &frag[0], frag.len() as u32);
+		}
 		shader
 	}
 }
@@ -139,70 +139,63 @@ pub struct VwShape {
 	vertex_buffer_memory: VkDeviceMemory,
 	vertex_input_buffer: VkBuffer,
 	vertice_count: u32,
-	pub pipeline: *const Style,
+	pub pipeline: Style,
 }
 
 pub struct Shape {
 	shape: VwShape,
 	hastx: bool,
-	pub pipeline: Style,
 	instances: Vec<VwLinkedInstance>,
 	screen: *mut Screen,
 }
 
 impl Shape {
-	pub fn colored(screen: &mut Screen, v: &[f32], pipeline: &Style)
-		-> Shape
-	{
+	pub fn colored(screen: &mut Screen, v: &[f32], shader: usize) -> Shape {
 		let size = v.len() as u32;
 		let mut shape = VwShape {
 			vertex_buffer_memory: 0,
 			vertex_input_buffer: 0,
 			vertice_count: size / 8,
-			pipeline: pipeline,
+			pipeline: screen.shader(shader),
 		};
 		unsafe { vw_vulkan_shape(&mut shape, screen.vw, &v[0], size); }
 		Shape {
 			shape: shape,
 			hastx: false,
-			pipeline: *pipeline,
 			instances: Vec::new(),
 			screen: screen,
 		}
 	}
 
-	pub fn textured(screen: &mut Screen, v: &[f32], pipeline: &Style)
-		-> Shape
-	{
+	pub fn textured(screen: &mut Screen, v: &[f32], shader: usize) -> Shape{
 		let size = v.len() as u32;
 		let mut shape = VwShape {
 			vertex_buffer_memory: 0,
 			vertex_input_buffer: 0,
 			vertice_count: size / 8,
-			pipeline: pipeline,
+			pipeline: screen.shader(shader),
 		};
 		unsafe { vw_vulkan_shape(&mut shape, screen.vw, &v[0], size); }
 		Shape {
 			shape: shape,
 			hastx: true,
-			pipeline: *pipeline,
 			instances: Vec::new(),
 			screen: screen,
 		}
 	}
 
-	pub fn animate(&mut self, i: usize, texture: *const Texture,
-		matrix: &Matrix)
+	pub fn animate(&mut self, i: usize, texture: *const Texture/*,
+		matrix: [f32; 16]*/)
 	{
 		unsafe {
 			vw_vulkan_txuniform(&((*self.screen).vw),
 				&mut self.instances[i].instance, texture,
 				if self.hastx { 1 } else { 0 });
 		}
-		self.matrix(i, matrix);
+//		self.matrix(i, matrix);
 	}
 
-/*	pub fn add(mut self, texture: *const Texture, matrix: &Matrix) -> Shape{
+/*	pub fn add(mut self, texture: *const Texture, matrix: &Transform) -> Shape{
 		let mem = VwLinkedInstance {
 			instance: unsafe {
 				vw_vulkan_uniforms((*self.screen).vw,
@@ -219,7 +212,7 @@ impl Shape {
 		self
 	}*/
 
-	pub fn texclone(&mut self, matrix: &Matrix, tx: *const Texture) {
+	pub fn texclone(&mut self, transform: [f32; 16], tx: *const Texture) {
 		let mem = VwLinkedInstance {
 			instance: unsafe {
 				vw_vulkan_uniforms(&((*self.screen).vw),
@@ -227,7 +220,7 @@ impl Shape {
 					if self.hastx { 1 } else { 0 })
 			},
 			texture: tx,
-			matrix: matrix.data,
+			matrix: transform,
 		};
 		let device = unsafe{ (*self.screen).vw.device };
 		let memory = mem.instance.uniform_memory;
@@ -236,13 +229,13 @@ impl Shape {
 		self.instances.push(mem);
 	}
 
-	pub fn clone(&mut self, matrix: &Matrix) {
+	pub fn clone(&mut self, transform: [f32; 16]) {
 		let tx = if self.hastx {
 			self.instances[0].texture
 		}else{
 			null_mut()
 		};
-		self.texclone(matrix, tx);
+		self.texclone(transform, tx);
 	}
 
 	pub fn draw(&self) {
@@ -259,8 +252,8 @@ impl Shape {
 		}
 	}
 
-	pub fn matrix(&mut self, i: usize, matrix: &Matrix) {
-		self.instances[i].matrix = matrix.data;
+	pub fn matrix(&mut self, i: usize, matrix: [f32; 16]) {
+		self.instances[i].matrix = matrix;
 		vulkan::copy_memory(unsafe { (*self.screen).vw.device },
 			self.instances[i].instance.uniform_memory,
 			&self.instances[i].matrix);
@@ -361,24 +354,24 @@ pub fn open(window_name: &str, native: &NativeWindow) -> Vw {
 	vw
 }
 
-pub fn make_styles(screen: &mut Screen, extrashaders: &[Shader]) -> Vec<Style> {
+pub fn make_styles(vw: &mut Vw, extrashaders: &[Shader], shaders: &mut Vec<Style>)
+{
 	let mut shadev = Vec::new();
 	let default_shaders = [
-		Shader::new(screen, include_bytes!("res/color-vert.spv"),
+		Shader::create(vw, include_bytes!("res/color-vert.spv"),
 			include_bytes!("res/color-frag.spv"), 0),
-		Shader::new(screen, include_bytes!("res/texture-vert.spv"),
+		Shader::create(vw, include_bytes!("res/texture-vert.spv"),
 			include_bytes!("res/texture-frag.spv"), 1),
 	];
 	shadev.extend(default_shaders.iter().cloned());
 	shadev.extend(extrashaders.iter().cloned());
 
-	let mut pipeline = vec![Style { pipeline: 0, descsetlayout: 0,
+	*shaders = vec![Style { pipeline: 0, descsetlayout: 0,
 		pipeline_layout: 0 }; shadev.len()];
 	unsafe {
-		vw_vulkan_pipeline(&mut pipeline[0], &mut screen.vw, &shadev[0],
+		vw_vulkan_pipeline(&mut shaders[0], vw, &shadev[0],
 			shadev.len() as u32);
 	}
-	pipeline
 }
 
 pub fn resize(screen: &mut Screen) {

@@ -85,7 +85,7 @@ typedef struct {
 	VkDeviceMemory vertex_buffer_memory;
 	VkBuffer vertex_input_buffer;
 	uint32_t vertice_count;
-	vw_pipeline_t* pipeline;
+	vw_pipeline_t pipeline;
 } vw_shape_t;
 
 typedef struct {

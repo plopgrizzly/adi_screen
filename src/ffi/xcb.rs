@@ -320,15 +320,16 @@ fn convert_event(screen: &Screen, event_out: &mut Input) -> bool {
 		XCB_LEAVE_NOTIFY => Input::LeaveWindow,
 		XCB_FOCUS_IN => Input::Resume,
 		XCB_FOCUS_OUT => Input::Pause,
-		XCB_CONFIGURE_NOTIFY =>
-			Input::Resize(dim.0 as u32, dim.1 as u32),
+		XCB_CONFIGURE_NOTIFY => {
+			Input::Resize(dim.0 as u32, dim.1 as u32) },
 		XCB_CLIENT_MESSAGE => Input::Back,
 		XCB_EXPOSE => return true, // ignore.
-		35 => { return true }, // TODO: why so many?  Temporary ignore
-		x => {
-			println!("Unknown event: {}", x);
-			return true; // ignore
-		},
+		_ => return true,
+//		35 => { return true }, // TODO: why so many?  Temporary ignore
+//		x => {
+//			println!("Unknown event: {}", x);
+//			return true; // ignore
+//		},
 	};
 	false
 }

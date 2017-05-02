@@ -481,7 +481,7 @@ vw_instance_t vw_vulkan_uniforms(const vw_t* vulkan, vw_shape_t* shape,
 		.pNext = NULL,
 		.descriptorPool = instance.desc_pool,
 		.descriptorSetCount = 1,
-		.pSetLayouts = &shape->pipeline->descsetlayout
+		.pSetLayouts = &shape->pipeline.descsetlayout
 	};
 	puts("VvkAllocateDescriptorSets");
 	vw_vulkan_error("Failed to allocate descriptor sets.",
@@ -1288,10 +1288,10 @@ void vw_vulkan_draw_shape(vw_t* vulkan, vw_shape_t* shape, const float* v,
 		&shape->vertex_input_buffer, &vulkan->offset);
 	// Bind pipeline.
 	vkCmdBindPipeline(vulkan->command_buffer,
-		VK_PIPELINE_BIND_POINT_GRAPHICS, shape->pipeline->pipeline);
+		VK_PIPELINE_BIND_POINT_GRAPHICS, shape->pipeline.pipeline);
 	vkCmdBindDescriptorSets(vulkan->command_buffer,
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		shape->pipeline->pipeline_layout, 0, 1, &instance.desc_set, 0,
+		shape->pipeline.pipeline_layout, 0, 1, &instance.desc_set, 0,
 		NULL);
 }
 

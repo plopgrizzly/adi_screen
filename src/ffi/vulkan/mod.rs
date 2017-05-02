@@ -239,29 +239,20 @@ fn check_error(name: &str, error: VkResult) {
 fn check_error(_: &str, _: VkResult) { }
 
 pub fn copy_memory(vk_device: VkDevice, vk_memory: VkDeviceMemory, data: &[f32]) {
-//	let len : usize = data.length();
-//	let mut mapped : usize = 0;// = null_mut();
-//	println!("device {0} memory {1} data {2}", vk_device, vk_memory, data[0]);
-//	println!("Mapped {}", mapped);
-	
-//	panic!("ok");
 	// TODO: Figure out why test_map works and not vkMapMemory ffi?
 	let mapped = unsafe { test_map(vk_device, vk_memory, VK_WHOLE_SIZE) };
 /*	unsafe {
 		check_error("Failed to map buffer memory.", vkMapMemory(
 			vk_device, vk_memory, 0, VK_WHOLE_SIZE, 0, &mut mapped));
-*///		println!("Mapped {}", mapped);
-/*	}*/
-//	panic!("its ok");
+		println!("Mapped {}", mapped);
+	}*/
 //	let mapped = mapped as *mut _ as *mut f32;
 	if mapped.is_null() {
 		panic!("Couldn't Map Buffer Memory?  Unknown cause.");
 	}
-//	println!("Mapped {}", mapped as *mut _ as usize);
 	for i in 0..data.len() {
 		unsafe { *(mapped.offset(i as isize)) = data[i]; }
 	}
-//	println!("done.");
 	unsafe {
 		vkUnmapMemory(vk_device, vk_memory);
 	}
