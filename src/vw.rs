@@ -4,8 +4,8 @@
 **/
 
 use style;
-use Screen;
-use screen::NativeScreen;
+use Window;
+use window::WindowFunctions;
 use ffi::{ NativeWindow, vulkan };
 
 type VkInstance = usize;
@@ -126,13 +126,13 @@ pub struct Shape {
 }
 
 impl Shape {
-	pub fn create(screen: &mut Screen, v: &[f32], style: style::Style) -> Shape {
+	pub fn create(window: &mut Window, v: &[f32], style: style::Style) -> Shape {
 		let size = v.len() as u32;
 		let mut shape = VwShape {
 			vertex_buffer_memory: 0,
 			vertex_input_buffer: 0,
 			vertice_count: size / 8,
-			pipeline: screen.shader(match style {
+			pipeline: window.shader(match style {
 				style::Style::Solid(shader) |
 				style::Style::CustomSolid(shader) |
 				style::Style::Opaque(shader, _) |
@@ -142,7 +142,7 @@ impl Shape {
 				style::Style::Invisible => !0
 			}),
 		};
-		unsafe { vw_vulkan_shape(&mut shape, screen.vw, &v[0], size); }
+		unsafe { vw_vulkan_shape(&mut shape, window.vw, &v[0], size); }
 		let hastx = match style {
 			style::Style::Invisible |
 			style::Style::Solid(_) |
@@ -160,7 +160,9 @@ impl Shape {
 		}
 	}
 
-	pub fn animate(window: &mut Screen, index: usize, i: usize, texture: *const NativeTexture) {
+	pub fn animate(window: &mut Window, index: usize, i: usize,
+		texture: *const NativeTexture)
+	{
 		unsafe {
 			vw_vulkan_txuniform(&window.vw,
 				&mut window.sprites[index].shape.instances[i].instance, texture,
@@ -168,7 +170,7 @@ impl Shape {
 		}
 	}
 
-	pub fn add(window: &mut Screen, index: usize, tx: *const NativeTexture) {
+	pub fn add(window: &mut Window, index: usize, tx: *const NativeTexture) {
 		let shape = &mut window.sprites[index].shape;
 		let mem = VwLinkedInstance {
 			instance: unsafe {
@@ -193,7 +195,7 @@ impl Shape {
 //		self.texclone(transform, tx);
 //	}
 
-	pub fn draw(window: &mut Screen, index: usize) {
+	pub fn draw(window: &mut Window, index: usize) {
 		let shape = &window.sprites[index].shape;
 		if !window.sprites[index].enabled { return; }
 		for i in 0..shape.instances.len() {
@@ -208,7 +210,9 @@ impl Shape {
 		}
 	}
 
-	pub fn matrix(window: &mut Screen, index: usize, i: usize, matrix: [f32; 16]) {
+	pub fn matrix(window: &mut Window, index: usize, i: usize,
+		matrix: [f32; 16])
+	{
 		window.sprites[index].shape.instances[i].matrix = matrix;
 		vulkan::copy_memory(window.vw.device,
 			window.sprites[index].shape.instances[i].instance.uniform_memory,
@@ -225,7 +229,7 @@ impl Shape {
 			self.shape.vertice_count);
 	}*/
 
-	pub fn vertices(window: &Screen, index: usize, v: &[f32]) {
+	pub fn vertices(window: &Window, index: usize, v: &[f32]) {
 		vulkan::copy_memory(window.vw.device,
 			window.sprites[index].shape.shape.vertex_buffer_memory, v);
 	}
@@ -328,24 +332,26 @@ pub fn make_styles(vw: &mut Vw, extrashaders: &[Shader], shaders: &mut Vec<Style
 	}
 }
 
-pub fn resize(screen: &mut Screen) {
-	if screen.vw.width==screen.size.0 && screen.vw.height==screen.size.1 {
+pub fn resize(window: &mut Window) {
+	let size = window.dim();
+
+	if window.vw.width == size.0 && window.vw.height == size.1 {
 		return;
 	}
-	screen.vw.width = screen.size.0;
-	screen.vw.height = screen.size.1;
+	window.vw.width = size.0;
+	window.vw.height = size.1;
 	unsafe {
-		vw_vulkan_swapchain_delete(&mut screen.vw);
-		vw_vulkan_resize(&mut screen.vw);
+		vw_vulkan_swapchain_delete(&mut window.vw);
+		vw_vulkan_resize(&mut window.vw);
 	}
 }
 
-pub fn draw_clear(screen: &mut Screen, r:f32, g:f32, b:f32) {
-	unsafe { vw_vulkan_draw_begin(&mut screen.vw, r, g, b); }
+pub fn draw_clear(window: &mut Window, r:f32, g:f32, b:f32) {
+	unsafe { vw_vulkan_draw_begin(&mut window.vw, r, g, b); }
 }
 
-pub fn draw_update(screen: &mut Screen) {
-	unsafe { vw_vulkan_draw_update(&mut screen.vw); }
+pub fn draw_update(window: &mut Window) {
+	unsafe { vw_vulkan_draw_update(&mut window.vw); }
 }
 
 pub fn close(vw: &mut Vw) {

@@ -10,7 +10,7 @@ const SHADER_CUSTOM : usize = 2;
 use vw::NativeTexture;
 use vw::Vw;
 use image::Image;
-use Screen;
+use Window;
 
 extern {
 	fn vw_vulkan_texture(a: *mut Vw, b: u32, c: u32, d: *const u8, e: u8,
@@ -36,22 +36,22 @@ impl Style {
 		Style::Solid(SHADER_COLOR)
 	}
 
-	pub fn opaque(self, screen: &mut Screen, icon: &'static [u8]) -> Style {
+	pub fn opaque(self, window: &mut Window, icon: &'static [u8]) -> Style {
 		let icon = Image::load(icon);
 
 		Style::Opaque(SHADER_TEXTURE, unsafe {
-			vw_vulkan_texture(&mut screen.vw, icon.size.0,
+			vw_vulkan_texture(&mut window.vw, icon.size.0,
 				icon.size.1, &icon.pixels[0], 0, 0, 0, 0)
 		})
 	}
 
-	pub fn subtransparent(self, screen: &mut Screen, icon: &'static [u8],
+	pub fn subtransparent(self, window: &mut Window, icon: &'static [u8],
 		key: (u8,u8,u8)) -> Style
 	{
 		let icon = Image::load(icon).alpha_key(key);
 
 		Style::Subtransparent(SHADER_TEXTURE, unsafe {
-			vw_vulkan_texture(&mut screen.vw, icon.size.0,
+			vw_vulkan_texture(&mut window.vw, icon.size.0,
 				icon.size.1, &icon.pixels[0], 1,
 				key.0, key.1, key.2)
 		})

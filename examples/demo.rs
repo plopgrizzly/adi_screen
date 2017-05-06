@@ -6,12 +6,12 @@
 extern crate adi_screen;
 
 use adi_screen::Transform;
-use adi_screen::{ Sprite, Screen, Style };
+use adi_screen::{ Sprite, Window, Style };
 use adi_screen::gui::Button;
 use adi_screen::input::Input;
 
 struct Context {
-	screen: Screen,
+	window: Window,
 	image: Sprite,
 	triangle: Sprite,
 	logo: Sprite,
@@ -20,42 +20,42 @@ struct Context {
 }
 
 fn draw(context: &mut Context) {
-	let disp = context.screen.full_smooth_pulse(8.0);
-	let disp2 = context.screen.full_linear_pulse(4.0);
+	let disp = context.window.pulse_full_smooth(8.0);
+	let disp2 = context.window.pulse_full_linear(4.0);
 
 	Transform::create()
 		.translate(-0.5, -0.5, 0.0)//5.0 * disp)
 		.translate(disp * 1.0, 0.0, 0.0)
 		.rotate(0.0, 0.0, disp)
-		.perspective(&context.screen, 90.0)
-		.on(&mut context.screen, &context.triangle, 0);
+		.perspective(&context.window, 90.0)
+		.apply(&mut context.window, &context.triangle, 0);
 	Transform::create()
 		.translate(-0.5, 0.5, 0.0)//5.0 * disp)
 		.translate(disp2 * 1.0, 0.0, 0.0)
-		.perspective(&context.screen, 90.0)
-		.on(&mut context.screen, &context.triangle, 1);
-	// Render onto the screen.
-	context.screen.render((disp, 0.0, disp));
+		.perspective(&context.window, 90.0)
+		.apply(&mut context.window, &context.triangle, 1);
+
+	context.window.background(disp, 0.0, disp);
 }
 
 fn resize(context: &mut Context) {
 	Transform::create().scale(0.1, 0.1, 1.0)
-		.orthographic(&context.screen)
-		.on(&mut context.screen, &context.square, 0);
-	Transform::create().orthographic(&context.screen)
-		.on(&mut context.screen, &context.image, 0);
+		.orthographic(&context.window)
+		.apply(&mut context.window, &context.square, 0);
+	Transform::create().orthographic(&context.window)
+		.apply(&mut context.window, &context.image, 0);
 	Transform::create().scale(0.5, 0.5, 1.0)
-		.orthographic(&context.screen)
-		.on(&mut context.screen, &context.logo, 0);
+		.orthographic(&context.window)
+		.apply(&mut context.window, &context.logo, 0);
 }
 
-fn input(context: &mut Context) {
-	let message = Input::get(&mut context.screen);
+fn update(context: &mut Context) -> bool {
+	let message = context.window.update();
 
 	match message {
-		Input::None => draw(context),
+		Input::Draw => draw(context),
 		Input::Resize => resize(context),
-		Input::Back => println!("Back"),
+		Input::Back => return false, // Quit
 		Input::Resume => println!("Resume ( Gain Focus )"),
 		Input::Pause => println!("Pause ( Lose Focus )"),
 		Input::KeyDown(a) => println!("press {}", a),
@@ -75,56 +75,55 @@ fn input(context: &mut Context) {
 		Input::EnterWindow => println!("Enter Window"),
 		Input::LeaveWindow => println!("Leave Window"),
 	};
-	let pressed = context.button.get(&mut context.screen, message);
+	let pressed = context.button.update(&mut context.window, message);
 	if pressed {
 		println!("button been pressed!");
 	}
+	true
 }
 
-fn init() -> (Screen, Style) {
+fn init() -> (Window, Style) {
 	// Load Resources - Images
 	let image_logo = include_bytes!("res/logo.ppm");
 
 	// Open window
-	let mut screen = Screen::create("Demo", image_logo, &[]);
+	let mut window = Window::create("Demo", image_logo, &[]);
 
 	// Create Textures
-	let style_logo = Style::create().opaque(&mut screen, image_logo);
+	let style_logo = Style::create().opaque(&mut window, image_logo);
 
-	(screen, style_logo)
+	(window, style_logo)
 }
 
 fn init2() -> Context {
-	let (mut screen, style_logo) = init();
+	let (mut window, style_logo) = init();
 
 	// Create Styles
 	let style_solid = Style::create().solid();
-	let style_bear = Style::create().subtransparent(&mut screen,
+	let style_bear = Style::create().subtransparent(&mut window,
 		include_bytes!("res/plopgrizzly.ppm"), (0, 255, 0));
 
 	// Create Sprites
 	let shape_image = include!("res/image.data");
 	Context {
-		logo: Sprite::create(&mut screen, &shape_image, style_logo, 1),
-		button: Button::create(&mut screen, (-1.0, -1.0)),
-		triangle: Sprite::create(&mut screen,
+		logo: Sprite::create(&mut window, &shape_image, style_logo, 1),
+		button: Button::create(&mut window, (-1.0, -1.0)),
+		triangle: Sprite::create(&mut window,
 			&include!("res/triangle.data"), style_solid, 2),
 		image: {
-			let image = Sprite::create(&mut screen, &shape_image,
+			let image = Sprite::create(&mut window, &shape_image,
 				style_logo, 1);
-			image.animate(&mut screen, 0, &style_bear);
+			image.animate(&mut window, 0, &style_bear);
 			image
 		},
-		square: Sprite::create(&mut screen,
+		square: Sprite::create(&mut window,
 			&include!("res/square.data"), style_solid, 1),
-		screen: screen,
+		window: window,
 	}
 }
 
 fn main() {
 	let mut context = init2();
 
-	loop {
-		input(&mut context);
-	}
+	while update(&mut context) { }
 }

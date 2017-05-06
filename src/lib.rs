@@ -6,11 +6,11 @@
 /// The version of adi_screen that's being used
 pub const VERSION : &'static str = "adi_screen 0.1.0";
 
-mod screen;
+mod window;
 mod sprite;
 mod style;
 
-pub use screen::Screen;
+pub use window::Window;
 pub use sprite::Sprite;
 pub use sprite::Transform;
 pub use style::Style;

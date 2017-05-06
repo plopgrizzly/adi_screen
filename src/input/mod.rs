@@ -5,9 +5,9 @@
 
 use std::fmt;
 
-use Screen;
+use Window;
+use window::WindowFunctions;
 use running;
-use std::process;
 
 pub mod keyboard;
 
@@ -72,7 +72,7 @@ impl fmt::Display for Key {
 #[derive(PartialEq)]
 #[derive(Copy, Clone)]
 pub enum Input {
-	None,
+	Draw,
 	Resize,
 	Back,
 	Resume,
@@ -95,46 +95,35 @@ pub enum Input {
 	ScrollRight(f32,f32),
 }
 
-fn key(screen: &mut Screen, input: Input, a: Key) -> Input {
+fn key(window: &mut Window, input: Input, a: Key) -> Input {
 	match a {
 		Key::F(11) => {
 			if input == Input::KeyDown(a) {
-				screen.toggle_fullscreen();
+				window.toggle_fullscreen();
 			}
-			Input::get(screen)
+			Input::get(window)
 		}
 		Key::Escape => {
-			screen.stop();
 			if input == Input::KeyDown(a) {
 				Input::Back
 			} else {
-				Input::get(screen)
+				Input::get(window)
 			}
 		}
 		Key::Char('\x00') => {
-			Input::get(screen)
+			Input::get(window)
 		}
 		_ => input
 	}
 }
 
 impl Input {
-
-	pub fn get(screen: &mut Screen) -> Input {
-		if screen.rqexit {
-			screen.cleanup();
-			println!("ADI Quit.");
-			process::exit(0);
-		}
-		match running(screen) {
-			Input::KeyDown(a) => key(screen, Input::KeyDown(a), a),
+	pub fn get(window: &mut Window) -> Input {
+		match running(window) {
+			Input::KeyDown(a) => key(window, Input::KeyDown(a), a),
 			Input::KeyRepeat(a) =>
-				key(screen, Input::KeyRepeat(a), a),
-			Input::KeyUp(a) => key(screen, Input::KeyUp(a), a),
-			Input::Back => {
-				screen.stop();
-				Input::Back
-			}
+				key(window, Input::KeyRepeat(a), a),
+			Input::KeyUp(a) => key(window, Input::KeyUp(a), a),
 			a => a,
 		}
 	}

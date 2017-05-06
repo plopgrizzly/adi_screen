@@ -7,7 +7,7 @@ use std::mem;
 use std::{ usize, isize };
 
 use input::Input;
-use screen::{ Screen };
+use screen::{ Window };
 use screen::ffi::string;
 use screen::image::Image;
 
@@ -297,21 +297,21 @@ pub fn native_window(title: &str, icon:&'static [u8]) -> NativeWindow {
 		fullscreen: false }
 }
 
-fn get_mouse(screen: &mut Screen) -> (f32, f32, bool) {
+fn get_mouse(window: &mut Window) -> (f32, f32, bool) {
 	let mut pos = Point { x: 0, y: 0 };
 	unsafe { GetCursorPos(&mut pos); }
 
-	let winx = screen.window.border_x + unsafe { DIM.left };
-	let winy = screen.window.border_y + unsafe { DIM.top };
+	let winx = window.window.border_x + unsafe { DIM.left };
+	let winy = window.window.border_y + unsafe { DIM.top };
 	
 	let dim = ((pos.x - winx) as i16, (pos.y - winy) as i16);
-	let pos = shared::convert_mouse_pos(&screen, dim);
+	let pos = shared::convert_mouse_pos(&window, dim);
 
 	let miw = pos.0 >= -1.0 && pos.0 <= 1.0 && pos.1 >= -1.0
 		&& pos.1 <= 1.0;
 
-	let miw_changed = if screen.window.miw != miw {
-		screen.window.miw = miw;
+	let miw_changed = if window.window.miw != miw {
+		window.window.miw = miw;
 		true
 	} else {
 		false
@@ -319,15 +319,15 @@ fn get_mouse(screen: &mut Screen) -> (f32, f32, bool) {
 	(pos.0, pos.1, miw_changed)
 }
 
-fn convert_event(screen: &mut Screen, event_out: &mut Input) -> bool {
+fn convert_event(window: &mut Window, event_out: &mut Input) -> bool {
 	let mut msg = Msg { hwnd: 0, message: 0, w_param: 0, l_param: 0, time: 0,
 		pt: Point { x: 0, y: 0 } };
 		
 	if unsafe { RESIZED } {
-		let w = unsafe { DIM.right - DIM.left } - screen.window.border_w;
-		let h = unsafe { DIM.bottom - DIM.top } - screen.window.border_h;
+		let w = unsafe { DIM.right - DIM.left } - window.window.border_w;
+		let h = unsafe { DIM.bottom - DIM.top } - window.window.border_h;
 
-		if shared::should_resize(screen, (w as u32, h as u32)) {
+		if shared::should_resize(window, (w as u32, h as u32)) {
 			*event_out = Input::Resize;
 		}
 		unsafe { RESIZED = false };
@@ -346,9 +346,9 @@ fn convert_event(screen: &mut Screen, event_out: &mut Input) -> bool {
 		return false; // Send Event
 	}
 
-	let (x, y, miw_changed) = get_mouse(screen);
+	let (x, y, miw_changed) = get_mouse(window);
 	if miw_changed {
-		*event_out = if screen.window.miw {
+		*event_out = if window.window.miw {
 			Input::EnterWindow
 		} else {
 			Input::LeaveWindow
@@ -359,7 +359,7 @@ fn convert_event(screen: &mut Screen, event_out: &mut Input) -> bool {
 	if unsafe {
 		PeekMessageW(&mut msg, 0, 0, 0, 0x0001)
 	} == 0 { // no messages available
-		*event_out = Input::None;
+		*event_out = Input::Draw;
 		return false;
 	}
 	*event_out = match msg.message {
@@ -421,10 +421,10 @@ fn convert_event(screen: &mut Screen, event_out: &mut Input) -> bool {
 	false
 }
 
-pub fn running(screen: &mut Screen) -> Input {
-	let mut converted = Input::None;
+pub fn running(window: &mut Window) -> Input {
+	let mut converted = Input::Draw;
 
-	while convert_event(screen, &mut converted) {}	
+	while convert_event(window, &mut converted) {}	
 	converted
 }
 

@@ -6,7 +6,8 @@
 use std::ptr::null_mut;
 use std::f32::consts::PI;
 
-use Screen;
+use Window;
+use window::WindowFunctions;
 use vw::{ Shape };
 use Style;
 
@@ -23,33 +24,33 @@ pub struct SpriteData {
 	pub shape: Shape, // The shape to render.
 }
 
-fn sprite(screen: &mut Screen, shape: Shape) -> usize {
+fn sprite(window: &mut Window, shape: Shape) -> usize {
 	let sprite = SpriteData {
 		enabled: true,
 		shape: shape,
 	};
-	screen.sprites.push(sprite); // Add sprite to end of vector
-	screen.sprites.len() - 1 // Length - 1 to get index of sprite.
+	window.sprites.push(sprite); // Add sprite to end of vector
+	window.sprites.len() - 1 // Length - 1 to get index of sprite.
 }
 
 impl Sprite {
-	pub fn create(screen: &mut Screen, v: &[f32], style: Style,
+	pub fn create(window: &mut Window, v: &[f32], style: Style,
 		instances: u32) -> Sprite
 	{
-		let shape = Shape::create(screen, v, style);
-		let index = sprite(screen, shape);
+		let shape = Shape::create(window, v, style);
+		let index = sprite(window, shape);
 
 		match style {
 			Style::Opaque(_, ref tx) |
 				Style::Subtransparent(_, ref tx) =>
 			{
 				for _ in 0..instances {
-					Shape::add(screen, index, tx);
+					Shape::add(window, index, tx);
 				}
 			}
 			Style::Solid(_) => {
 				for _ in 0..instances {
-					Shape::add(screen, index, null_mut());
+					Shape::add(window, index, null_mut());
 				}
 			}
 			_ => panic!("This style type is unsupported.")
@@ -58,15 +59,15 @@ impl Sprite {
 		Sprite(index)
 	}
 
-	pub fn animate(&self, screen: &mut Screen, i: usize, style: &Style)->(){
+	pub fn animate(&self, window: &mut Window, i: usize, style: &Style)->(){
 		match *style {
 			Style::Invisible => {
-				screen.sprites[i].enabled = false;
+				window.sprites[i].enabled = false;
 			}
 			Style::Opaque(_,ref tx)|Style::Subtransparent(_,ref tx)
 				=>
 			{
-				Shape::animate(screen, self.0, i, tx);
+				Shape::animate(window, self.0, i, tx);
 			}
 			_ => {
 				panic!("Can't animate with this style.")
@@ -74,8 +75,8 @@ impl Sprite {
 		}
 	}
 
-	pub fn vertices(&mut self, screen: &mut Screen, v: &[f32]) -> () {
-		Shape::vertices(screen, self.0, v);
+	pub fn vertices(&mut self, window: &mut Window, v: &[f32]) -> () {
+		Shape::vertices(window, self.0, v);
 	}
 }
 
@@ -175,9 +176,9 @@ impl Transform {
 		self.combine(m1).combine(m2)
 	}
 
-	pub fn perspective(self, screen: &Screen, fov: f32) -> TransformApply {
+	pub fn perspective(self, window: &Window, fov: f32) -> TransformApply {
 		let scale = (fov * 0.5 * PI / 180.).tan().recip();
-		let xscale = scale * screen.unit_ratio();
+		let xscale = scale * window.unit_ratio();
 		let t = self.combine([
 				xscale,	0.,	0.,	0.,
 				0.,	scale,	0.,	0.,
@@ -188,24 +189,25 @@ impl Transform {
 		TransformApply(t)
 	}
 
-	pub fn orthographic(self, screen: &Screen) -> TransformApply {
-		TransformApply(self.scale(screen.unit_ratio(), 1.0, 1.0))
+	pub fn orthographic(self, window: &Window) -> TransformApply {
+		TransformApply(self.scale(window.unit_ratio(), 1.0, 1.0))
 	}
 
-	pub fn auto(self, screen: &mut Screen, pos: (f32, f32))
+	pub fn auto(self, window: &mut Window, pos: (f32, f32))
 		-> TransformApply
 	{
-		let t = self.scale(screen.unit_width(),screen.unit_height(),1.0)
+		let size = window.unit_size();
+		let t = self.scale(size.0, size.1, 1.0)
 			.translate(pos.0, pos.1, 0.0);
 		TransformApply(t)
 	}
 }
 
 impl TransformApply {
-	pub fn on(self, screen: &mut Screen, sprite: &Sprite, i: usize)
+	pub fn apply(self, window: &mut Window, sprite: &Sprite, i: usize)
 		-> TransformApply
 	{
-		Shape::matrix(screen, sprite.0, i, self.0 .0);
+		Shape::matrix(window, sprite.0, i, self.0 .0);
 		self
 	}
 }

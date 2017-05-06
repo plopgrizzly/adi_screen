@@ -5,7 +5,7 @@
 
 use std;
 use std::ffi::CString;
-use Screen;
+use Window;
 use input::Input;
 use image::Image;
 use input::keyboard::{ english };
@@ -165,7 +165,6 @@ pub fn toggle_fullscreen(window: &NativeWindow) {
 		free(reply as *mut _);
 		free(reply2 as *mut _);
 	}
-	println!("FULLSCREN!");
 }
 
 pub fn native_window(title: &str, icon:&'static [u8]) -> NativeWindow {
@@ -251,8 +250,8 @@ pub fn native_window(title: &str, icon:&'static [u8]) -> NativeWindow {
 	native_window
 }
 
-fn poll_event(screen: &Screen) -> (u8, u8, (i16, i16)) {
-	let e = unsafe { xcb_poll_for_event(screen.window.connection) };
+fn poll_event(window: &Window) -> (u8, u8, (i16, i16)) {
+	let e = unsafe { xcb_poll_for_event(window.window.connection) };
 	if e == std::ptr::null_mut() {
 		return (0, 0, (0, 0));
 	}
@@ -268,10 +267,10 @@ fn poll_event(screen: &Screen) -> (u8, u8, (i16, i16)) {
 	details
 }
 
-fn convert_event(screen: &mut Screen, event_out: &mut Input) -> bool {
-	let (xcb_event, detail, dim) = poll_event(screen);
+fn convert_event(window: &mut Window, event_out: &mut Input) -> bool {
+	let (xcb_event, detail, dim) = poll_event(window);
 	*event_out = match xcb_event {
-		0 => Input::None,
+		0 => Input::Draw,
 		XCB_KEY_PRESS => Input::KeyDown(english(detail as u32)),
 		XCB_KEY_RELEASE => {
 			let detail = english(detail as u32);
@@ -279,7 +278,7 @@ fn convert_event(screen: &mut Screen, event_out: &mut Input) -> bool {
 				return true // ignore.
 			}else{
 				let e = unsafe {
-					xcb_poll_for_event(screen.window.connection)
+					xcb_poll_for_event(window.window.connection)
 				};
 				if e == std::ptr::null_mut() {
 					Input::KeyUp(detail)
@@ -290,7 +289,7 @@ fn convert_event(screen: &mut Screen, event_out: &mut Input) -> bool {
 			}
 		},
 		XCB_BUTTON_PRESS => {
-			let (x, y) = shared::convert_mouse_pos(&screen, dim);
+			let (x, y) = shared::convert_mouse_pos(&window, dim);
 			match detail {
 				1 => Input::LeftDown(x,y),
 				2 => Input::MiddleDown(x,y),
@@ -303,7 +302,7 @@ fn convert_event(screen: &mut Screen, event_out: &mut Input) -> bool {
 			}
 		},
 		XCB_BUTTON_RELEASE => {
-			let (x, y) = shared::convert_mouse_pos(&screen, dim);
+			let (x, y) = shared::convert_mouse_pos(&window, dim);
 			match detail {
 				1 => Input::LeftUp(x,y),
 				2 => Input::MiddleUp(x,y),
@@ -313,7 +312,7 @@ fn convert_event(screen: &mut Screen, event_out: &mut Input) -> bool {
 			}
 		},
 		XCB_MOTION_NOTIFY => {
-			let (x, y) = shared::convert_mouse_pos(&screen, dim);
+			let (x, y) = shared::convert_mouse_pos(&window, dim);
 			Input::Cursor(x,y)
 		},
 		XCB_ENTER_NOTIFY => Input::EnterWindow,
@@ -321,7 +320,7 @@ fn convert_event(screen: &mut Screen, event_out: &mut Input) -> bool {
 		XCB_FOCUS_IN => Input::Resume,
 		XCB_FOCUS_OUT => Input::Pause,
 		XCB_CONFIGURE_NOTIFY => {
-			if shared::should_resize(screen,
+			if shared::should_resize(window,
 				(dim.0 as u32, dim.1 as u32))
 			{
 				Input::Resize
@@ -341,10 +340,10 @@ fn convert_event(screen: &mut Screen, event_out: &mut Input) -> bool {
 	false
 }
 
-pub fn running(screen: &mut Screen) -> Input {
-	let mut converted = Input::None;
+pub fn running(window: &mut Window) -> Input {
+	let mut converted = Input::Draw;
 
-	while convert_event(screen, &mut converted) {}
+	while convert_event(window, &mut converted) {}
 	converted
 }
 

@@ -6,7 +6,7 @@
 <div style="margin-left:5%;margin-right:5%;padding:0px;background:#111111;">
 	<img src="adi_screen.png" width="100%"/>
 	<button onclick="insertParam('');home()">home</button>
-	<button onclick="insertParam('screen');screen()">screen</button>
+	<button onclick="insertParam('window');window2()">window</button>
 	<button onclick="insertParam('sprite');sprite()">sprite</button>
 	<button onclick="insertParam('transform');transform()">transform</button>
 </div>
@@ -24,9 +24,9 @@ function home() {
 		onload=\"resize_iframe(this);\"></iframe>";
 }
 
-function screen() {
+function window2() {
 	document.getElementById("docs").innerHTML = "\
-		<iframe src=\"screen.html\" \
+		<iframe src=\"window.html\" \
 		id=\"docf\" frameborder=\"0\" scrolling\"no\"\
 		style=\"position:absolute;width:90%\"\
 		onload=\"resize_iframe(this);\"></iframe>";
@@ -91,7 +91,7 @@ function insertParam(value) {
 
 m = getParameterByName('m');
 switch(m) {
-	case 'screen': screen(); break;
+	case 'window': window2(); break;
 	case 'sprite': sprite(); break;
 	case 'transform': transform(); break;
 	default: home(); break;
