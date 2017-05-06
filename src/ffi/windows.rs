@@ -327,7 +327,9 @@ fn convert_event(screen: &mut Screen, event_out: &mut Input) -> bool {
 		let w = unsafe { DIM.right - DIM.left } - screen.window.border_w;
 		let h = unsafe { DIM.bottom - DIM.top } - screen.window.border_h;
 
-		*event_out = Input::Resize(w as u32, h as u32);
+		if shared::should_resize(screen, (w as u32, h as u32)) {
+			*event_out = Input::Resize;
+		}
 		unsafe { RESIZED = false };
 		return false; // Send Event
 	}

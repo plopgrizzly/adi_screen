@@ -128,6 +128,8 @@ static inline void vw_vulkan_image_view(vw_t* vulkan) {
 
 	VkFenceCreateInfo fenceCreateInfo = {
 		.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+		.pNext = NULL,
+		.flags = 0,
 	};
 	vkCreateFence(vulkan->device, &fenceCreateInfo, NULL,
 		&vulkan->submit_fence);
@@ -180,7 +182,6 @@ static inline void vw_vulkan_image_view(vw_t* vulkan) {
 
 		vkResetCommandBuffer(vulkan->command_buffer, 0);
 
-		puts("vkCreateImageView #1");
 		vw_vulkan_error("Could not create ImageView.", vkCreateImageView(
 			vulkan->device, &presentImagesViewCreateInfo, NULL,
 			&vulkan->present_image_views[i]));
@@ -313,7 +314,6 @@ static inline void vw_vulkan_depth_buffer(vw_t* vulkan) {
 		.subresourceRange.baseArrayLayer = 0,
 		.subresourceRange.layerCount = 1,
 	};
-	puts("vkCreateImageView #2");
 	vw_vulkan_error("Failed to create image view.", vkCreateImageView(
 		vulkan->device, &imageViewCreateInfo, NULL,
 		&vulkan->depth_image_view));
@@ -446,11 +446,9 @@ vw_instance_t vw_vulkan_uniforms(const vw_t* vulkan, vw_shape_t* shape,
 		.queueFamilyIndexCount = 0,
 		.pQueueFamilyIndices = NULL,
 	};
-	puts("E: MATRIX BUFFER");
 	vw_vulkan_error("Failed to create matrix buffer.", vkCreateBuffer(
 		vulkan->device, &uniform_buffer_ci, NULL,
 		&instance.matrix_buffer));
-	puts("E: MATRIX BUFFER");
 
 	// Descriptor Pool
 	const VkDescriptorPoolSize type_counts[2] = {
@@ -470,11 +468,9 @@ vw_instance_t vw_vulkan_uniforms(const vw_t* vulkan, vw_shape_t* shape,
 		.poolSizeCount = 1 + tex_count,
 		.pPoolSizes = &type_counts[0],
 	};
-	printf("VvkCreateDescriptorPool %d\n", tex_count);
 	vw_vulkan_error("Failed to create descriptor pool.",
 		vkCreateDescriptorPool(vulkan->device, &descriptor_pool, NULL,
 			&instance.desc_pool));
-	puts("VvkCreateDescriptorPool");
 
 	VkDescriptorSetAllocateInfo alloc_info = {
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
@@ -483,11 +479,9 @@ vw_instance_t vw_vulkan_uniforms(const vw_t* vulkan, vw_shape_t* shape,
 		.descriptorSetCount = 1,
 		.pSetLayouts = &shape->pipeline.descsetlayout
 	};
-	puts("VvkAllocateDescriptorSets");
 	vw_vulkan_error("Failed to allocate descriptor sets.",
 		vkAllocateDescriptorSets(vulkan->device, &alloc_info,
 			&instance.desc_set));
-	puts("VvkAllocateDescriptorSets");
 
 // {
 	instance.uniform_memory = 0;
@@ -508,10 +502,8 @@ vw_instance_t vw_vulkan_uniforms(const vw_t* vulkan, vw_shape_t* shape,
 
 	vw_vulkan_error("Failed to allocate uniform memory.", vkAllocateMemory(
 		vulkan->device, &buffer_ai, NULL, &instance.uniform_memory));
-	printf("kkkkkVVBindBufferMemory %lu\n", (long unsigned int) vulkan->device);
 	vkBindBufferMemory(vulkan->device, instance.matrix_buffer,
 		instance.uniform_memory, 0);
-	printf("kkkkkkVVBindBufferMemory %lu\n", (long unsigned int) instance.uniform_memory);
 // }
 	vw_vulkan_txuniform(vulkan, &instance, tx, tex_count);
 	return instance;
@@ -552,19 +544,15 @@ void vw_vulkan_shape(vw_shape_t* shape, vw_t vulkan, const float* v,
 		&shape->vertex_buffer_memory));
 	// Copy buffer data.
 	void *mapped;
-	puts("vVKMapEMOY");
 //	printf("%d %d %d %d %d\n", sizeof(VkDevice), sizeof(VkDeviceMemory), sizeof(VkDeviceSize), sizeof(VkMemoryMapFlags), sizeof(void**));
 	vw_vulkan_error("Failed to map buffer memory.", vkMapMemory(
 		vulkan.device, shape->vertex_buffer_memory, 0, VK_WHOLE_SIZE, 0,
 		&mapped));
-	puts("vVKMapEMOY");
 	memcpy(mapped, v, sizeof(float) * size);
 	vkUnmapMemory(vulkan.device, shape->vertex_buffer_memory);
-	puts("vVkBindBufferMemory");
 	vw_vulkan_error("Failed to bind buffer memory.", vkBindBufferMemory(
 		vulkan.device, shape->vertex_input_buffer,
 		shape->vertex_buffer_memory, 0));
-	puts("vVkBindBufferMemory");
 }
 
 float* test_map(VkDevice device, VkDeviceMemory vertex_buffer_memory, uint64_t wholesize) {
@@ -573,117 +561,6 @@ float* test_map(VkDevice device, VkDeviceMemory vertex_buffer_memory, uint64_t w
 		device, vertex_buffer_memory, 0, wholesize, 0,
 		&mapped));
 	return mapped;
-}
-
-void execute_end_command_buffer(vw_t* vulkan) {
-	puts("END COMMAND BUFFER");
-	vw_vulkan_error("Failed to end command buffer.", vkEndCommandBuffer(
-		vulkan->command_buffer));
-	puts("END COMMAND BUFFER");
-}
-
-void execute_queue_command_buffer(vw_t* vulkan) {
-	VkFence drawFence;
-	VkFenceCreateInfo fenceInfo = {
-		.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-		.pNext = NULL,
-		.flags = 0,
-	};
-	const VkPipelineStageFlags pipe_stage_flags =
-		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	VkSubmitInfo submit_info = {
-		.pNext = NULL,
-		.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-		.waitSemaphoreCount = 0,
-		.pWaitSemaphores = NULL,
-		.pWaitDstStageMask = &pipe_stage_flags,
-		.commandBufferCount = 1,
-		.pCommandBuffers = &vulkan->command_buffer,
-		.signalSemaphoreCount = 0,
-		.pSignalSemaphores = NULL,
-	};
-
-	vw_vulkan_error("Failed to create fence", vkCreateFence(vulkan->device,
-		&fenceInfo, NULL, &drawFence));
-	vw_vulkan_error("Failed to submit queue", vkQueueSubmit(vulkan->present_queue, 1,
-		&submit_info, drawFence));
-	printf("Begin wait for fences....\n");
-	/*vw_vulkan_error("Failed to wait for fences", */while(vkWaitForFences(vulkan->device, 1,
-		&drawFence, VK_TRUE, 1000) == 2);
-	printf("End wait for fences....\n");
-	vkDestroyFence(vulkan->device, drawFence, NULL);
-}
-
-void set_image_layout(vw_t* vulkan, VkImage image,
-	VkImageAspectFlags aspectMask, VkImageLayout old_image_layout,
-	VkImageLayout new_image_layout,	VkPipelineStageFlags src_stages,
-	VkPipelineStageFlags dest_stages)
-{
-/*	VkImageMemoryBarrier image_memory_barrier = {
-		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-		.pNext = NULL,
-		.srcAccessMask = 0,
-		.dstAccessMask = 0,
-		.oldLayout = old_image_layout,
-		.newLayout = new_image_layout,
-		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-		.image = image,
-		.subresourceRange = {
-			.aspectMask = aspectMask,
-			.baseMipLevel = 0,
-			.levelCount = 1,
-			.baseArrayLayer = 0,
-			.layerCount = 1,
-		},
-	};
-*/
-/*	switch(old_image_layout) {
-		case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-			image_memory_barrier.srcAccessMask =
-				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-			break;
-		case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-			image_memory_barrier.srcAccessMask =
-				VK_ACCESS_TRANSFER_WRITE_BIT;
-			break;
-		case VK_IMAGE_LAYOUT_PREINITIALIZED:
-			image_memory_barrier.srcAccessMask =
-				VK_ACCESS_HOST_WRITE_BIT;
-			break;
-		default:
-			break;
-	}
-
-	switch(new_image_layout) {
-		case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-			image_memory_barrier.dstAccessMask =
-				VK_ACCESS_TRANSFER_WRITE_BIT;
-			break;
-		case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-			image_memory_barrier.dstAccessMask =
-				VK_ACCESS_TRANSFER_READ_BIT;
-			break;
-		case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-			image_memory_barrier.dstAccessMask =
-				VK_ACCESS_SHADER_READ_BIT;
-			break;
-		case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-			image_memory_barrier.dstAccessMask =
-				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-			break;
-		case VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL:
-			image_memory_barrier.dstAccessMask =
-				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-			break;
-		default:
-			break;
-	}
-*/
-//	printf("CMDPIPELINEBARRIER\n");
-//	vkCmdPipelineBarrier(vulkan->command_buffer, src_stages, dest_stages, 0,
-//		0, NULL, 0, NULL, 1, &image_memory_barrier);
-//	printf("CMDPIPELINEBARRIER\n");
 }
 
 void vw_vulkan_animate(vw_t* vulkan, vw_texture_t* tx, uint32_t w, uint32_t h,
@@ -711,7 +588,6 @@ void vw_vulkan_animate(vw_t* vulkan, vw_texture_t* tx, uint32_t w, uint32_t h,
 		}
 		data += tx->pitch;
 	}
-	puts("ok then.");
 
 	vkUnmapMemory(vulkan->device, tx->mappable_memory);
 
@@ -719,32 +595,11 @@ void vw_vulkan_animate(vw_t* vulkan, vw_texture_t* tx, uint32_t w, uint32_t h,
 		// Use a linear tiled image for the texture, is supported
 		tx->image = tx->mappable_image;
 		tx->memory = tx->mappable_memory;
-		set_image_layout(vulkan, tx->image,
-			VK_IMAGE_ASPECT_COLOR_BIT,
-			VK_IMAGE_LAYOUT_PREINITIALIZED,
-			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VK_PIPELINE_STAGE_HOST_BIT,
-			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
 	} else {
 		// Use optimal tiled image - create from linear tiled image
 		VkMemoryRequirements mem_reqs;
 		vkGetImageMemoryRequirements(vulkan->device, 0,
 			&mem_reqs);
-
-		// Prepare mappable image for blitting onto optimal image
-		set_image_layout(vulkan, tx->mappable_image,
-			VK_IMAGE_ASPECT_COLOR_BIT,
-			VK_IMAGE_LAYOUT_PREINITIALIZED,
-			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			VK_PIPELINE_STAGE_HOST_BIT,
-			VK_PIPELINE_STAGE_TRANSFER_BIT);
-		// Prepare optimal image for being blitted onto.
-		set_image_layout(vulkan, tx->image,
-			VK_IMAGE_ASPECT_COLOR_BIT,
-			VK_IMAGE_LAYOUT_UNDEFINED,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-			VK_PIPELINE_STAGE_TRANSFER_BIT);
 
 		VkImageCopy copy_region = {
 			.srcSubresource = {
@@ -768,19 +623,7 @@ void vw_vulkan_animate(vw_t* vulkan, vw_texture_t* tx, uint32_t w, uint32_t h,
 		vkCmdCopyImage(vulkan->command_buffer, tx->mappable_image,
 			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, tx->image,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy_region);
-
-		// Change layout from DESTINATION_OPTIMAL to SHADER_READ_ONLY
-		set_image_layout(vulkan, tx->image, VK_IMAGE_ASPECT_COLOR_BIT,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VK_PIPELINE_STAGE_TRANSFER_BIT,
-			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
 	}
-	printf("well then\n");
-//	execute_end_command_buffer(vulkan);
-	printf("oh well then\n");
-//	execute_queue_command_buffer(vulkan);
-	printf("pe well then\n");
 }
 
 vw_texture_t vw_vulkan_texture(vw_t* vulkan, uint32_t w, uint32_t h,
@@ -884,12 +727,8 @@ vw_texture_t vw_vulkan_texture(vw_t* vulkan, uint32_t w, uint32_t h,
 			vulkan->device, texture.image, texture.memory, 0));
 	}
 
-	printf("oh ha\n");
-	
 	vw_vulkan_animate(vulkan, &texture, w, h, p, ka, kr, kg, kb);
 
-	printf("oh ho\n");
-	
 	VkSamplerCreateInfo samplerCreateInfo = {
 		.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
 		.magFilter = VK_FILTER_NEAREST,
@@ -928,11 +767,8 @@ vw_texture_t vw_vulkan_texture(vw_t* vulkan, uint32_t w, uint32_t h,
 		.subresourceRange.layerCount = 1,
 		.image = texture.image,
 	};
-	puts("vkCreateImageView #3");
 	vw_vulkan_error("create image view", vkCreateImageView(vulkan->device,
 		&view_info, NULL, &texture.view));
-	puts("vkCreateImageView #3");
-
 	return texture;
 }
 
@@ -1330,6 +1166,8 @@ void vw_vulkan_draw_update(vw_t* vulkan) {
 	VkFence render_fence;
 	VkFenceCreateInfo fenceCreateInfo = {
 		.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+		.pNext = NULL,
+		.flags = 0,
 	};
 	vkCreateFence(vulkan->device, &fenceCreateInfo, NULL, &render_fence);
 	VkPipelineStageFlags waitStageMash=VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;

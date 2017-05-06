@@ -5,8 +5,8 @@
 
 use std::fmt;
 
-use /*screen::*/Screen;
-use /*screen::*/running;
+use Screen;
+use running;
 use std::process;
 
 pub mod keyboard;
@@ -73,6 +73,8 @@ impl fmt::Display for Key {
 #[derive(Copy, Clone)]
 pub enum Input {
 	None,
+	Resize,
+	Back,
 	Resume,
 	Pause,
 	EnterWindow,
@@ -91,8 +93,6 @@ pub enum Input {
 	ScrollDown(f32,f32),
 	ScrollLeft(f32,f32),
 	ScrollRight(f32,f32),
-	Resize(u32,u32),
-	Back,
 }
 
 fn key(screen: &mut Screen, input: Input, a: Key) -> Input {
@@ -127,18 +127,9 @@ impl Input {
 			process::exit(0);
 		}
 		match running(screen) {
-			Input::Resize(w, h) => {
-				if (w, h) == screen.size {
-					// ignore, didn't actually resize.
-					Input::get(screen)
-				} else {
-					screen.resize(w, h);
-					Input::Resize(w, h)
-				}
-			},
 			Input::KeyDown(a) => key(screen, Input::KeyDown(a), a),
-			Input::KeyRepeat(a) => key(screen, Input::KeyRepeat(a),
-				a),
+			Input::KeyRepeat(a) =>
+				key(screen, Input::KeyRepeat(a), a),
 			Input::KeyUp(a) => key(screen, Input::KeyUp(a), a),
 			Input::Back => {
 				screen.stop();

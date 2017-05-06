@@ -6,9 +6,8 @@
 use input::Input;
 use Screen;
 use Sprite;
-use Texture;
+use Style;
 use Transform;
-use SHADER_TEXTURE;
 
 pub struct Button {
 	sprite: Sprite,
@@ -31,14 +30,11 @@ impl Button {
 			 0.0,  1.0, 0.0, 1.0,	0.0, 1.0, 1.0, 1.0,
 		];
 
-		let texture = Texture::opaque(screen,
+		let style = Style::create().opaque(screen,
 			include_bytes!("../res/button.ppm"));
-		let mut spr = Sprite::textured(screen, &v, SHADER_TEXTURE);
-		let transform = Transform::create().auto(screen, pos);
-		spr.texcopy(screen, &transform, &texture);
-
-		
-//			.on(screen, spr, 0);
+		let spr = Sprite::create(screen, &v, style, 1);
+//		let transform = Transform::create().auto(screen, pos);
+//		spr.copy(screen, &transform);
 
 		let button = Button {
 			sprite: spr,
@@ -57,16 +53,13 @@ impl Button {
 			Input::Cursor(x, y) => {
 				self.button_check(screen, x, y);
 			},
-			Input::Resize(_, _) => {
+			Input::Resize => {
 				let pos = (self.xmin, self.ymin);
-				*self = Button {
-					sprite: Sprite { index: self.sprite.index },
-					xmax: pos.0 + screen.unit_width(),
-					xmin: pos.0,
-					ymax: pos.1 + screen.unit_height(),
-					ymin: pos.1,
-					held: false,
-				};
+				self.xmax = pos.0 + screen.unit_width();
+				self.xmin = pos.0;
+				self.ymax = pos.1 + screen.unit_height();
+				self.ymin = pos.1;
+				self.held = false;
 				self.resize(screen);
 				self.away(screen);
 			},

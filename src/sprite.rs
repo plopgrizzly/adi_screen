@@ -3,13 +3,19 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
+use std::ptr::null_mut;
 use std::f32::consts::PI;
 
 use Screen;
-use vw::{ Texture, Shape };
+use vw::{ Shape };
+use Style;
 
-pub struct Sprite { pub index: usize }
+#[must_use]
+pub struct Sprite(usize);
+
+#[must_use]
 pub struct Transform([f32; 16]);
+
 pub struct TransformApply(Transform);
 
 pub struct SpriteData {
@@ -27,47 +33,49 @@ fn sprite(screen: &mut Screen, shape: Shape) -> usize {
 }
 
 impl Sprite {
-	pub fn colored(screen: &mut Screen, v: &[f32], shader: usize) -> Sprite{
-		let shape = Shape::colored(screen, v, shader);
+	pub fn create(screen: &mut Screen, v: &[f32], style: Style,
+		instances: u32) -> Sprite
+	{
+		let shape = Shape::create(screen, v, style);
 		let index = sprite(screen, shape);
-		Sprite { index: index }
+
+		match style {
+			Style::Opaque(_, ref tx) |
+				Style::Subtransparent(_, ref tx) =>
+			{
+				for _ in 0..instances {
+					Shape::add(screen, index, tx);
+				}
+			}
+			Style::Solid(_) => {
+				for _ in 0..instances {
+					Shape::add(screen, index, null_mut());
+				}
+			}
+			_ => panic!("This style type is unsupported.")
+		}
+
+		Sprite(index)
 	}
 
-	pub fn textured(screen: &mut Screen, v: &[f32], shader: usize) -> Sprite
-	{
-		let shape = Shape::textured(screen, v, shader);
-		let index = sprite(screen, shape);
-		Sprite { index: index }
-	}
-
-	pub fn texcopy(&mut self, screen: &mut Screen, matrix: &TransformApply,
-		texture: &Texture) -> ()
-	{
-		let sprite = screen.sprites.get_mut(self.index).unwrap();
-		sprite.shape.texclone(matrix.0 .0, texture);
-	}
-
-	pub fn copy(&mut self, screen: &mut Screen, matrix: &TransformApply)
-		-> ()
-	{
-		let sprite = screen.sprites.get_mut(self.index).unwrap();
-		sprite.shape.clone(matrix.0 .0);
-	}
-
-	pub fn enabled(&mut self, screen: &mut Screen, enabled: bool) -> () {
-		screen.sprites[self.index].enabled = enabled;
-	}
-
-	pub fn animate(&mut self, screen: &mut Screen, i: usize,
-		texture: &Texture) -> ()
-	{
-		let sprite = screen.sprites.get_mut(self.index).unwrap();
-		sprite.shape.animate(i, texture);
+	pub fn animate(&self, screen: &mut Screen, i: usize, style: &Style)->(){
+		match *style {
+			Style::Invisible => {
+				screen.sprites[i].enabled = false;
+			}
+			Style::Opaque(_,ref tx)|Style::Subtransparent(_,ref tx)
+				=>
+			{
+				Shape::animate(screen, self.0, i, tx);
+			}
+			_ => {
+				panic!("Can't animate with this style.")
+			}
+		}
 	}
 
 	pub fn vertices(&mut self, screen: &mut Screen, v: &[f32]) -> () {
-		let sprite = screen.sprites.get_mut(self.index).unwrap();
-		sprite.shape.vertices(v);
+		Shape::vertices(screen, self.0, v);
 	}
 }
 
@@ -167,10 +175,11 @@ impl Transform {
 		self.combine(m1).combine(m2)
 	}
 
-	pub fn perspective(self, fov: f32) -> TransformApply {
+	pub fn perspective(self, screen: &Screen, fov: f32) -> TransformApply {
 		let scale = (fov * 0.5 * PI / 180.).tan().recip();
+		let xscale = scale * screen.unit_ratio();
 		let t = self.combine([
-				scale,	0.,	0.,	0.,
+				xscale,	0.,	0.,	0.,
 				0.,	scale,	0.,	0.,
 				0.,	0.,	1.,	1.,
 				0.,	0.,	0., 	1.,
@@ -179,8 +188,8 @@ impl Transform {
 		TransformApply(t)
 	}
 
-	pub fn orthographic(self) -> TransformApply {
-		TransformApply(self)
+	pub fn orthographic(self, screen: &Screen) -> TransformApply {
+		TransformApply(self.scale(screen.unit_ratio(), 1.0, 1.0))
 	}
 
 	pub fn auto(self, screen: &mut Screen, pos: (f32, f32))
@@ -196,8 +205,7 @@ impl TransformApply {
 	pub fn on(self, screen: &mut Screen, sprite: &Sprite, i: usize)
 		-> TransformApply
 	{
-		let spr = screen.sprites.get_mut(sprite.index).unwrap();
-		spr.shape.matrix(i, self.0 .0);
+		Shape::matrix(screen, sprite.0, i, self.0 .0);
 		self
 	}
 }

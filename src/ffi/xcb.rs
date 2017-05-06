@@ -268,7 +268,7 @@ fn poll_event(screen: &Screen) -> (u8, u8, (i16, i16)) {
 	details
 }
 
-fn convert_event(screen: &Screen, event_out: &mut Input) -> bool {
+fn convert_event(screen: &mut Screen, event_out: &mut Input) -> bool {
 	let (xcb_event, detail, dim) = poll_event(screen);
 	*event_out = match xcb_event {
 		0 => Input::None,
@@ -321,7 +321,14 @@ fn convert_event(screen: &Screen, event_out: &mut Input) -> bool {
 		XCB_FOCUS_IN => Input::Resume,
 		XCB_FOCUS_OUT => Input::Pause,
 		XCB_CONFIGURE_NOTIFY => {
-			Input::Resize(dim.0 as u32, dim.1 as u32) },
+			if shared::should_resize(screen,
+				(dim.0 as u32, dim.1 as u32))
+			{
+				Input::Resize
+			} else {
+				return true;
+			}
+		},
 		XCB_CLIENT_MESSAGE => Input::Back,
 		XCB_EXPOSE => return true, // ignore.
 		_ => return true,
@@ -334,7 +341,7 @@ fn convert_event(screen: &Screen, event_out: &mut Input) -> bool {
 	false
 }
 
-pub fn running(screen: &Screen) -> Input {
+pub fn running(screen: &mut Screen) -> Input {
 	let mut converted = Input::None;
 
 	while convert_event(screen, &mut converted) {}

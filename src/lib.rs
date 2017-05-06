@@ -8,13 +8,12 @@ pub const VERSION : &'static str = "adi_screen 0.1.0";
 
 mod screen;
 mod sprite;
+mod style;
 
 pub use screen::Screen;
-pub use screen::SHADER_COLOR;
-pub use screen::SHADER_TEXTURE;
-pub use screen::SHADER_CUSTOM;
 pub use sprite::Sprite;
 pub use sprite::Transform;
+pub use style::Style;
 
 pub extern crate adi_clock;
 
@@ -28,4 +27,4 @@ mod image;
 
 #[link(name = "vulkan-1")]
 mod vw;
-pub use self::vw::{ Texture, Style, Shader };
+pub use self::vw::{ Shader };

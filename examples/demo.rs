@@ -6,15 +6,16 @@
 extern crate adi_screen;
 
 use adi_screen::Transform;
-use adi_screen::{ Sprite, Screen, Texture };
+use adi_screen::{ Sprite, Screen, Style };
 use adi_screen::gui::Button;
 use adi_screen::input::Input;
-use adi_screen::{ SHADER_COLOR, SHADER_TEXTURE };
 
 struct Context {
 	screen: Screen,
 	image: Sprite,
 	triangle: Sprite,
+	logo: Sprite,
+	square: Sprite,
 	button: Button,
 }
 
@@ -26,25 +27,41 @@ fn draw(context: &mut Context) {
 		.translate(-0.5, -0.5, 0.0)//5.0 * disp)
 		.translate(disp * 1.0, 0.0, 0.0)
 		.rotate(0.0, 0.0, disp)
-		.perspective(90.0)
+		.perspective(&context.screen, 90.0)
 		.on(&mut context.screen, &context.triangle, 0);
 	Transform::create()
 		.translate(-0.5, 0.5, 0.0)//5.0 * disp)
 		.translate(disp2 * 1.0, 0.0, 0.0)
-		.perspective(90.0)
+		.perspective(&context.screen, 90.0)
 		.on(&mut context.screen, &context.triangle, 1);
 	// Render onto the screen.
 	context.screen.render((disp, 0.0, disp));
 }
 
-fn input(context: &mut Context, message: Input) {
+fn resize(context: &mut Context) {
+	Transform::create().scale(0.1, 0.1, 1.0)
+		.orthographic(&context.screen)
+		.on(&mut context.screen, &context.square, 0);
+	Transform::create().orthographic(&context.screen)
+		.on(&mut context.screen, &context.image, 0);
+	Transform::create().scale(0.5, 0.5, 1.0)
+		.orthographic(&context.screen)
+		.on(&mut context.screen, &context.logo, 0);
+}
+
+fn input(context: &mut Context) {
+	let message = Input::get(&mut context.screen);
+
 	match message {
 		Input::None => draw(context),
+		Input::Resize => resize(context),
+		Input::Back => println!("Back"),
+		Input::Resume => println!("Resume ( Gain Focus )"),
+		Input::Pause => println!("Pause ( Lose Focus )"),
 		Input::KeyDown(a) => println!("press {}", a),
 		Input::KeyUp(a) => println!("release {}", a),
 		Input::KeyRepeat(a) => println!("repeat {}", a),
 		Input::Cursor(x, y) => println!("Cursor({}, {})", x, y),
-		Input::Resize(w, h) => println!("Resize({}, {})", w, h),
 		Input::LeftDown(x, y) => println!("Left Down ({}, {})", x, y),
 		Input::LeftUp(x, y) => println!("Left Up ({}, {})", x, y),
 		Input::MiddleDown(x, y) => println!("Middle Down ({}, {})", x, y),
@@ -57,9 +74,6 @@ fn input(context: &mut Context, message: Input) {
 		Input::ScrollLeft(x, y) => println!("Scroll Left ({}, {})", x, y),
 		Input::EnterWindow => println!("Enter Window"),
 		Input::LeaveWindow => println!("Leave Window"),
-		Input::Resume => println!("Resume ( Gain Focus )"),
-		Input::Pause => println!("Pause ( Lose Focus )"),
-		Input::Back => println!("Back"),
 	};
 	let pressed = context.button.get(&mut context.screen, message);
 	if pressed {
@@ -67,72 +81,50 @@ fn input(context: &mut Context, message: Input) {
 	}
 }
 
-fn main() {
-	// Vertices
-	let v_triangle = [
-		// Front Side
-		-0.5,  0.5, 0., 1.0,	1.0, 0.0, 0.0, 1.0,
-		 0.5,  0.5, 0., 1.0,	0.0, 1.0, 0.0, 1.0,
-		 0.0, -0.5, 0., 1.0,	0.0, 0.0, 1.0, 1.0,
+fn init() -> (Screen, Style) {
+	// Load Resources - Images
+	let image_logo = include_bytes!("res/logo.ppm");
 
-		// Back Side
-		-0.5,  0.5, 0., 1.0,	1.0, 0.0, 0.0, 1.0,
-		 0.0, -0.5, 0., 1.0,	0.0, 0.0, 1.0, 1.0,
-		 0.5,  0.5, 0., 1.0,	0.0, 1.0, 0.0, 1.0,
-	];
-	let v_square = [
-		-1.0, -1.0, 0.0, 1.0,	0.5, 0.5, 0.5, 0.5,
-		1.0, 1.0, 0.0, 1.0,	0.5, 0.5, 0.5, 0.5,
-		1.0, -1.0, 0.0, 1.0,	0.5, 0.5, 0.5, 0.5,
-
-		1.0, 1.0, 0.0, 1.0,	0.5, 0.5, 0.5, 0.5,
-		-1.0, -1.0, 0.0, 1.0,	0.5, 0.5, 0.5, 0.5,
-		-1.0, 1.0, 0.0, 1.0,	0.5, 0.5, 0.5, 0.5,
-	];
-	let v_image = [
-		-1.0, -1.0, 0.0, 1.0,	0.0, 0.0, 1.0, 1.0,
-		-0.5, -0.5, 0.0, 1.0,	1.0, 1.0, 1.0, 1.0,
-		-0.5, -1.0, 0.0, 1.0,	1.0, 0.0, 1.0, 1.0,
-
-		-0.5, -0.5, 0.0, 1.0,	1.0, 1.0, 1.0, 1.0,
-		-1.0, -1.0, 0.0, 1.0,	0.0, 0.0, 1.0, 1.0,
-		-1.0, -0.5, 0.0, 1.0,	0.0, 1.0, 1.0, 1.0,
-	];
-	// Matrices
-	let sm = Transform::create().scale(0.1, 0.1, 1.0).orthographic();
-	let im = Transform::create().orthographic();
-	let jm = Transform::create().scale(0.5, 0.5, 1.0).orthographic();
 	// Open window
-	let icon = include_bytes!("res/logo.ppm");
-	let mut screen = Screen::create("Demo", icon, &[]);
+	let mut screen = Screen::create("Demo", image_logo, &[]);
 
-	let texture = [
-		Texture::opaque(&mut screen, include_bytes!("res/logo.ppm")),
-		Texture::akeyed(&mut screen,
-			include_bytes!("res/plopgrizzly.ppm"), (0, 255, 0))
-	];
-println!("TEX..");
-	// Make sprites
-	Sprite::textured(&mut screen, &v_image, SHADER_TEXTURE)
-		.texcopy(&mut screen, &jm, &texture[0]);
-	let mut context = Context {
-		button: Button::create(&mut screen, (0.5, 0.5)),
-		triangle: Sprite::colored(&mut screen, &v_triangle,
-			SHADER_COLOR),
-		image: Sprite::textured(&mut screen, &v_image, SHADER_TEXTURE),
+	// Create Textures
+	let style_logo = Style::create().opaque(&mut screen, image_logo);
+
+	(screen, style_logo)
+}
+
+fn init2() -> Context {
+	let (mut screen, style_logo) = init();
+
+	// Create Styles
+	let style_solid = Style::create().solid();
+	let style_bear = Style::create().subtransparent(&mut screen,
+		include_bytes!("res/plopgrizzly.ppm"), (0, 255, 0));
+
+	// Create Sprites
+	let shape_image = include!("res/image.data");
+	Context {
+		logo: Sprite::create(&mut screen, &shape_image, style_logo, 1),
+		button: Button::create(&mut screen, (-1.0, -1.0)),
+		triangle: Sprite::create(&mut screen,
+			&include!("res/triangle.data"), style_solid, 2),
+		image: {
+			let image = Sprite::create(&mut screen, &shape_image,
+				style_logo, 1);
+			image.animate(&mut screen, 0, &style_bear);
+			image
+		},
+		square: Sprite::create(&mut screen,
+			&include!("res/square.data"), style_solid, 1),
 		screen: screen,
-//		time: Time::now(),
-	};
-	Sprite::colored(&mut context.screen, &v_square, SHADER_COLOR)
-		.copy(&mut context.screen, &sm);
-	context.triangle.copy(&mut context.screen, &im);
-	context.triangle.copy(&mut context.screen, &im);
+	}
+}
 
-	context.image.texcopy(&mut context.screen, &im, &texture[1]);
-	context.image.animate(&mut context.screen, 0, &texture[0]);
+fn main() {
+	let mut context = init2();
 
 	loop {
-		let message = Input::get(&mut context.screen);
-		input(&mut context, message);
+		input(&mut context);
 	}
 }

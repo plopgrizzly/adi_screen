@@ -8,6 +8,7 @@
 	<button onclick="insertParam('');home()">home</button>
 	<button onclick="insertParam('screen');screen()">screen</button>
 	<button onclick="insertParam('sprite');sprite()">sprite</button>
+	<button onclick="insertParam('transform');transform()">transform</button>
 </div>
 <div id="docs" class="docs"></div>
 <script>
@@ -34,6 +35,14 @@ function screen() {
 function sprite() {
 	document.getElementById("docs").innerHTML = "\
 		<iframe src=\"sprite.html\" \
+		id=\"docf\" frameborder=\"0\" scrolling\"no\"\
+		style=\"position:absolute;width:90%\"\
+		onload=\"resize_iframe(this);\"></iframe>";
+}
+
+function transform() {
+	document.getElementById("docs").innerHTML = "\
+		<iframe src=\"transform.html\" \
 		id=\"docf\" frameborder=\"0\" scrolling\"no\"\
 		style=\"position:absolute;width:90%\"\
 		onload=\"resize_iframe(this);\"></iframe>";
@@ -84,6 +93,7 @@ m = getParameterByName('m');
 switch(m) {
 	case 'screen': screen(); break;
 	case 'sprite': sprite(); break;
+	case 'transform': transform(); break;
 	default: home(); break;
 }
 window.addEventListener("resize", resize);

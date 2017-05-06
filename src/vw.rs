@@ -3,10 +3,9 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
-use std::ptr::null_mut;
-
+use style;
 use Screen;
-use image::{ Image };
+use screen::NativeScreen;
 use ffi::{ NativeWindow, vulkan };
 
 type VkInstance = usize;
@@ -97,8 +96,8 @@ pub struct Style {
 }
 
 #[repr(C)]
-#[derive(PartialEq)]
-pub struct Texture {
+#[derive(PartialEq,Copy,Clone)]
+pub struct NativeTexture {
 	mappable_image: VkImage,
 	mappable_memory: VkDeviceMemory,
 	image: VkImage,
@@ -110,28 +109,6 @@ pub struct Texture {
 	size: u32,
 	pitch: u32,
 	staged: u8,
-}
-
-impl Texture {
-	pub fn opaque(screen: &mut Screen, icon: &'static [u8]) -> Texture {
-		let icon = Image::load(icon);
-		unsafe {
-			vw_vulkan_texture(&mut screen.vw, icon.size.0,
-				icon.size.1, &icon.pixels[0], 0, 0, 0, 0)
-		}
-	}
-
-	pub fn akeyed(screen: &mut Screen, icon: &'static [u8],
-		key: (u8,u8,u8)) -> Texture
-	{
-		let icon = Image::load(icon).alpha_key(key);
-
-		unsafe {
-			vw_vulkan_texture(&mut screen.vw, icon.size.0,
-				icon.size.1, &icon.pixels[0], 1,
-				key.0, key.1, key.2)
-		}
-	}
 }
 
 #[repr(C)]
@@ -146,117 +123,96 @@ pub struct Shape {
 	shape: VwShape,
 	hastx: bool,
 	instances: Vec<VwLinkedInstance>,
-	screen: *mut Screen,
 }
 
 impl Shape {
-	pub fn colored(screen: &mut Screen, v: &[f32], shader: usize) -> Shape {
+	pub fn create(screen: &mut Screen, v: &[f32], style: style::Style) -> Shape {
 		let size = v.len() as u32;
 		let mut shape = VwShape {
 			vertex_buffer_memory: 0,
 			vertex_input_buffer: 0,
 			vertice_count: size / 8,
-			pipeline: screen.shader(shader),
+			pipeline: screen.shader(match style {
+				style::Style::Solid(shader) |
+				style::Style::CustomSolid(shader) |
+				style::Style::Opaque(shader, _) |
+				style::Style::Subtransparent(shader, _) |
+				style::Style::CustomTexture(shader, _)
+					=> shader,
+				style::Style::Invisible => !0
+			}),
 		};
 		unsafe { vw_vulkan_shape(&mut shape, screen.vw, &v[0], size); }
+		let hastx = match style {
+			style::Style::Invisible |
+			style::Style::Solid(_) |
+			style::Style::CustomSolid(_)
+				=> false,
+			style::Style::Opaque(_, _) |
+			style::Style::Subtransparent(_, _) |
+			style::Style::CustomTexture(_, _)
+				=> true,
+		};
 		Shape {
 			shape: shape,
-			hastx: false,
+			hastx: hastx,
 			instances: Vec::new(),
-			screen: screen,
 		}
 	}
 
-	pub fn textured(screen: &mut Screen, v: &[f32], shader: usize) -> Shape{
-		let size = v.len() as u32;
-		let mut shape = VwShape {
-			vertex_buffer_memory: 0,
-			vertex_input_buffer: 0,
-			vertice_count: size / 8,
-			pipeline: screen.shader(shader),
-		};
-		unsafe { vw_vulkan_shape(&mut shape, screen.vw, &v[0], size); }
-		Shape {
-			shape: shape,
-			hastx: true,
-			instances: Vec::new(),
-			screen: screen,
-		}
-	}
-
-	pub fn animate(&mut self, i: usize, texture: *const Texture/*,
-		matrix: [f32; 16]*/)
-	{
+	pub fn animate(window: &mut Screen, index: usize, i: usize, texture: *const NativeTexture) {
 		unsafe {
-			vw_vulkan_txuniform(&((*self.screen).vw),
-				&mut self.instances[i].instance, texture,
-				if self.hastx { 1 } else { 0 });
+			vw_vulkan_txuniform(&window.vw,
+				&mut window.sprites[index].shape.instances[i].instance, texture,
+				if window.sprites[index].shape.hastx { 1 } else { 0 });
 		}
-//		self.matrix(i, matrix);
 	}
 
-/*	pub fn add(mut self, texture: *const Texture, matrix: &Transform) -> Shape{
+	pub fn add(window: &mut Screen, index: usize, tx: *const NativeTexture) {
+		let shape = &mut window.sprites[index].shape;
 		let mem = VwLinkedInstance {
 			instance: unsafe {
-				vw_vulkan_uniforms((*self.screen).vw,
-					&self.shape, texture,
-					if self.hastx { 1 } else { 0 })
+				vw_vulkan_uniforms(&window.vw,
+					&shape.shape, tx,
+					if shape.hastx { 1 } else { 0 })
 			},
-			texture: texture,
-			matrix: matrix.data,
+			matrix: [ 1.0, 0.0, 0.0, 0.0,	0.0, 1.0, 0.0, 0.0,
+				  0.0, 0.0, 1.0, 0.0,	0.0, 0.0, 0.0, 1.0],
 		};
-		vulkan::copy_memory( unsafe{ (*self.screen).vw.device },
-			mem.instance.uniform_memory,
-			&mem.matrix);
-		self.instances.push(mem);
-		self
-	}*/
-
-	pub fn texclone(&mut self, transform: [f32; 16], tx: *const Texture) {
-		let mem = VwLinkedInstance {
-			instance: unsafe {
-				vw_vulkan_uniforms(&((*self.screen).vw),
-					&self.shape, tx,
-					if self.hastx { 1 } else { 0 })
-			},
-			texture: tx,
-			matrix: transform,
-		};
-		let device = unsafe{ (*self.screen).vw.device };
-		let memory = mem.instance.uniform_memory;
-		println!("DEVICE {0} TEXCLONE {1}", device, memory);
-		vulkan::copy_memory(device, memory, &mem.matrix);
-		self.instances.push(mem);
+		vulkan::copy_memory(window.vw.device,
+			mem.instance.uniform_memory, &mem.matrix);
+		shape.instances.push(mem);
 	}
 
-	pub fn clone(&mut self, transform: [f32; 16]) {
-		let tx = if self.hastx {
-			self.instances[0].texture
-		}else{
-			null_mut()
-		};
-		self.texclone(transform, tx);
-	}
+//	pub fn clone(&mut self, transform: [f32; 16]) {
+//		let tx = if self.hastx {
+//			self.instances[0].texture
+//		}else{
+//			null_mut()
+//		};
+//		self.texclone(transform, tx);
+//	}
 
-	pub fn draw(&self) {
-		for i in 0..self.instances.len() {
+	pub fn draw(window: &mut Screen, index: usize) {
+		let shape = &window.sprites[index].shape;
+		if !window.sprites[index].enabled { return; }
+		for i in 0..shape.instances.len() {
 			unsafe {
-				vw_vulkan_draw_shape(&mut (*self.screen).vw,
-					&self.shape,
-					&self.instances[i].matrix[0],
-					self.instances[i].instance);
+				vw_vulkan_draw_shape(&mut window.vw,
+					&shape.shape,
+					&shape.instances[i].matrix[0],
+					shape.instances[i].instance);
 			}
-			vulkan::cmd_draw(unsafe {
-					(*self.screen).vw.command_buffer
-				}, self.shape.vertice_count);
+			vulkan::cmd_draw(window.vw.command_buffer,
+				shape.shape.vertice_count);
 		}
 	}
 
-	pub fn matrix(&mut self, i: usize, matrix: [f32; 16]) {
-		self.instances[i].matrix = matrix;
-		vulkan::copy_memory(unsafe { (*self.screen).vw.device },
-			self.instances[i].instance.uniform_memory,
-			&self.instances[i].matrix);
+	pub fn matrix(window: &mut Screen, index: usize, i: usize, matrix: [f32; 16]) {
+		window.sprites[index].shape.instances[i].matrix = matrix;
+		vulkan::copy_memory(window.vw.device,
+			window.sprites[index].shape.instances[i].instance.uniform_memory,
+			&window.sprites[index].shape.instances[i].matrix);
 	}
 
 /*	pub fn draw_index(&self, i: usize) {
@@ -269,9 +225,9 @@ impl Shape {
 			self.shape.vertice_count);
 	}*/
 
-	pub fn vertices(&self, v: &[f32]) {
-		vulkan::copy_memory( unsafe { (*self.screen).vw.device },
-			self.shape.vertex_buffer_memory, v);
+	pub fn vertices(window: &Screen, index: usize, v: &[f32]) {
+		vulkan::copy_memory(window.vw.device,
+			window.sprites[index].shape.shape.vertex_buffer_memory, v);
 	}
 }
 
@@ -287,22 +243,20 @@ pub struct VwInstance {
 #[derive(Copy, Clone)]
 pub struct VwLinkedInstance {
 	instance: VwInstance,
-	texture: *const Texture,
 	matrix: [f32; 16],
 }
 
 extern {
 	fn vw_vulkan_shape(a: *mut VwShape, b: Vw, c: *const f32, d: u32) -> ();
-	fn vw_vulkan_texture(a: *mut Vw, b: u32, c: u32, d: *const u8, e: u8,
-		f: u8, g: u8, h: u8) -> Texture;
+//
 	fn vw_vulkan_shader(a: *mut Shader, b: Vw, c: *const u8, d: u32,
 		e: *const u8, f: u32) -> ();
 	fn vw_vulkan_pipeline(z: *mut Style, a: *mut Vw, b: *const Shader,
 		c: u32);
 	fn vw_vulkan_draw_begin(v: *mut Vw, r: f32, g: f32, b: f32) -> ();
 	fn vw_vulkan_txuniform(vw: *const Vw, b: *mut VwInstance,
-		c: *const Texture, d: u8) -> ();
-	fn vw_vulkan_uniforms(a: *const Vw, b: &VwShape, c: *const Texture,
+		c: *const NativeTexture, d: u8) -> ();
+	fn vw_vulkan_uniforms(a: *const Vw, b: &VwShape, c: *const NativeTexture,
 		d: u8) -> VwInstance;
 	fn vw_vulkan_draw_shape(v: *mut Vw, s: *const VwShape, e: *const f32,
 		f: VwInstance) -> ();
