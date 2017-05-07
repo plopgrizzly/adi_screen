@@ -20,13 +20,11 @@ pub struct Transform([f32; 16]);
 pub struct TransformApply(Transform);
 
 pub struct SpriteData {
-	pub enabled: bool, // Is the sprite going to be drawn and used?
 	pub shape: Shape, // The shape to render.
 }
 
 fn sprite(window: &mut Window, shape: Shape) -> usize {
 	let sprite = SpriteData {
-		enabled: true,
 		shape: shape,
 	};
 	window.sprites.push(sprite); // Add sprite to end of vector
@@ -41,16 +39,17 @@ impl Sprite {
 		let index = sprite(window, shape);
 
 		match style {
-			Style::Opaque(_, ref tx) |
-				Style::Subtransparent(_, ref tx) =>
-			{
+			Style::Texture(s, ref tx) => {
+				let shader = window.shader(s);
 				for _ in 0..instances {
-					Shape::add(window, index, tx);
+					Shape::add(window, index, tx, shader);
 				}
 			}
-			Style::Solid(_) => {
+			Style::Solid(s) => {
+				let shader = window.shader(s);
 				for _ in 0..instances {
-					Shape::add(window, index, null_mut());
+					Shape::add(window, index, null_mut(),
+						shader);
 				}
 			}
 			_ => panic!("This style type is unsupported.")
@@ -59,18 +58,19 @@ impl Sprite {
 		Sprite(index)
 	}
 
-	pub fn animate(&self, window: &mut Window, i: usize, style: &Style)->(){
+	pub fn style(&self, window: &mut Window, i: usize, style: &Style) ->() {
 		match *style {
 			Style::Invisible => {
-				window.sprites[i].enabled = false;
+				Shape::enable(window, self.0, i, false);
 			}
-			Style::Opaque(_,ref tx)|Style::Subtransparent(_,ref tx)
-				=>
-			{
-				Shape::animate(window, self.0, i, tx);
+			Style::Texture(s, ref tx) => {
+				let shader = window.shader(s);
+				Shape::animate(window, self.0, i, tx, shader);
 			}
-			_ => {
-				panic!("Can't animate with this style.")
+			Style::Solid(s) => {
+				let shader = window.shader(s);
+				Shape::animate(window, self.0, i, null_mut(),
+					shader);
 			}
 		}
 	}

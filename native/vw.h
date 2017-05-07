@@ -58,7 +58,6 @@ typedef struct {
 	uint32_t next_image_index;
 	VkSemaphore presenting_complete_sem, rendering_complete_sem;
 	VkDeviceSize offset;
-	VkCommandPool cmd_pool;
 	uint8_t do_draw;
 } vw_t;
 
@@ -79,13 +78,13 @@ typedef struct {
 	VkDeviceMemory uniform_memory;
 	VkDescriptorSet desc_set;
 	VkDescriptorPool desc_pool;
+	vw_pipeline_t pipeline;
 } vw_instance_t;
 
 typedef struct {
 	VkDeviceMemory vertex_buffer_memory;
 	VkBuffer vertex_input_buffer;
 	uint32_t vertice_count;
-	vw_pipeline_t pipeline;
 } vw_shape_t;
 
 typedef struct {

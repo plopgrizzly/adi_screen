@@ -7,12 +7,18 @@
 <p>Sprite represents anything that is rendered onto the screen.
 </p>
 
-<h4>fn <i>create</i>(<mark>...</mark>: &type) -> Sprite </h4>
+<h4>fn <i>create</i>(<mark>window</mark>: &mut Window, <mark>v</mark>: &[f32],
+<mark>style</mark>: Style, <mark>instances</mark>: u32) -> Sprite </h4>
 <p>
-Create a window for drawing to.  <mark>name</mark> is the name of the
-window.  <mark>icon</mark> is the window's icon in ppm format.
-<mark>shaders</mark> is a list of extra shaders to add to the returned Style
-vector.
+Create a sprite.  <mark>window</mark> is the window.  <mark>v</mark> is sprite's
+vertices.  Format: </p>
+<p><span></span>x, y, z, 1.0, <span></span> r, g, b, a,</p>
+<p><span></span>x, y, z, 1.0, <span></span> texture coordinate x, texture
+	coordinate y, 1.0, 1.0,</p>
+<p>
+<mark>style</mark> is the Style that will initially be applied to each of the
+sprite's instances.  <mark>instances</mark> is the initial number of instances
+this sprite should have.
 </p>
 
 <h4>fn <i>...</i>(&<mark>self</mark>) -> f32</h4>

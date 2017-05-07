@@ -431,8 +431,15 @@ void vw_vulkan_txuniform(const vw_t* vulkan, vw_instance_t* instance,
 	vkUpdateDescriptorSets(vulkan->device, 1 + NUM_WRITES, writes, 0, NULL);
 }
 
+void vw_uniform_uniforms_free(const vw_t* vulkan, vw_instance_t* instance) {
+	vkFreeMemory(vulkan->device, instance->uniform_memory, NULL);
+	vkFreeDescriptorSets(vulkan->device, instance->desc_pool, 1, &instance->desc_set);
+	vkDestroyDescriptorPool(vulkan->device, instance->desc_pool, NULL);
+	vkDestroyBuffer(vulkan->device, instance->matrix_buffer, NULL);
+}
+
 // Called From Rust FFI
-vw_instance_t vw_vulkan_uniforms(const vw_t* vulkan, vw_shape_t* shape,
+vw_instance_t vw_vulkan_uniforms(const vw_t* vulkan, vw_pipeline_t pipeline,
 	const vw_texture_t* tx, uint8_t tex_count)
 {
 	vw_instance_t instance;
@@ -477,7 +484,7 @@ vw_instance_t vw_vulkan_uniforms(const vw_t* vulkan, vw_shape_t* shape,
 		.pNext = NULL,
 		.descriptorPool = instance.desc_pool,
 		.descriptorSetCount = 1,
-		.pSetLayouts = &shape->pipeline.descsetlayout
+		.pSetLayouts = &pipeline.descsetlayout
 	};
 	vw_vulkan_error("Failed to allocate descriptor sets.",
 		vkAllocateDescriptorSets(vulkan->device, &alloc_info,
@@ -506,6 +513,8 @@ vw_instance_t vw_vulkan_uniforms(const vw_t* vulkan, vw_shape_t* shape,
 		instance.uniform_memory, 0);
 // }
 	vw_vulkan_txuniform(vulkan, &instance, tx, tex_count);
+
+	instance.pipeline = pipeline;
 	return instance;
 }
 
@@ -1124,10 +1133,10 @@ void vw_vulkan_draw_shape(vw_t* vulkan, vw_shape_t* shape, const float* v,
 		&shape->vertex_input_buffer, &vulkan->offset);
 	// Bind pipeline.
 	vkCmdBindPipeline(vulkan->command_buffer,
-		VK_PIPELINE_BIND_POINT_GRAPHICS, shape->pipeline.pipeline);
+		VK_PIPELINE_BIND_POINT_GRAPHICS, instance.pipeline.pipeline);
 	vkCmdBindDescriptorSets(vulkan->command_buffer,
 		VK_PIPELINE_BIND_POINT_GRAPHICS,
-		shape->pipeline.pipeline_layout, 0, 1, &instance.desc_set, 0,
+		instance.pipeline.pipeline_layout, 0, 1, &instance.desc_set, 0,
 		NULL);
 }
 

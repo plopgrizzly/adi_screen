@@ -21,10 +21,7 @@ extern {
 pub enum Style {
 	Invisible,
 	Solid(usize),
-	Opaque(usize, NativeTexture),
-	Subtransparent(usize, NativeTexture),
-	CustomSolid(usize),
-	CustomTexture(usize, NativeTexture),
+	Texture(usize, NativeTexture),
 }
 
 impl Style {
@@ -39,7 +36,7 @@ impl Style {
 	pub fn opaque(self, window: &mut Window, icon: &'static [u8]) -> Style {
 		let icon = Image::load(icon);
 
-		Style::Opaque(SHADER_TEXTURE, unsafe {
+		Style::Texture(SHADER_TEXTURE, unsafe {
 			vw_vulkan_texture(&mut window.vw, icon.size.0,
 				icon.size.1, &icon.pixels[0], 0, 0, 0, 0)
 		})
@@ -50,7 +47,7 @@ impl Style {
 	{
 		let icon = Image::load(icon).alpha_key(key);
 
-		Style::Subtransparent(SHADER_TEXTURE, unsafe {
+		Style::Texture(SHADER_TEXTURE, unsafe {
 			vw_vulkan_texture(&mut window.vw, icon.size.0,
 				icon.size.1, &icon.pixels[0], 1,
 				key.0, key.1, key.2)
@@ -62,11 +59,8 @@ impl Style {
 			Style::Invisible =>
 				panic!("Can't customize invisible style."),
 			Style::Solid(_) => Style::Solid(SHADER_CUSTOM + index),
-			Style::Opaque(_, t) =>
-				Style::Opaque(SHADER_CUSTOM + index, t),
-			Style::Subtransparent(_, t) =>
-				Style::Subtransparent(SHADER_CUSTOM + index, t),
-			_ => panic!("Style's shader is already customized.")
+			Style::Texture(_, t) =>
+				Style::Texture(SHADER_CUSTOM + index, t),
 		}
 	}
 }

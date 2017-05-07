@@ -20,7 +20,6 @@ type VkImage = u64;
 type VkFramebuffer = u64;
 type VkFence = u64;
 type VkDescriptorPool = u64;
-type VkCommandPool = u64;
 type VkDescriptorSetLayout = u64;
 type VkDescriptorSet = u64;
 type VkImageView = u64;
@@ -61,7 +60,6 @@ pub struct Vw {
 	presenting_complete_sem: VkSemaphore,
 	rendering_complete_sem: VkSemaphore,
 	offsets: u64, // VkDeviceSize
-	command_pool: VkCommandPool,
 	pub do_draw: u8,
 }
 
@@ -116,7 +114,6 @@ pub struct VwShape {
 	vertex_buffer_memory: VkDeviceMemory,
 	vertex_input_buffer: VkBuffer,
 	vertice_count: u32,
-	pub pipeline: Style,
 }
 
 pub struct Shape {
@@ -128,31 +125,22 @@ pub struct Shape {
 impl Shape {
 	pub fn create(window: &mut Window, v: &[f32], style: style::Style) -> Shape {
 		let size = v.len() as u32;
+		let hastx = {
+			match style {
+				style::Style::Solid(_) => false,
+				style::Style::Texture(_, _) => true,
+				style::Style::Invisible => {
+					panic!("Can't create a Sprite with \
+						invisible style.")
+				}
+			}
+		};
 		let mut shape = VwShape {
 			vertex_buffer_memory: 0,
 			vertex_input_buffer: 0,
 			vertice_count: size / 8,
-			pipeline: window.shader(match style {
-				style::Style::Solid(shader) |
-				style::Style::CustomSolid(shader) |
-				style::Style::Opaque(shader, _) |
-				style::Style::Subtransparent(shader, _) |
-				style::Style::CustomTexture(shader, _)
-					=> shader,
-				style::Style::Invisible => !0
-			}),
 		};
 		unsafe { vw_vulkan_shape(&mut shape, window.vw, &v[0], size); }
-		let hastx = match style {
-			style::Style::Invisible |
-			style::Style::Solid(_) |
-			style::Style::CustomSolid(_)
-				=> false,
-			style::Style::Opaque(_, _) |
-			style::Style::Subtransparent(_, _) |
-			style::Style::CustomTexture(_, _)
-				=> true,
-		};
 		Shape {
 			shape: shape,
 			hastx: hastx,
@@ -160,45 +148,71 @@ impl Shape {
 		}
 	}
 
-	pub fn animate(window: &mut Window, index: usize, i: usize,
-		texture: *const NativeTexture)
-	{
-		unsafe {
-			vw_vulkan_txuniform(&window.vw,
-				&mut window.sprites[index].shape.instances[i].instance, texture,
-				if window.sprites[index].shape.hastx { 1 } else { 0 });
-		}
+	pub fn enable(window: &mut Window, index: usize, i: usize, e: bool) {
+		window.sprites[index].shape.instances[i].enabled = e;
 	}
 
-	pub fn add(window: &mut Window, index: usize, tx: *const NativeTexture) {
+	pub fn animate(window: &mut Window, index: usize, i: usize,
+		texture: *const NativeTexture, style: Style)
+	{
+		let hastx = window.sprites[index].shape.hastx;
+
+		// Must be same style
+		if hastx {
+			if (texture as *const _ as usize) == 0 {
+				panic!("Can't set Style of a Sprite initialized\
+					with Style::Texture to Style::Solid");
+			}
+		} else {
+			if (texture as *const _ as usize) != 0 {
+				panic!("Can't set Style of a Sprite initialized\
+					with Style::Solid to Style::Texture");
+			}
+		}
+
+		// Free old Style, and set new uniform buffers.
+		unsafe {
+			vw_uniform_uniforms_free(&window.vw, &mut
+				window.sprites[index].shape.instances[i].instance);
+			window.sprites[index].shape.instances[i].instance =
+				vw_vulkan_uniforms(&window.vw, style, texture,
+					if hastx { 1 } else { 0 });
+		}
+		// TODO: Optimize when using same value from vw_vulkan_uniforms
+		// ( Same todo as in extern )
+		// Set texture
+//		unsafe {
+//			vw_vulkan_txuniform(&window.vw,
+//				&mut window.sprites[index].shape.instances[i].instance, texture,
+//				if window.sprites[index].shape.hastx { 1 } else { 0 });
+//		}
+		Shape::enable(window, index, i, true);
+	}
+
+	pub fn add(window: &mut Window, index: usize, tx: *const NativeTexture,
+		style: Style)
+	{
 		let shape = &mut window.sprites[index].shape;
 		let mem = VwLinkedInstance {
 			instance: unsafe {
-				vw_vulkan_uniforms(&window.vw,
-					&shape.shape, tx,
+				vw_vulkan_uniforms(&window.vw, style, tx,
 					if shape.hastx { 1 } else { 0 })
 			},
 			matrix: [ 1.0, 0.0, 0.0, 0.0,	0.0, 1.0, 0.0, 0.0,
 				  0.0, 0.0, 1.0, 0.0,	0.0, 0.0, 0.0, 1.0],
+			enabled: true,
 		};
 		vulkan::copy_memory(window.vw.device,
 			mem.instance.uniform_memory, &mem.matrix);
 		shape.instances.push(mem);
 	}
 
-//	pub fn clone(&mut self, transform: [f32; 16]) {
-//		let tx = if self.hastx {
-//			self.instances[0].texture
-//		}else{
-//			null_mut()
-//		};
-//		self.texclone(transform, tx);
-//	}
-
 	pub fn draw(window: &mut Window, index: usize) {
 		let shape = &window.sprites[index].shape;
-		if !window.sprites[index].enabled { return; }
 		for i in 0..shape.instances.len() {
+			if !window.sprites[index].shape.instances[i].enabled {
+				continue;
+			}
 			unsafe {
 				vw_vulkan_draw_shape(&mut window.vw,
 					&shape.shape,
@@ -219,16 +233,6 @@ impl Shape {
 			&window.sprites[index].shape.instances[i].matrix);
 	}
 
-/*	pub fn draw_index(&self, i: usize) {
-		unsafe {
-			vw_vulkan_draw_shape(&mut (*self.screen).vw,
-				&self.shape, &self.instances[i].matrix[0],
-				self.instances[i].instance);
-		}
-		vulkan::cmd_draw(unsafe {(*self.screen).vw.command_buffer},
-			self.shape.vertice_count);
-	}*/
-
 	pub fn vertices(window: &Window, index: usize, v: &[f32]) {
 		vulkan::copy_memory(window.vw.device,
 			window.sprites[index].shape.shape.vertex_buffer_memory, v);
@@ -242,12 +246,14 @@ pub struct VwInstance {
 	uniform_memory: VkDeviceMemory,
 	pub desc_set: VkDescriptorSet,
 	pub desc_pool: VkDescriptorPool,
+	pub pipeline: Style,
 }
 
 #[derive(Copy, Clone)]
 pub struct VwLinkedInstance {
 	instance: VwInstance,
 	matrix: [f32; 16],
+	enabled: bool,
 }
 
 extern {
@@ -258,10 +264,13 @@ extern {
 	fn vw_vulkan_pipeline(z: *mut Style, a: *mut Vw, b: *const Shader,
 		c: u32);
 	fn vw_vulkan_draw_begin(v: *mut Vw, r: f32, g: f32, b: f32) -> ();
-	fn vw_vulkan_txuniform(vw: *const Vw, b: *mut VwInstance,
-		c: *const NativeTexture, d: u8) -> ();
-	fn vw_vulkan_uniforms(a: *const Vw, b: &VwShape, c: *const NativeTexture,
-		d: u8) -> VwInstance;
+	fn vw_uniform_uniforms_free(v: *const Vw, b: *mut VwInstance) -> ();
+// TODO: Use for optimization instead of freeing and reallocating uniform
+// buffers when pipeline doesn't change.
+//	fn vw_vulkan_txuniform(vw: *const Vw, b: *mut VwInstance,
+//		c: *const NativeTexture, d: u8) -> ();
+	fn vw_vulkan_uniforms(a: *const Vw, b: Style,
+		c: *const NativeTexture, d: u8) -> VwInstance;
 	fn vw_vulkan_draw_shape(v: *mut Vw, s: *const VwShape, e: *const f32,
 		f: VwInstance) -> ();
 	fn vw_vulkan_draw_update(v: *mut Vw) -> ();
@@ -301,7 +310,6 @@ pub fn open(window_name: &str, native: &NativeWindow) -> Vw {
 		presenting_complete_sem: 0,
 		rendering_complete_sem: 0,
 		offsets: 0,
-		command_pool: 0, // TODO: not needed.
 		do_draw: 0,
 	};
 

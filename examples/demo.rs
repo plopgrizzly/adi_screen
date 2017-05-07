@@ -82,23 +82,15 @@ fn update(context: &mut Context) -> bool {
 	true
 }
 
-fn init() -> (Window, Style) {
+fn init2() -> Context {
 	// Load Resources - Images
 	let image_logo = include_bytes!("res/logo.ppm");
 
-	// Open window
+	// Create Window
 	let mut window = Window::create("Demo", image_logo, &[]);
 
-	// Create Textures
-	let style_logo = Style::create().opaque(&mut window, image_logo);
-
-	(window, style_logo)
-}
-
-fn init2() -> Context {
-	let (mut window, style_logo) = init();
-
 	// Create Styles
+	let style_logo = Style::create().opaque(&mut window, image_logo);
 	let style_solid = Style::create().solid();
 	let style_bear = Style::create().subtransparent(&mut window,
 		include_bytes!("res/plopgrizzly.ppm"), (0, 255, 0));
@@ -113,7 +105,7 @@ fn init2() -> Context {
 		image: {
 			let image = Sprite::create(&mut window, &shape_image,
 				style_logo, 1);
-			image.animate(&mut window, 0, &style_bear);
+			image.style(&mut window, 0, &style_bear);
 			image
 		},
 		square: Sprite::create(&mut window,
