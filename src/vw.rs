@@ -149,13 +149,13 @@ impl Shape {
 	}
 
 	pub fn enable(window: &mut Window, index: usize, i: usize, e: bool) {
-		window.sprites[index].shape.instances[i].enabled = e;
+		window.sprites[index].instances[i].enabled = e;
 	}
 
 	pub fn animate(window: &mut Window, index: usize, i: usize,
 		texture: *const NativeTexture, style: Style)
 	{
-		let hastx = window.sprites[index].shape.hastx;
+		let hastx = window.sprites[index].hastx;
 
 		// Must be same style
 		if hastx {
@@ -173,8 +173,8 @@ impl Shape {
 		// Free old Style, and set new uniform buffers.
 		unsafe {
 			vw_uniform_uniforms_free(&window.vw, &mut
-				window.sprites[index].shape.instances[i].instance);
-			window.sprites[index].shape.instances[i].instance =
+				window.sprites[index].instances[i].instance);
+			window.sprites[index].instances[i].instance =
 				vw_vulkan_uniforms(&window.vw, style, texture,
 					if hastx { 1 } else { 0 });
 		}
@@ -192,7 +192,7 @@ impl Shape {
 	pub fn add(window: &mut Window, index: usize, tx: *const NativeTexture,
 		style: Style)
 	{
-		let shape = &mut window.sprites[index].shape;
+		let shape = &mut window.sprites[index];
 		let mem = VwLinkedInstance {
 			instance: unsafe {
 				vw_vulkan_uniforms(&window.vw, style, tx,
@@ -208,9 +208,9 @@ impl Shape {
 	}
 
 	pub fn draw(window: &mut Window, index: usize) {
-		let shape = &window.sprites[index].shape;
+		let shape = &window.sprites[index];
 		for i in 0..shape.instances.len() {
-			if !window.sprites[index].shape.instances[i].enabled {
+			if !window.sprites[index].instances[i].enabled {
 				continue;
 			}
 			unsafe {
@@ -227,15 +227,15 @@ impl Shape {
 	pub fn matrix(window: &mut Window, index: usize, i: usize,
 		matrix: [f32; 16])
 	{
-		window.sprites[index].shape.instances[i].matrix = matrix;
+		window.sprites[index].instances[i].matrix = matrix;
 		vulkan::copy_memory(window.vw.device,
-			window.sprites[index].shape.instances[i].instance.uniform_memory,
-			&window.sprites[index].shape.instances[i].matrix);
+			window.sprites[index].instances[i].instance.uniform_memory,
+			&window.sprites[index].instances[i].matrix);
 	}
 
 	pub fn vertices(window: &Window, index: usize, v: &[f32]) {
 		vulkan::copy_memory(window.vw.device,
-			window.sprites[index].shape.shape.vertex_buffer_memory, v);
+			window.sprites[index].shape.vertex_buffer_memory, v);
 	}
 }
 

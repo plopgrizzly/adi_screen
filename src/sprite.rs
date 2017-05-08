@@ -12,26 +12,30 @@ use vw::{ Shape };
 use Style;
 
 #[must_use]
+/// Sprite represents anything that is rendered onto the screen.
 pub struct Sprite(usize);
 
 #[must_use]
+/// Transform represents a transformation matrix.
 pub struct Transform([f32; 16]);
 
+/// TransformApply represents a Transform that has been projected using auto(),
+/// orthographic(), or perspective(). 
 pub struct TransformApply(Transform);
 
-pub struct SpriteData {
-	pub shape: Shape, // The shape to render.
-}
-
 fn sprite(window: &mut Window, shape: Shape) -> usize {
-	let sprite = SpriteData {
-		shape: shape,
-	};
-	window.sprites.push(sprite); // Add sprite to end of vector
+	window.sprites.push(shape); // Add sprite to end of vector
 	window.sprites.len() - 1 // Length - 1 to get index of sprite.
 }
 
 impl Sprite {
+	/// Create a sprite. window is the window. v is sprite's vertices.
+	/// Format: x, y, z, 1.0, r, g, b, a,
+	/// Format: x, y, z, 1.0, texture coordinate x, texture coordinate y,
+	/// 1.0, 1.0,
+	///  style is the Style that will initially be applied to each of the
+	/// sprite's instances. instances is the initial number of instances
+	/// this sprite should have. 
 	pub fn create(window: &mut Window, v: &[f32], style: Style,
 		instances: u32) -> Sprite
 	{
@@ -58,6 +62,7 @@ impl Sprite {
 		Sprite(index)
 	}
 
+	/// Change the style of self to style for instance i.
 	pub fn style(&self, window: &mut Window, i: usize, style: &Style) ->() {
 		match *style {
 			Style::Invisible => {
@@ -75,6 +80,7 @@ impl Sprite {
 		}
 	}
 
+	/// Change the vertices of self to v.
 	pub fn vertices(&mut self, window: &mut Window, v: &[f32]) -> () {
 		Shape::vertices(window, self.0, v);
 	}
@@ -122,6 +128,8 @@ impl Transform {
 		self
 	}
 
+	/// Create a transform that does nothing. ( Underneath, this is an
+	/// identity matrix ).
 	pub fn create() -> Transform {
 		Transform ([
 			1., 0., 0., 0.,
@@ -131,6 +139,7 @@ impl Transform {
 		])
 	}
 
+	/// Translate self by x, y and z.
 	pub fn translate(mut self, x:f32, y:f32, z:f32) -> Transform {
 		self.0[12] += x;
 		self.0[13] += y;
@@ -138,6 +147,7 @@ impl Transform {
 		self
 	}
 
+	/// Scale self by x, y and z.
 	pub fn scale(mut self, x:f32, y:f32, z:f32) -> Transform {
 		self.0[0] *= x;
 		self.0[5] *= y;
@@ -145,6 +155,7 @@ impl Transform {
 		self
 	}
 
+	/// Rotate self by yaw, pitch and roll.
 	pub fn rotate(self, yaw:f32, pitch:f32, roll:f32) -> Transform {
 		let num9 = roll * PI;
 		let num6 = num9.sin();
@@ -176,6 +187,8 @@ impl Transform {
 		self.combine(m1).combine(m2)
 	}
 
+	/// Apply perspective with fov degrees for field of view. Note: The
+	/// return value is TransformApply.
 	pub fn perspective(self, window: &Window, fov: f32) -> TransformApply {
 		let scale = (fov * 0.5 * PI / 180.).tan().recip();
 		let xscale = scale * window.unit_ratio();
@@ -189,10 +202,15 @@ impl Transform {
 		TransformApply(t)
 	}
 
+	/// Apply an orthographic projection ( depth doesn't change x and y
+	/// position ). Note: The return value is TransformApply.
 	pub fn orthographic(self, window: &Window) -> TransformApply {
 		TransformApply(self.scale(window.unit_ratio(), 1.0, 1.0))
 	}
 
+	/// Multiply by a projection that scales width and height by the
+	/// smallest widget size. The widget is put at position pos. Position
+	/// isn't affected by aspect ratio.
 	pub fn auto(self, window: &mut Window, pos: (f32, f32))
 		-> TransformApply
 	{
@@ -204,6 +222,7 @@ impl Transform {
 }
 
 impl TransformApply {
+	/// Apply a TransformApply onto instance i of Sprite.
 	pub fn apply(self, window: &mut Window, sprite: &Sprite, i: usize)
 		-> TransformApply
 	{

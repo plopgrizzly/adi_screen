@@ -7,7 +7,6 @@ use adi_clock::Timer;
 use adi_clock::Pulse;
 use vw;
 use ffi;
-use sprite;
 use vw::Style;
 use input::Input;
 
@@ -16,7 +15,7 @@ pub struct Window {
 	pub vw: vw::Vw,
 	pub window: ffi::NativeWindow, // TODO: pub
 	size: (u32, u32),
-	pub sprites: Vec<sprite::SpriteData>, // TODO: pub
+	pub sprites: Vec<vw::Shape>, // TODO: pub
 	time: (Timer, f32),
 	minsize: (u32, (f32, f32)),
 	aspect: f32,
