@@ -5,9 +5,7 @@
 
 extern crate adi_screen;
 
-use adi_screen::Transform;
-use adi_screen::{ Sprite, Window, Style, Input };
-use adi_screen::gui::Button;
+use adi_screen::{ Transform, Sprite, Window, Style, Input, Button };
 
 struct Context {
 	window: Window,

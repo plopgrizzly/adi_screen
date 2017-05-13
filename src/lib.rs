@@ -7,23 +7,19 @@
 pub const VERSION : &'static str = "adi_screen 0.1.0";
 
 mod ffi;
+mod image;
+mod vw;
 
 mod window;
 mod sprite;
 mod style;
 mod input;
+mod gui;
 
 pub use window::Window;
 pub use sprite::{ Sprite, Transform };
 pub use style::Style;
 pub use input::{ Input, Key };
+pub use gui::Button;
 
 pub extern crate adi_clock;
-
-pub mod gui;
-
-mod image;
-
-#[link(name = "vulkan-1")]
-mod vw;
-pub use self::vw::{ Shader };

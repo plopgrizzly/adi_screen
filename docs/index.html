@@ -10,6 +10,7 @@
 	<button onclick="insertParam('sprite');sprite()">sprite</button>
 	<button onclick="insertParam('style');style()">style</button>
 	<button onclick="insertParam('input');input()">input</button>
+	<button onclick="insertParam('button');button()">button</button>
 </div>
 <div id="docs" class="docs"></div>
 <script>
@@ -52,6 +53,14 @@ function style() {
 function input() {
 	document.getElementById("docs").innerHTML = "\
 		<iframe src=\"input.html\" \
+		id=\"docf\" frameborder=\"0\" scrolling\"no\"\
+		style=\"position:absolute;width:90%\"\
+		onload=\"resize_iframe(this);\"></iframe>";
+}
+
+function button() {
+	document.getElementById("docs").innerHTML = "\
+		<iframe src=\"button.html\" \
 		id=\"docf\" frameborder=\"0\" scrolling\"no\"\
 		style=\"position:absolute;width:90%\"\
 		onload=\"resize_iframe(this);\"></iframe>";
@@ -104,6 +113,7 @@ switch(m) {
 	case 'sprite': sprite(); break;
 	case 'style': style(); break;
 	case 'input': input(); break;
+	case 'button': button(); break;
 	default: home(); break;
 }
 window.addEventListener("resize", resize);
