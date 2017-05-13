@@ -91,7 +91,7 @@ fn init2() -> Context {
 
 	// Create Styles
 	let style_logo = Style::create().opaque(&mut window, image_logo);
-	let style_solid = Style::create().solid();
+	let style_gradient = Style::create().gradient();
 	let style_bear = Style::create().subtransparent(&mut window,
 		include_bytes!("res/plopgrizzly.ppm"), (0, 255, 0));
 
@@ -101,7 +101,7 @@ fn init2() -> Context {
 		logo: Sprite::create(&mut window, &shape_image, style_logo, 1),
 		button: Button::create(&mut window, (-1.0, -1.0)),
 		triangle: Sprite::create(&mut window,
-			&include!("res/triangle.data"), style_solid, 2),
+			&include!("res/triangle.data"), style_gradient, 2),
 		image: {
 			let image = Sprite::create(&mut window, &shape_image,
 				style_logo, 1);
@@ -109,7 +109,7 @@ fn init2() -> Context {
 			image
 		},
 		square: Sprite::create(&mut window,
-			&include!("res/square.data"), style_solid, 1),
+			&include!("res/square.data"), style_gradient, 1),
 		window: window,
 	}
 }

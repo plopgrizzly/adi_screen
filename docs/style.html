@@ -1,0 +1,34 @@
+<base target="_parent">
+<link rel="stylesheet" href="https://plopgrizzly.github.io/adi/style.css"/>
+<div>
+
+<h2>Style</h2>
+<h3>use adi_screen::Style;</h3>
+<p>Style represents a shader with an optionally attached texture.
+</p>
+
+<h4>fn <i>create</i>() -> Style </h4>
+<p>
+Create a new style.  Used on it's own, the style is invisible.
+</p>
+
+<h4>fn <i>gradient</i>(<mark>self</mark>) -> Style</h4>
+<p>Use the second 4 values on a vertex as RGB colors.</p>
+
+<h4>fn <i>opaque</i>(<mark>self</mark>, <mark>window</mark>: &mut Window,
+<mark>image</mark>: &'static [u8]) -> Style</h4>
+<p>Set the style to opaque image from ppm data, <mark>image</mark>.</p>
+
+<h4>fn <i>subtransparent</i>(<mark>self</mark>, <mark>window</mark>: &mut
+Window, <mark>image</mark>: &'static [u8], <mark>key</mark>: (u8,u8,u8)) ->
+Style</h4>
+<p>Set the style to ppm image, <mark>image</mark>, with pixels with the color,
+<mark>key</mark>, replaced with a transparent pixel.</p>
+
+<h4>fn <i>apply(<mark>self</mark>, <mark>index</mark>: usize) -> Style</h4>
+<p>Apply custom shader at index, <mark>index</mark>, to <mark>self</mark>.</p>
+
+<hr>
+Author: Jeron Aldaron Lau - The Aldaron's Device Interface Documentation Is
+Public Domain
+</div>

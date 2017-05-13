@@ -8,7 +8,7 @@
 	<button onclick="insertParam('');home()">home</button>
 	<button onclick="insertParam('window');window2()">window</button>
 	<button onclick="insertParam('sprite');sprite()">sprite</button>
-	<button onclick="insertParam('transform');transform()">transform</button>
+	<button onclick="insertParam('style');style()">style</button>
 </div>
 <div id="docs" class="docs"></div>
 <script>
@@ -40,9 +40,9 @@ function sprite() {
 		onload=\"resize_iframe(this);\"></iframe>";
 }
 
-function transform() {
+function style() {
 	document.getElementById("docs").innerHTML = "\
-		<iframe src=\"transform.html\" \
+		<iframe src=\"style.html\" \
 		id=\"docf\" frameborder=\"0\" scrolling\"no\"\
 		style=\"position:absolute;width:90%\"\
 		onload=\"resize_iframe(this);\"></iframe>";
@@ -93,7 +93,7 @@ m = getParameterByName('m');
 switch(m) {
 	case 'window': window2(); break;
 	case 'sprite': sprite(); break;
-	case 'transform': transform(); break;
+	case 'style': style(); break;
 	default: home(); break;
 }
 window.addEventListener("resize", resize);
