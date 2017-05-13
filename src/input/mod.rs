@@ -7,7 +7,7 @@ use std::fmt;
 
 use Window;
 use window::WindowFunctions;
-use running;
+use ffi::convert_event;
 
 pub mod keyboard;
 
@@ -20,8 +20,7 @@ pub enum Key {
 	Ctrl(bool),
 	Shift(bool),
 	Alt(bool),
-	F(u8),
-	CapsLock,
+	Compose,
 	NumLock,
 	Home,
 	End,
@@ -32,7 +31,6 @@ pub enum Key {
 	Left,
 	Right,
 	Insert,
-	Escape,
 }
 
 impl fmt::Display for Key {
@@ -42,6 +40,8 @@ impl fmt::Display for Key {
 				' ' => write!(f, "space"),
 				'\t' => write!(f, "tab"),
 				'\n' => write!(f, "newline"),
+				keyboard::ESC => write!(f, "Escape"),
+				keyboard::FSC => write!(f, "Toggle Fullscreen"),
 				b => write!(f, "{}", b),
 			},
 			Key::Backspace => write!(f, "Backspace"),
@@ -52,8 +52,7 @@ impl fmt::Display for Key {
 			Key::Shift(true) => write!(f, "Right Shift (true)"),
 			Key::Alt(false) => write!(f, "Left Alt (false)"),
 			Key::Alt(true) => write!(f, "Right Alt (true)"),
-			Key::F(a) => write!(f, "F{}", a),
-			Key::CapsLock => write!(f, "CapsLock"),
+			Key::Compose => write!(f, "Compose"),
 			Key::NumLock => write!(f, "NumLock"),
 			Key::Home => write!(f, "Home"),
 			Key::End => write!(f, "End"),
@@ -64,15 +63,15 @@ impl fmt::Display for Key {
 			Key::Left => write!(f, "Left"),
 			Key::Right => write!(f, "Right"),
 			Key::Insert => write!(f, "Insert"),
-			Key::Escape => write!(f, "Escape"),
 		}
 	}
 }
 
 #[derive(PartialEq)]
 #[derive(Copy, Clone)]
+/// Input represents user input.
 pub enum Input {
-	Draw,
+	Redraw,
 	Resize,
 	Back,
 	Resume,
@@ -97,13 +96,13 @@ pub enum Input {
 
 fn key(window: &mut Window, input: Input, a: Key) -> Input {
 	match a {
-		Key::F(11) => {
+		Key::Char(keyboard::FSC) => {
 			if input == Input::KeyDown(a) {
 				window.toggle_fullscreen();
 			}
 			Input::get(window)
 		}
-		Key::Escape => {
+		Key::Char(keyboard::ESC) => {
 			if input == Input::KeyDown(a) {
 				Input::Back
 			} else {
@@ -119,7 +118,12 @@ fn key(window: &mut Window, input: Input, a: Key) -> Input {
 
 impl Input {
 	pub fn get(window: &mut Window) -> Input {
-		match running(window) {
+		match {
+			let mut converted = Input::Redraw;
+
+			while convert_event(window, &mut converted) {}
+			converted
+		} {
 			Input::KeyDown(a) => key(window, Input::KeyDown(a), a),
 			Input::KeyRepeat(a) =>
 				key(window, Input::KeyRepeat(a), a),

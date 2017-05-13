@@ -93,7 +93,7 @@ impl Window {
 	/// Update the window and return the user input.  This should run in a
 	/// loop.
 	pub fn update(&mut self) -> Input {
-		if self.input == Input::Draw {
+		if self.input == Input::Redraw {
 			let color = self.color;
 
 			vw::draw_clear(self, color.0, color.1, color.2);

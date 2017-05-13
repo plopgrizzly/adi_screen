@@ -8,7 +8,7 @@ use std::ffi::CString;
 use Window;
 use input::Input;
 use image::Image;
-use input::keyboard::{ english };
+use input::keyboard::{ english, FSC };
 use input::Key;
 use std::vec::Vec;
 use super::shared;
@@ -267,14 +267,14 @@ fn poll_event(window: &Window) -> (u8, u8, (i16, i16)) {
 	details
 }
 
-fn convert_event(window: &mut Window, event_out: &mut Input) -> bool {
+pub fn convert_event(window: &mut Window, event_out: &mut Input) -> bool {
 	let (xcb_event, detail, dim) = poll_event(window);
 	*event_out = match xcb_event {
-		0 => Input::Draw,
+		0 => Input::Redraw,
 		XCB_KEY_PRESS => Input::KeyDown(english(detail as u32)),
 		XCB_KEY_RELEASE => {
 			let detail = english(detail as u32);
-			if detail == Key::F(11) {
+			if detail == Key::Char(FSC) {
 				return true // ignore.
 			}else{
 				let e = unsafe {
@@ -284,6 +284,11 @@ fn convert_event(window: &mut Window, event_out: &mut Input) -> bool {
 					Input::KeyUp(detail)
 				}else{
 					unsafe { free(e as *mut _) };
+					if detail == Key::Insert ||
+						detail == Key::Compose
+					{
+						return true;
+					}
 					Input::KeyRepeat(detail)
 				}
 			}
@@ -338,13 +343,6 @@ fn convert_event(window: &mut Window, event_out: &mut Input) -> bool {
 //		},
 	};
 	false
-}
-
-pub fn running(window: &mut Window) -> Input {
-	let mut converted = Input::Draw;
-
-	while convert_event(window, &mut converted) {}
-	converted
 }
 
 pub fn cleanup(window: &mut NativeWindow) {

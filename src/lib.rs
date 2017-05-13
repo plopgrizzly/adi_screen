@@ -6,22 +6,21 @@
 /// The version of adi_screen that's being used
 pub const VERSION : &'static str = "adi_screen 0.1.0";
 
+mod ffi;
+
 mod window;
 mod sprite;
 mod style;
+mod input;
 
 pub use window::Window;
-pub use sprite::Sprite;
-pub use sprite::Transform;
+pub use sprite::{ Sprite, Transform };
 pub use style::Style;
+pub use input::{ Input, Key };
 
 pub extern crate adi_clock;
 
-pub mod input;
 pub mod gui;
-
-mod ffi; // Native window module
-pub use self::ffi::{ running };
 
 mod image;
 

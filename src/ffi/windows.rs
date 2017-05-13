@@ -11,7 +11,7 @@ use screen::{ Window };
 use screen::ffi::string;
 use screen::image::Image;
 
-use input::keyboard::{ english };
+use input::keyboard::{ english, FSC };
 use input::Key;
 
 use super::shared;
@@ -319,7 +319,7 @@ fn get_mouse(window: &mut Window) -> (f32, f32, bool) {
 	(pos.0, pos.1, miw_changed)
 }
 
-fn convert_event(window: &mut Window, event_out: &mut Input) -> bool {
+pub fn convert_event(window: &mut Window, event_out: &mut Input) -> bool {
 	let mut msg = Msg { hwnd: 0, message: 0, w_param: 0, l_param: 0, time: 0,
 		pt: Point { x: 0, y: 0 } };
 		
@@ -359,7 +359,7 @@ fn convert_event(window: &mut Window, event_out: &mut Input) -> bool {
 	if unsafe {
 		PeekMessageW(&mut msg, 0, 0, 0, 0x0001)
 	} == 0 { // no messages available
-		*event_out = Input::Draw;
+		*event_out = Input::Redraw;
 		return false;
 	}
 	*event_out = match msg.message {
@@ -381,10 +381,10 @@ fn convert_event(window: &mut Window, event_out: &mut Input) -> bool {
 			{
 				match chr {
 					// These keys shouldn't repeat.
-					Key::Escape | Key::F(_) | Key::Insert |
-						Key::CapsLock | Key::NumLock |
-						Key::Shift(_) | Key::Ctrl(_) |
-						Key::Alt(_)
+					Key::Escape | Key::Char(FSC) |
+						Key::Insert | Key::CapsLock |
+						Key::NumLock | Key::Shift(_) |
+						Key::Ctrl(_) | Key::Alt(_)
 					=> {
 						return true;
 					}
@@ -419,13 +419,6 @@ fn convert_event(window: &mut Window, event_out: &mut Input) -> bool {
 		}
 	};
 	false
-}
-
-pub fn running(window: &mut Window) -> Input {
-	let mut converted = Input::Draw;
-
-	while convert_event(window, &mut converted) {}	
-	converted
 }
 
 pub fn cleanup(_: &mut NativeWindow) { }

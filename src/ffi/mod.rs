@@ -28,4 +28,4 @@ pub mod vulkan;
 pub mod string;
 mod shared;
 
-pub use self::native::{ NativeWindow, running, native_window, cleanup, toggle_fullscreen };
+pub use self::native::{ NativeWindow, convert_event, native_window, cleanup, toggle_fullscreen };

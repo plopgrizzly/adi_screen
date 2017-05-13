@@ -5,28 +5,33 @@
 
 use input::Key;
 
+pub const ESC : char = '\x10';
+pub const FSC : char = '\x11';
+
+const NONE : Key = Key::Char('\x00');
+
 // Non-Printing Characters
-const ESCAPE : Key = Key::Escape;
+const ESCAPE : Key = Key::Char(ESC);
 const BACKSPACE : Key = Key::Backspace;
-const F1 : Key = Key::F(1);
-const F2 : Key = Key::F(2);
-const F3 : Key = Key::F(3);
-const F4 : Key = Key::F(4);
-const F5 : Key = Key::F(5);
-const F6 : Key = Key::F(6);
-const F7 : Key = Key::F(7);
-const F8 : Key = Key::F(8);
-const F9 : Key = Key::F(9);
-const F10 : Key = Key::F(10);
-const F11 : Key = Key::F(11);
-const F12 : Key = Key::F(12);
+const F1 : Key = NONE;
+const F2 : Key = NONE;
+const F3 : Key = NONE;
+const F4 : Key = NONE;
+const F5 : Key = NONE;
+const F6 : Key = NONE;
+const F7 : Key = NONE;
+const F8 : Key = NONE;
+const F9 : Key = NONE;
+const F10 : Key = NONE;
+const F11 : Key = Key::Char(FSC);
+const F12 : Key = NONE;
 const LCTRL : Key = Key::Ctrl(false);
 const RCTRL : Key = Key::Ctrl(true);
 const LALT : Key = Key::Alt(false);
 const RALT : Key = Key::Alt(true);
 const LSHIFT : Key = Key::Shift(false);
 const RSHIFT : Key = Key::Shift(true);
-const CAPS_LOCK : Key = Key::CapsLock;
+const CAPS_LOCK : Key = Key::Compose;
 const NUM_LOCK : Key = Key::NumLock;
 const HOME : Key = Key::Home;
 const END : Key = Key::End;

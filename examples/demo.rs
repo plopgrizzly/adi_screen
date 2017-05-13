@@ -6,9 +6,8 @@
 extern crate adi_screen;
 
 use adi_screen::Transform;
-use adi_screen::{ Sprite, Window, Style };
+use adi_screen::{ Sprite, Window, Style, Input };
 use adi_screen::gui::Button;
-use adi_screen::input::Input;
 
 struct Context {
 	window: Window,
@@ -19,7 +18,7 @@ struct Context {
 	button: Button,
 }
 
-fn draw(context: &mut Context) {
+fn redraw(context: &mut Context) {
 	let disp = context.window.pulse_full_smooth(8.0);
 	let disp2 = context.window.pulse_full_linear(4.0);
 
@@ -53,7 +52,7 @@ fn update(context: &mut Context) -> bool {
 	let message = context.window.update();
 
 	match message {
-		Input::Draw => draw(context),
+		Input::Redraw => redraw(context),
 		Input::Resize => resize(context),
 		Input::Back => return false, // Quit
 		Input::Resume => println!("Resume ( Gain Focus )"),
