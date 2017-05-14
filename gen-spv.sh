@@ -3,7 +3,7 @@
 # Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 # 
 
-GlslangValidator=third-party/linux/VulkanSDK/1.0.46.0/x86_64/bin/glslangValidator
+GlslangValidator=glslangValidator
 
 ./$GlslangValidator glsl/color.frag -V -o src/res/color-frag.spv
 ./$GlslangValidator glsl/color.vert -V -o src/res/color-vert.spv
