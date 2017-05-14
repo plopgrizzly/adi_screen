@@ -18,7 +18,8 @@ homepage = "http://plopgrizzly.tech/adi_screen/"
 repository = "https://github.com/plopgrizzly/adi_screen/"
 readme = "README.md"
 exclude = [
-	"examples/*", "docs/*", ".gitignore", "TODO", "glsl/*", "gen-spv.sh"
+	"examples/*", "docs/*", ".gitignore", "TODO", "glsl/*", "gen-spv.sh",
+	"glslangValidator", "THIRD-PARTY.md"
 ]
 
 build = "build.rs"
