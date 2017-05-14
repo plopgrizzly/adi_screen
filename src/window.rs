@@ -71,7 +71,7 @@ impl Window {
 		let mut window = Window {
 			vw: vw::open(name, &native), window: native,
 			size: (0,0), sprites: Vec::new(),
-			time: (Timer::new(1.0 / 60.0), 0.0),
+			time: (Timer::create(1.0 / 60.0), 0.0),
 			minsize: (64, (0.0, 0.0)), aspect: 0.0, ymultiply: 0.0,
 			shaders: Vec::new(), input: Input::Resize,
 			color: (0.0, 0.0, 0.0),
@@ -112,13 +112,13 @@ impl Window {
 	/// Returns a number between 0-1. This function is used for animations.
 	/// It will take rate_spr seconds to go from 0 to 1. 
 	pub fn pulse_half_linear(&self, rate_spr: f32) -> f32 {
-		self.time.1.half_linear_pulse(rate_spr)
+		self.time.1.pulse_half_linear(rate_spr)
 	}
 
 	/// Returns a number between 0-1. This function is used for animations.
 	/// It will take rate_spr seconds to go from 0 to 1 and back to 0.
 	pub fn pulse_full_linear(&self, rate_spr: f32) -> f32 {
-		self.time.1.full_linear_pulse(rate_spr)
+		self.time.1.pulse_full_linear(rate_spr)
 
 	}
 
@@ -127,7 +127,7 @@ impl Window {
 	/// underneath to make the animation look smooth, by making the
 	/// beginning and end of the animation slower than the middle.
 	pub fn pulse_half_smooth(&self, rate_spr: f32) -> f32 {
-		self.time.1.half_smooth_pulse(rate_spr)
+		self.time.1.pulse_half_smooth(rate_spr)
 	}
 
 	/// Returns a number between 0-1. This function is used for animations.
@@ -135,7 +135,7 @@ impl Window {
 	/// uses cosine underneath to make the animation look smooth, by making
 	/// the beginning and end of the animation slower than the middle.
 	pub fn pulse_full_smooth(&self, rate_spr: f32) -> f32 {
-		self.time.1.full_smooth_pulse(rate_spr)
+		self.time.1.pulse_full_smooth(rate_spr)
 	}
 }
 
