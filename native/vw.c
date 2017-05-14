@@ -17,7 +17,25 @@ void android_main(struct android_app *app) {
 
 #endif*/
 
-// Vulkan
+// 
+
+void* vk_get(VkInstance instance, const char* pName) {
+	return (void*)vkGetInstanceProcAddr(instance, pName);
+}
+
+VkResult vk_create_instance(const VkInstanceCreateInfo* pCreateInfo,
+	const VkAllocationCallbacks* pAllocator,
+	VkInstance* pInstance, PFN_vkCreateInstance create_instance)
+{
+//	PFN_vkCreateInstance create_instance = (PFN_vkCreateInstance)vkGetInstanceProcAddr(NULL, pName);
+	return create_instance(pCreateInfo, pAllocator, pInstance);
+}
+
+// VkResult vk_create_surface()
+
+/*PFN_vkCreateInstance vw_get_create_instance(void) {
+	return (PFN_vkCreateInstance)vkGetInstanceProcAddr(NULL, "vkCreateInstance");
+}*/
 
 static inline void vw_vulkan_error(const char *msg, VkResult result) {
 	if(result != VK_SUCCESS) {
@@ -50,7 +68,14 @@ static inline void vw_vulkan_swapchain(vw_t* vulkan) {
 		if(max < 2) desiredImageCount = 1;
 	}
 	// TODO DEBUG
-	printf("min: %d, max: %d, chosen: %d\n", min, max, desiredImageCount);
+	// printf("min: %d, max: %d, chosen: %d\n", min, max, desiredImageCount);
+	if(desiredImageCount == 1)
+		puts("adi_screen: Double Buffering: No");
+	else if(desiredImageCount == 2)
+		puts("adi_screen: Double Buffering: Yes");
+	else
+		printf("adi_screen: Double Buffering: Custom %d",
+			desiredImageCount);
 
 	// Surface Resolution
 	VkExtent2D surfaceResolution = surface_capables.currentExtent;

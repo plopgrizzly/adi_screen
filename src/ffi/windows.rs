@@ -7,11 +7,11 @@ use std::mem;
 use std::{ usize, isize };
 
 use input::Input;
-use screen::{ Window };
-use screen::ffi::string;
-use screen::image::Image;
+use Window;
+use ffi::string;
+use image::Image;
 
-use input::keyboard::{ english, FSC };
+use input::keyboard::{ english, FSC, ESC };
 use input::Key;
 
 use super::shared;
@@ -265,15 +265,12 @@ pub fn native_window(title: &str, icon:&'static [u8]) -> NativeWindow {
 		panic!("Failed to register windows class.");
 	}
 
-	println!("hah!");
 	let mut wr = Rect { left: 0, top: 0, right: MWW, bottom: MWH };
 	unsafe { AdjustWindowRect(&mut wr, WS_OVERLAPPEDWINDOW, 0) };
 	let width = wr.right - wr.left;
 	let height = wr.bottom - wr.top;
 	let border : (isize, isize, isize, isize) = (width - MWW, height - MWH,
 		wr.right - MWW, 0 - wr.top);
-	println!("W: {} H: {}", width, height);
-	println!("top:{},bottom:{},right:{},left:{}", wr.top, wr.bottom, wr.right, wr.left);
 	let window = unsafe { CreateWindowExW(0,
 		&name,		// class name
 		&name,		// app name
@@ -381,8 +378,8 @@ pub fn convert_event(window: &mut Window, event_out: &mut Input) -> bool {
 			{
 				match chr {
 					// These keys shouldn't repeat.
-					Key::Escape | Key::Char(FSC) |
-						Key::Insert | Key::CapsLock |
+					Key::Char(ESC) | Key::Char(FSC) |
+						Key::Insert | Key::Compose |
 						Key::NumLock | Key::Shift(_) |
 						Key::Ctrl(_) | Key::Alt(_)
 					=> {

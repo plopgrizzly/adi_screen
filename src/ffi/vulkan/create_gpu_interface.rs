@@ -37,10 +37,7 @@ struct VkDeviceCreateInfo {
 }
 
 extern {
-	fn vkCreateDevice(physicalDevice: usize,
-		pCreateInfo: *const VkDeviceCreateInfo,
-		pAllocator: LazyPointer,
-		pDevice: *mut usize) -> VkResult;
+//	fn vkCreateDevice(;
 }
 
 #[cfg(feature = "checks")]
@@ -64,7 +61,9 @@ fn layer_names(_: &()) -> [*const i8; NUM_LAYERS as usize] {
 	[ ]
 }
 
-pub fn create_gpu_interface(gpu: usize, present_queue_index: u32) -> usize {
+pub fn create_gpu_interface(instance: usize, gpu: usize,
+	present_queue_index: u32) -> usize
+{
 	let mut device = 0;
 	let ext = CString::new("VK_KHR_swapchain").unwrap();
 	let lay = layers();
@@ -89,9 +88,21 @@ pub fn create_gpu_interface(gpu: usize, present_queue_index: u32) -> usize {
 	};
 
 	unsafe {
-		check_error("vkCreateDevice failure", vkCreateDevice(gpu,
-			&create_info, 0, &mut device));
-	}
+		extern "system" {
+			fn vkGetInstanceProcAddr(instance: LazyPointer,
+				name: *const i8)
+			-> extern "system" fn(
+				physicalDevice: usize,
+				pCreateInfo: *const VkDeviceCreateInfo,
+				pAllocator: LazyPointer,
+				pDevice: *mut usize) -> VkResult;
+		}
+		let name = CString::new("vkCreateDevice").unwrap();
+		check_error("vkCreateDevice failure.",
+			(vkGetInstanceProcAddr(instance, name.as_ptr()))
+			(gpu, &create_info, 0, &mut device)
+		);
+	};
 
 	device
 }

@@ -24,7 +24,10 @@ use self::windows as native;
 use self::android as native;
 
 // Platform Independant
+
+#[link(name = "vulkan-1")]
 pub mod vulkan;
+
 pub mod string;
 mod shared;
 

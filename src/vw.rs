@@ -282,7 +282,7 @@ pub fn open(window_name: &str, native: &NativeWindow) -> Vw {
 	let instance = vulkan::Instance::create(window_name);
 	let surface = vulkan::Surface::create(&instance, native);
 	let gpu = vulkan::Gpu::create(&surface);
-	let gpu_interface = vulkan::GpuInterface::create(&gpu);
+	let gpu_interface = vulkan::GpuInterface::create(&instance, &gpu);
 	let queue = vulkan::Queue::create(&gpu_interface, &gpu);
 	let command_buffer = vulkan::CommandBuffer::create(&gpu_interface,&gpu);
 

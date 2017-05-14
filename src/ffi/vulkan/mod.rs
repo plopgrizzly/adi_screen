@@ -69,13 +69,14 @@ impl Gpu {
 // VkDevice
 pub struct GpuInterface { pub native: usize }
 impl GpuInterface {
-	pub fn create(gpu: &Gpu) -> GpuInterface {
+	pub fn create(instance: &Instance, gpu: &Gpu) -> GpuInterface {
+		let instance = instance.native;
 		let present_queue_index = gpu.present_queue_index;
 		let gpu = gpu.native;
 
 		GpuInterface {
-			native: create_gpu_interface::create_gpu_interface(gpu,
-				present_queue_index)
+			native: create_gpu_interface::create_gpu_interface(
+				instance, gpu, present_queue_index)
 		}
 	}
 }
@@ -106,7 +107,7 @@ impl CommandBuffer {
 }
 
 use std::fmt;
-use std::{u64,usize};
+use std::{ u64, usize };
 // use std::ptr::null_mut;
 
 // use screen::vw::Vw;

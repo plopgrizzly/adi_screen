@@ -4,6 +4,7 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
+use std::ffi::CString;
 use super::{ LazyPointer, VkResult, VkStructureType, check_error };
 
 #[repr(C)]
@@ -28,16 +29,6 @@ struct VkCommandBufferAllocateInfo {
 	command_buffer_count: u32,
 }
 
-extern {
-	fn vkCreateCommandPool(device: usize,
-		pCreateInfo: *const VkCommandPoolCreateInfo,
-		pAllocator: LazyPointer,
-		pCommandPool: *mut u64) -> VkResult;
-	fn vkAllocateCommandBuffers(device: usize,
-		pAllocateInfo: *const VkCommandBufferAllocateInfo,
-		pCommandBuffers: *mut usize) -> VkResult;
-}
-
 pub fn create_command_buffer(gpu_interface: usize, present_queue_index: u32)
 	-> (usize, u64)
 {
@@ -52,9 +43,21 @@ pub fn create_command_buffer(gpu_interface: usize, present_queue_index: u32)
 	};
 
 	unsafe {
-		check_error("vkCreateCommandPool failure", vkCreateCommandPool(
-			gpu_interface, &create_info, 0, &mut command_pool));
-	}
+		extern "system" {
+			fn vkGetDeviceProcAddr(instance: LazyPointer,
+				name: *const i8)
+			-> extern "system" fn(
+				device: usize,
+				pCreateInfo: *const VkCommandPoolCreateInfo,
+				pAllocator: LazyPointer,
+				pCommandPool: *mut u64) -> VkResult;
+		}
+		let name = CString::new("vkCreateCommandPool").unwrap();
+		check_error("Failed to create vulkan instance.",
+			(vkGetDeviceProcAddr(gpu_interface, name.as_ptr()))
+			(gpu_interface, &create_info, 0, &mut command_pool)
+		);
+	};
 
 	let allocate_info = VkCommandBufferAllocateInfo {
 		s_type: VkStructureType::CommandBufferAllocateInfo,
@@ -65,10 +68,20 @@ pub fn create_command_buffer(gpu_interface: usize, present_queue_index: u32)
 	};
 
 	unsafe {
-		check_error("vkAllocateCommandBuffers failure",
-			vkAllocateCommandBuffers(gpu_interface, &allocate_info,
-				&mut command_buffer));
-	}
+		extern "system" {
+			fn vkGetDeviceProcAddr(instance: LazyPointer,
+				name: *const i8)
+			-> extern "system" fn(
+				device: usize,
+				ai: *const VkCommandBufferAllocateInfo,
+				cmd_buffs: *mut usize) -> VkResult;
+		}
+		let name = CString::new("vkAllocateCommandBuffers").unwrap();
+		check_error("Failed to create vulkan instance.",
+			(vkGetDeviceProcAddr(gpu_interface, name.as_ptr()))
+			(gpu_interface, &allocate_info, &mut command_buffer)
+		);
+	};
 
 	(command_buffer, command_pool)
 }

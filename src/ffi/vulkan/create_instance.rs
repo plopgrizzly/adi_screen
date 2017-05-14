@@ -55,12 +55,6 @@ struct VkInstanceCreateInfo {
 	pp_enabled_extension_names: *const [*const i8; NUM_EXTENSIONS as usize],
 }
 
-extern {
-	fn vkCreateInstance(pCreateInfo: *const VkInstanceCreateInfo,
-		pAllocator: LazyPointer, pInstance: *mut usize)
-		-> VkResult;
-}
-
 fn required_extensions() -> (CString, CString) {
 	let s1 = CString::new("VK_KHR_surface").unwrap();
 	let s2 = CString::new(EXTENSION).unwrap();
@@ -70,7 +64,7 @@ fn required_extensions() -> (CString, CString) {
 #[cfg(feature = "checks")]
 fn extensions() -> (CString, CString, CString) {
 	let req = required_extensions();
-	let s3 = CString::new("VK_EXT_debug_report").unwrap();
+	let s3 = CString("VK_EXT_debug_report").unwrap();
 	(req.0, req.1, s3)
 }
 
@@ -117,10 +111,8 @@ fn layer_names(_: &()) -> [*const i8; NUM_LAYERS as usize] {
 pub fn create_instance(app_name: &str) -> usize {
 	let mut instance = 0;
 
-	let program_name : *const i8 = CString::new(app_name)
-		.unwrap().as_ptr();
-	let engine_name : *const i8 = CString::new(VERSION)
-		.unwrap().as_ptr();
+	let program_name : CString = CString::new(app_name).unwrap();
+	let engine_name : CString = CString::new(VERSION).unwrap();
 
 	// This variables must be defined separately so it stays in scope.
 	let ext = extensions();
@@ -133,9 +125,9 @@ pub fn create_instance(app_name: &str) -> usize {
 		p_application_info: &VkApplicationInfo {
 			s_type: VkStructureType::ApplicationInfo,
 			p_next: 0,
-			p_application_name: program_name,
+			p_application_name: program_name.as_ptr(),
 			application_version: 2,
-			p_engine_name: engine_name,
+			p_engine_name: engine_name.as_ptr(),
 			engine_version: 2,
 			api_version: VULKAN_VERSION.0,
 		},
@@ -145,14 +137,26 @@ pub fn create_instance(app_name: &str) -> usize {
 		pp_enabled_extension_names: &extension_names(&ext),
 	};
 
-	check_error("Failed to create vulkan instance.", unsafe {
-		vkCreateInstance(&instance_create_info, 0, &mut instance)
-	});
+	unsafe {
+		extern "system" {
+			fn vkGetInstanceProcAddr(instance: LazyPointer,
+				name: *const i8)
+			-> extern "system" fn(
+				pCreateInfo: *const VkInstanceCreateInfo,
+				pAllocator: LazyPointer,
+				pInstance: *mut usize) -> VkResult;
+		}
+		let name = CString::new("vkCreateInstance").unwrap();
+		check_error("Failed to create vulkan instance.",
+			(vkGetInstanceProcAddr(0, name.as_ptr()))
+			(&instance_create_info, 0, &mut instance)
+		);
+	};
 
 	println!("adi_screen: Program: {}", app_name);
 	println!("adi_screen: Engine: {}", VERSION);
 	println!("adi_screen: Backend: {}", VULKAN_VERSION.1);
 	println!("adi_screen: Checks: {}", CHECKS);
-
+	
 	instance
 }

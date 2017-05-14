@@ -4,6 +4,7 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
+use std::ffi::CString;
 use std::ptr::null_mut;
 use super::{ VkResult, check_error };
 
@@ -24,42 +25,52 @@ struct VkQueueFamilyProperties {
 	min_image_transfer_granularity: VkExtent3D,
 }
 
-extern {
-	fn vkEnumeratePhysicalDevices(instance: usize,
-		pPhysicalDeviceCount : *mut u32,
-		pPhysicalDevices: *mut usize) -> VkResult;
-	fn vkGetPhysicalDeviceQueueFamilyProperties(
-		physicalDevice: usize,
-		pQueueFamilyPropertyCount: *mut u32,
-		pQueueFamilyProperties: *mut VkQueueFamilyProperties) -> ();
-	fn vkGetPhysicalDeviceSurfaceSupportKHR(
-		physicalDevice: usize,
-		queueFamilyIndex: u32,
-		surface: u64,
-		psupported: *mut u32) -> VkResult;
-}
-
 pub fn create_gpu(instance: usize, surface: u64) -> (usize, u32) {
 	let mut num_gpus = 0;
 	let mut gpus;
 
 	unsafe {
-		check_error("vkEnumeratePhysicalDevices(null) failed!",
-			vkEnumeratePhysicalDevices(instance, &mut num_gpus,
-				null_mut()));
-		gpus = vec![0; num_gpus as usize];
-		check_error("vkEnumeratePhysicalDevices(gpus) failed!",
-			vkEnumeratePhysicalDevices(instance, &mut num_gpus,
-				gpus.as_mut_ptr()));
-	}
+		extern "system" {
+			fn vkGetInstanceProcAddr(instance: usize,
+				name: *const i8)
+			-> extern "system" fn(
+				instance: usize,
+				pPhysicalDeviceCount : *mut u32,
+				pPhysicalDevices: *mut usize) -> VkResult;
+		}
 
+		let name = CString::new("vkEnumeratePhysicalDevices").unwrap();
+		check_error("vkEnumeratePhysicalDevices(null) failed.",
+			(vkGetInstanceProcAddr(instance, name.as_ptr()))
+			(instance, &mut num_gpus, null_mut())
+		);
+
+		gpus = vec![0; num_gpus as usize];
+		check_error("vkEnumeratePhysicalDevices(null) failed.",
+			(vkGetInstanceProcAddr(instance, name.as_ptr()))
+			(instance, &mut num_gpus, gpus.as_mut_ptr())
+		);
+	};
+
+	let vk_properties = unsafe {
+		extern "system" {
+			fn vkGetInstanceProcAddr(instance: usize,
+				name: *const i8)
+			-> extern "system" fn(
+				physicalDevice: usize,
+				property_count: *mut u32,
+				properties: *mut VkQueueFamilyProperties) -> ();
+		}
+
+		let name = CString::new(
+			"vkGetPhysicalDeviceQueueFamilyProperties").unwrap();
+		vkGetInstanceProcAddr(instance, name.as_ptr())
+	};
+	
 	for i in 0..(num_gpus as usize) {
 		let mut num_queue_families = 0;
 
-		unsafe {
-			vkGetPhysicalDeviceQueueFamilyProperties(gpus[i],
-				&mut num_queue_families, null_mut());
-		}
+		vk_properties(gpus[i], &mut num_queue_families, null_mut());
 
 		let mut properties = vec![VkQueueFamilyProperties {
 			queue_flags: 0,
@@ -70,22 +81,29 @@ pub fn create_gpu(instance: usize, surface: u64) -> (usize, u32) {
 			},
 		}; num_queue_families as usize];
 
-		unsafe {
-			vkGetPhysicalDeviceQueueFamilyProperties(gpus[i],
-				&mut num_queue_families,
-				properties.as_mut_ptr());		
-		}
+		vk_properties(gpus[i], &mut num_queue_families,
+			properties.as_mut_ptr());
 
 		for j in 0..(num_queue_families as usize) {
 			let k = j as u32;
 			let mut supports_present = 0;
 
 			unsafe {
+				extern "system" {
+					fn vkGetPhysicalDeviceSurfaceSupportKHR(
+						physicalDevice: usize,
+						queueFamilyIndex: u32,
+						surface: u64,
+						psupported: *mut u32) -> VkResult;
+				}
+				
 				check_error("vkGetPhysicalDeviceSurfaceSupport",
 					vkGetPhysicalDeviceSurfaceSupportKHR(
 						gpus[i], k, surface,
-						&mut supports_present));
+						&mut supports_present)
+				);
 			}
+
 			if supports_present != 0 &&
 				(properties[j].queue_flags & 0x00000001) != 0
 			{
