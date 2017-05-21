@@ -9,11 +9,10 @@ be used for video games or applications.
 
 ### support
 
-| Platform              | Window |          Cursor          |      Keyboard      | Joystick |
-|                       |        | Touch | Touchpad | Mouse | Physical | Virtual |          |
-|-----------------------|--------|-------|----------|-------|----------|---------|----------|
-| Vulkan + XCB on Linux | Yes    | No    | Yes      | Yes   | Yes      | No      | No       |
-| Vulkan on Windows     | Yes    | No    | No       | Yes   | Yes      | No      | No       |
+| Platform              | Vulkan | OpenGL | Metal | Window | Touch | Touchpad | Mouse | Keyboard | Joystick |
+|-----------------------|--------|--------|-------|--------|-------|----------|-------|----------|----------|
+| XCB on Linux          | Yes    | No     | No    | Yes    | No    | Yes      | Yes   | Yes      | No       |
+| Windows               | Yes    | No     | No    | Yes    | No    | No       | Yes   | Yes      | No       |
 
 # next planned release
 
@@ -21,3 +20,5 @@ be used for video games or applications.
 * Fix 2 keys being pressed at same time causing problems on XCB.
 
 * Make scrolling fast work on windows ( increments of 120 )
+
+* Add Joystick Support on Linux
