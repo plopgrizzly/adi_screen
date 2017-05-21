@@ -7,8 +7,8 @@ const SHADER_COLOR : usize = 0;
 const SHADER_TEXTURE : usize = 1;
 const SHADER_CUSTOM : usize = 2;
 
-use vw::NativeTexture;
-use vw::Vw;
+use renderer::NativeTexture;
+use renderer::Vw;
 use image::Image;
 use Window;
 

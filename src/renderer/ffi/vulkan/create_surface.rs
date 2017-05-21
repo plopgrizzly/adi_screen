@@ -4,7 +4,7 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
-use ffi::NativeWindow;
+use window::NativeWindow;
 use super::{ LazyPointer, VkResult, VkStructureType, check_error };
 
 #[cfg(any(target_os = "linux", target_os = "macos"))]
@@ -46,8 +46,8 @@ pub fn create_surface(instance: usize, native_window: &NativeWindow) -> u64 {
 		s_type: VkStructureType::SurfaceCreateInfo,
 		p_next: 0,
 		flags: 0,
-		connection: native_window.connection,
-		window: native_window.window,
+		connection: native_window.connection.native,
+		window: native_window.window.native,
 	};
 
 	unsafe {
@@ -73,8 +73,8 @@ pub fn create_surface(instance: usize, native_window: &NativeWindow) -> u64 {
 		s_type: VkStructureType::SurfaceCreateInfo,
 		p_next: 0,
 		flags: 0,
-		hinstance: native_window.connection,
-		hwnd: native_window.window,
+		hinstance: native_window.connection.native,
+		hwnd: native_window.window.native,
 	};
 
 	unsafe {
@@ -100,7 +100,7 @@ pub fn create_surface(instance: usize, native_window: &NativeWindow) -> u64 {
 		s_type: VkStructureType::SurfaceCreateInfo,
 		p_next: 0,
 		flags: 0,
-		window: native_window.window,
+		window: native_window.window.native,
 	};
 
 	unsafe {

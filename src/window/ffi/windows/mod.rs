@@ -1,14 +1,16 @@
 /**
- * adi_screen - Aldaron's Device Interface - Screen - "ffi/windows.rs"
+ * adi_screen - Aldaron's Device Interface
+ * Screen - "ffi/windows/mod.rs"
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
+
+mod string; // for UTF-16 conversions
 
 use std::mem;
 use std::{ usize, isize };
 
 use input::Input;
 use Window;
-use ffi::string;
 use image::Image;
 
 use input::keyboard::{ english, FSC, ESC };

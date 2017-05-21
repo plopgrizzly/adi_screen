@@ -1,9 +1,9 @@
-/**
+/*
  * adi_screen - Aldaron's Device Interface - Screen - "input/keyboard.rs"
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
-**/
+ */
 
-use input::Key;
+use window::input::Key;
 
 pub const ESC : char = '\x10';
 pub const FSC : char = '\x11';

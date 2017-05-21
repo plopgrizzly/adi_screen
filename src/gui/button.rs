@@ -3,7 +3,7 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
-use input::Input;
+use window::input::Input;
 use Window;
 use Sprite;
 use Style;
@@ -31,7 +31,7 @@ impl Button {
 		];
 
 		let style = Style::create().opaque(window,
-			include_bytes!("../res/button.ppm"));
+			include_bytes!("res/button.ppm"));
 		let spr = Sprite::create(window, &v, style, 1);
 		let size = window.unit_size();
 

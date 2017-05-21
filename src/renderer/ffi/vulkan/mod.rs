@@ -1,9 +1,10 @@
-/**
- * adi_screen - Aldaron's Device Interface - Screen - "ffi/vulkan/mod.rs"
+/*
+ * adi_screen - Aldaron's Device Interface
+ * Screen - "ffi_renderer/vulkan/mod.rs"
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
-**/
+ */
 
-use ffi::NativeWindow;
+use window::NativeWindow;
 
 mod create_command_buffer;
 mod create_gpu;
@@ -108,18 +109,15 @@ impl CommandBuffer {
 
 use std::fmt;
 use std::{ u64, usize };
-// use std::ptr::null_mut;
+use super::LazyPointer;
 
-// use screen::vw::Vw;
-
-type LazyPointer = usize;
 type VkDeviceMemory = u64;
 // type VkDescriptorSet = u64;
 // type VkDescriptorSetLayout = u64;
 // type VkDescriptorPool = u64;
 
-type VkDevice = usize;
-type VkCommandBuffer = usize;
+type VkDevice = LazyPointer;
+type VkCommandBuffer = LazyPointer;
 
 // type VkStructureType = u32; // Size of enum is 4 bytes
 // type VkFlags = u32;

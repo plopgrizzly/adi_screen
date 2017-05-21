@@ -8,7 +8,7 @@ use std::f32::consts::PI;
 
 use Window;
 use window::WindowFunctions;
-use vw::{ Shape };
+use renderer::{ Shape };
 use Style;
 
 #[must_use]

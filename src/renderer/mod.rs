@@ -1,12 +1,16 @@
 /**
- * adi_screen - Aldaron's Device Interface - Screen - "vw.rs"
+ * adi_screen - Aldaron's Device Interface - Screen - "renderer/mod.rs"
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
+
+mod ffi;
+
+use self::ffi::vulkan;
+use window::NativeWindow;
 
 use style;
 use Window;
 use window::WindowFunctions;
-use ffi::{ NativeWindow, vulkan };
 
 type VkInstance = usize;
 type VkQueue = usize;
