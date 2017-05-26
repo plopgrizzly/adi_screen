@@ -3,7 +3,63 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
  */
 
-use window::input::Key;
+use std::fmt;
+
+#[derive(PartialEq)]
+#[derive(Copy, Clone)]
+pub enum Key {
+	Char(char),
+	Backspace,
+	Delete,
+	Ctrl(bool),
+	Shift(bool),
+	Alt(bool),
+	Compose,
+	NumLock,
+	Home,
+	End,
+	PageUp,
+	PageDown,
+	Up,
+	Down,
+	Left,
+	Right,
+	Insert,
+}
+
+impl fmt::Display for Key {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		match *self {
+			Key::Char(a) => match a {
+				' ' => write!(f, "space"),
+				'\t' => write!(f, "tab"),
+				'\n' => write!(f, "newline"),
+				ESC => write!(f, "Escape"),
+				FSC => write!(f, "Toggle Fullscreen"),
+				b => write!(f, "{}", b),
+			},
+			Key::Backspace => write!(f, "Backspace"),
+			Key::Delete => write!(f, "Delete"),
+			Key::Ctrl(false) => write!(f, "Left Ctrl (false)"),
+			Key::Ctrl(true) => write!(f, "Right Ctrl (true)"),
+			Key::Shift(false) => write!(f, "Left Shift (false)"),
+			Key::Shift(true) => write!(f, "Right Shift (true)"),
+			Key::Alt(false) => write!(f, "Left Alt (false)"),
+			Key::Alt(true) => write!(f, "Right Alt (true)"),
+			Key::Compose => write!(f, "Compose"),
+			Key::NumLock => write!(f, "NumLock"),
+			Key::Home => write!(f, "Home"),
+			Key::End => write!(f, "End"),
+			Key::PageUp => write!(f, "PageUp"),
+			Key::PageDown => write!(f, "PageDown"),
+			Key::Up => write!(f, "Up"),
+			Key::Down => write!(f, "Down"),
+			Key::Left => write!(f, "Left"),
+			Key::Right => write!(f, "Right"),
+			Key::Insert => write!(f, "Insert"),
+		}
+	}
+}
 
 pub const ESC : char = '\x10';
 pub const FSC : char = '\x11';

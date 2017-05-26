@@ -15,10 +15,12 @@ mod sprite;
 mod style;
 mod gui;
 
+pub use input::keyboard::Key;
+pub use input::joystick::Button;
+pub use input::{ Input };
 pub use window::{ Window };
-pub use window::input::{ Input, Key };
 pub use sprite::{ Sprite, Transform };
 pub use style::Style;
-pub use gui::Button;
+pub use gui::Button as GuiButton;
 
 pub extern crate adi_clock;

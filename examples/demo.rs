@@ -5,7 +5,7 @@
 
 extern crate adi_screen;
 
-use adi_screen::{ Transform, Sprite, Window, Style, Input, Button };
+use adi_screen::{ Transform, Sprite, Window, Style, Input, GuiButton };
 
 struct Context {
 	window: Window,
@@ -13,7 +13,7 @@ struct Context {
 	triangle: Sprite,
 	logo: Sprite,
 	square: Sprite,
-	button: Button,
+	button: GuiButton,
 }
 
 fn redraw(context: &mut Context) {
@@ -71,6 +71,11 @@ fn update(context: &mut Context) -> bool {
 		Input::ScrollLeft(x, y) => println!("Scroll Left ({}, {})", x, y),
 		Input::EnterWindow => println!("Enter Window"),
 		Input::LeaveWindow => println!("Leave Window"),
+		Input::JoystickMove(x, y) => println!("Joystick ({}, {})", x, y),
+		Input::JoystickPov(x, y) => println!("POV Hat ({}, {})", x, y),
+		Input::JoystickThrottle(x) => println!("Throttle ({})", x),
+		Input::JoystickButtonDown(a) => println!("Button Down ({})", a),
+		Input::JoystickButtonUp(a) =>  println!("Button Up ({})", a),
 	};
 	let pressed = context.button.update(&mut context.window, message);
 	if pressed {
@@ -96,7 +101,7 @@ fn init2() -> Context {
 	let shape_image = include!("res/image.data");
 	Context {
 		logo: Sprite::create(&mut window, &shape_image, style_logo, 1),
-		button: Button::create(&mut window, (-1.0, -1.0)),
+		button: GuiButton::create(&mut window, (-1.0, -1.0)),
 		triangle: Sprite::create(&mut window,
 			&include!("res/triangle.data"), style_gradient, 2),
 		image: {

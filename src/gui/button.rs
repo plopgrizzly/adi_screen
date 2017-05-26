@@ -3,7 +3,7 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
-use window::input::Input;
+use Input;
 use Window;
 use Sprite;
 use Style;
@@ -114,7 +114,6 @@ impl Button {
 	fn down(&mut self, window: &mut Window) {
 		self.modify(window, 2.0);
 	}
-
 
 	fn button_check(&mut self, window: &mut Window, x: f32, y: f32) -> bool{
 		let (xmax, xmin, ymax, ymin, held) = {

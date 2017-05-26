@@ -1,23 +1,24 @@
 ~ Next Release
 
-	adi_screen 0.1.1
+	adi_screen 0.2.0
 		* Fix 2 keys being pressed at same time causing problems on XCB.
 		* Make scrolling fast work on windows ( increments of 120 )
+		* Add joystick support for Linux
 
 ~ Next Release ( 2 )
 
-	adi_screen 0.1.2
+	adi_screen 0.2.1
 		* Give sprites auto depth-sort.
 
 ~ Next Release ( 3 )
 
-	adi_screen 0.2.0
+	adi_screen 0.3.0
 		* Implement OpenGL backwards compatibility for Windows.
 		* Implement OpenGL + MacOS support
 
 ~ Next Release ( 4 )
 
-	adi_screen 0.3.0
+	adi_screen 0.4.0
 		* Implement Android Support
 
 ~ Before 1.0.0 ~

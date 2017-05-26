@@ -4,15 +4,16 @@
 **/
 
 mod ffi;
-pub mod input;
 
 pub use self::ffi::{ NativeWindow, poll_events };
-use self::input::Input;
 
 use adi_clock::Timer;
 use adi_clock::Pulse;
+use Input;
 use renderer;
 use renderer::{ Vw, Style, Shape };
+
+use input::joystick::Joystick;
 
 /// Window represents a connection to a display that can also recieve input.
 pub struct Window {
@@ -27,6 +28,7 @@ pub struct Window {
 	shaders: Vec<Style>,
 	color: (f32, f32, f32),
 	pub input: Vec<Input>, // TODO: pub
+	pub joystick: Joystick, // TODO: pub
 }
 
 pub trait WindowFunctions {
@@ -80,7 +82,7 @@ impl Window {
 			time: (Timer::create(1.0 / 60.0), 0.0),
 			minsize: (64, (0.0, 0.0)), aspect: 0.0, ymultiply: 0.0,
 			shaders: Vec::new(), input: input,
-			color: (0.0, 0.0, 0.0),
+			color: (0.0, 0.0, 0.0), joystick: Joystick::create(),
 		};
 		renderer::make_styles(&mut window.vw, shaders, &mut window.shaders);
 		window
