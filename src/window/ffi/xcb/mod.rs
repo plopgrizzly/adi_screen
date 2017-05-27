@@ -1,9 +1,8 @@
 /**
- * adi_screen - Aldaron's Device Interface - Screen - "ffi/xcb/mod.rs"
+ * adi_screen - Aldaron's Device Interface
+ * Screen - "window/ffi/xcb/mod.rs"
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
-
-use Input;
 
 mod create_connection;
 mod create_property;
@@ -18,6 +17,7 @@ mod window_map;
 mod window_title;
 mod window_update;
 
+use Input;
 use image::Image;
 use super::{ LazyPointer, convert_mouse_pos, should_resize };
 

@@ -45,6 +45,16 @@ use Input;
 
 type LazyPointer = usize;
 
+trait LazyCast<T> {
+	fn lazy_cast(&self) -> *mut T;
+}
+
+impl<T> LazyCast<T> for LazyPointer {
+	fn lazy_cast(&self) -> *mut T {
+		unsafe { *(&self as *const _ as *const *mut _) }
+	}
+}
+
 const MWW : u32 = 640;
 const MWH : u32 = 360;
 
@@ -80,6 +90,7 @@ fn convert_mouse_pos(wh: &(u32, u32), c: (i16, i16)) -> (f32,f32) {
 
 fn should_resize(wh: &mut (u32, u32), d: (u32, u32)) -> bool {
 	if *wh != d {
+		println!("RE-SIZE {} {}", d.0, d.1);
 		*wh = d;
 		true
 	}else{
