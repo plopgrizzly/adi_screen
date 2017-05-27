@@ -1,6 +1,6 @@
 [package]
 name = "adi_screen"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.tech>"]
 description = """
         The adi_screen library enables the programmer to render onto a \
