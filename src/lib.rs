@@ -4,7 +4,7 @@
 **/
 
 /// The version of adi_screen that's being used
-pub const VERSION : &'static str = "adi_screen 0.1.0";
+pub const VERSION : &'static str = "adi_screen 0.2.1";
 
 mod image;
 mod renderer;
