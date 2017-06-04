@@ -19,13 +19,13 @@ use super::{ convert_mouse_pos, should_resize };
 const MWW : isize = super::MWW as isize;
 const MWH : isize = super::MWH as isize;
 
-pub struct Connection { pub native: VoidPointer }
+struct Connection { native: VoidPointer }
 impl Connection {
 	fn create() -> Connection {
 		Connection { native: connection_create::connection_create() }
 	}
 }
-pub struct Class { name: [u8; 80] }
+struct Class { name: [u8; 80] }
 impl Class {
 	fn create(connection: &Connection, name: &str, image: Image, wnd_proc:
 		extern "C" fn(a: VoidPointer, b: u32, c: VoidPointer,
@@ -38,7 +38,7 @@ impl Class {
 		}
 	}
 }
-pub struct Window { pub native: VoidPointer }
+struct Window { native: VoidPointer }
 impl Window {
 	fn create(connection: &Connection, size: (isize, isize), class: Class) -> Window {
 		let c = connection.native;
@@ -49,8 +49,8 @@ impl Window {
 }
 
 pub struct NativeWindow {
-	pub window: Window,
-	pub connection: Connection,
+	window: Window,
+	connection: Connection,
 	miw: bool, // Mouse In Window
 	restore_size: (i32, i32, i32, i32),
 	fullscreen: bool,
@@ -85,5 +85,13 @@ impl NativeWindow {
 	}
 
 	pub fn update(&self) {
+	}
+
+	pub fn get_window(&self) -> VoidPointer {
+		self.window.native
+	}
+
+	pub fn get_connection(&self) -> VoidPointer {
+		self.connection.native
 	}
 }

@@ -33,7 +33,7 @@ type VkSemaphore = u64;
 type VkBuffer = u64;
 type VkShaderModule = u64;
 type VkSampler = u64;
-pub type VkPipeline = u64;
+type VkPipeline = u64;
 
 type VkC = u32; // Size of enum is 4 bytes
 

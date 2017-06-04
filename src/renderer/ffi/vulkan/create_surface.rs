@@ -49,8 +49,8 @@ pub fn create_surface(instance: VoidPointer, native_window: &NativeWindow)
 		s_type: VkStructureType::SurfaceCreateInfo,
 		p_next: NULL,
 		flags: 0,
-		connection: native_window.connection.native,
-		window: native_window.window.native,
+		connection: native_window.get_connection(),
+		window: native_window.get_window(),
 	};
 
 	unsafe {
@@ -78,8 +78,8 @@ pub fn create_surface(instance: VoidPointer, native_window: &NativeWindow)
 		s_type: VkStructureType::SurfaceCreateInfo,
 		p_next: 0,
 		flags: 0,
-		hinstance: native_window.connection.native,
-		hwnd: native_window.window.native,
+		hinstance: native_window.get_connection(),
+		hwnd: native_window.get_window(),
 	};
 
 	unsafe {
@@ -107,7 +107,7 @@ pub fn create_surface(instance: VoidPointer, native_window: &NativeWindow)
 		s_type: VkStructureType::SurfaceCreateInfo,
 		p_next: 0,
 		flags: 0,
-		window: native_window.window.native,
+		window: native_window.get_window(),
 	};
 
 	unsafe {

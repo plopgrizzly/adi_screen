@@ -25,7 +25,7 @@ use super::{ convert_mouse_pos, should_resize };
 const MWW : u16 = super::MWW as u16;
 const MWH : u16 = super::MWH as u16;
 
-pub struct Connection { pub native: VoidPointer }
+struct Connection { native: VoidPointer }
 impl Connection {
 	fn create() -> Connection {
 		Connection { native: create_connection::create_connection() }
@@ -39,7 +39,7 @@ impl Drop for Connection {
 	}
 }
 
-pub struct Screen { root: u32, visual: u32, black: u32 }
+struct Screen { root: u32, visual: u32, black: u32 }
 impl Screen {
 	fn create(connection: &Connection) -> Screen {
 		let c = connection.native;
@@ -51,7 +51,7 @@ impl Screen {
 	}
 }
 
-pub struct Window { pub native: u32 }
+struct Window { native: u32 }
 impl Window {
 	fn create(connection: &Connection, screen: Screen) -> Window {
 		let c = connection.native;
@@ -65,7 +65,7 @@ impl Window {
 	}
 }
 
-pub struct Property(u32, u32);
+struct Property(u32, u32);
 impl Property {
 	fn create(connection: &Connection, name: &str, fake: bool, name2: &str)
 		-> Property
@@ -78,8 +78,8 @@ impl Property {
 }
 
 pub struct NativeWindow {
-	pub window: Window,
-	pub connection: Connection,
+	window: Window,
+	connection: Connection,
 	fullscreen: Property,
 }
 impl NativeWindow {
@@ -120,6 +120,14 @@ impl NativeWindow {
 
 	pub fn update(&self) {
 		window_update::window_update(self.connection.native);
+	}
+
+	pub fn get_window(&self) -> u32 {
+		self.window.native
+	}
+
+	pub fn get_connection(&self) -> VoidPointer {
+		self.connection.native
 	}
 
 	fn map(&self) {

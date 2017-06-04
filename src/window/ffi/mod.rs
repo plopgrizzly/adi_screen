@@ -30,7 +30,7 @@ mod xcb;
 #[cfg(not(any(target_os = "windows",target_os = "android",target_os = "ios")))]
 pub use self::xcb::NativeWindow;
 
-// mod aldaros;
+// mod aldarons_os;
 // mod arduino;
 // mod nintendo_switch;
 // mod raspberry_pi;
