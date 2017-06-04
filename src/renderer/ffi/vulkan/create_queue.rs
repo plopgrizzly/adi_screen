@@ -4,18 +4,22 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
+use ami::void_pointer::*;
 use std::ffi::CString;
 
-pub fn create_queue(gpu_interface: usize, present_queue_index: u32) -> usize {
+pub fn create_queue(gpu_interface: VoidPointer, present_queue_index: u32)
+	-> usize
+{
 	let mut queue = 0;
 
 	unsafe {
 		extern "system" {
-			fn vkGetDeviceProcAddr(instance: usize,
+			fn vkGetDeviceProcAddr(instance: VoidPointer,
 				name: *const i8)
 			-> extern "system" fn(
-				physicalDevice: usize, queueFamilyIndex: u32,
-				queueIndex: u32, pQueue: *mut usize) -> ();
+				physicalDevice: VoidPointer,
+				queueFamilyIndex: u32, queueIndex: u32,
+				pQueue: *mut usize) -> ();
 		}
 		let name = CString::new("vkGetDeviceQueue").unwrap();
 		(vkGetDeviceProcAddr(gpu_interface, name.as_ptr()))

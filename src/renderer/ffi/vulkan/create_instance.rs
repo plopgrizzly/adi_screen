@@ -4,8 +4,9 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
+use ami::void_pointer::*;
 use std::ffi::CString;
-use super::{ LazyPointer, VkResult, VkStructureType, check_error };
+use super::{ VkResult, VkStructureType, check_error };
 use VERSION;
 
 const VULKAN_VERSION : (u32, &'static str) = (4194304, "VK_API_VERSION_1_0");
@@ -35,7 +36,7 @@ const CHECKS : &'static str = "No ( Release )";
 #[repr(C)]
 struct VkApplicationInfo {
 	s_type: VkStructureType,
-	p_next: LazyPointer,
+	p_next: VoidPointer,
 	p_application_name: *const i8,
 	application_version: u32,
 	p_engine_name: *const i8,
@@ -46,7 +47,7 @@ struct VkApplicationInfo {
 #[repr(C)]
 struct VkInstanceCreateInfo {
 	s_type: VkStructureType,
-	p_next: LazyPointer,
+	p_next: VoidPointer,
 	flags: u32,
 	p_application_info: *const VkApplicationInfo,
 	enabled_layer_count: u32,
@@ -108,8 +109,8 @@ fn layer_names(_: &()) -> [*const i8; NUM_LAYERS as usize] {
 	[ ]
 }
 
-pub fn create_instance(app_name: &str) -> usize {
-	let mut instance = 0;
+pub fn create_instance(app_name: &str) -> VoidPointer {
+	let mut instance = NULL;
 
 	let program_name : CString = CString::new(app_name).unwrap();
 	let engine_name : CString = CString::new(VERSION).unwrap();
@@ -120,11 +121,11 @@ pub fn create_instance(app_name: &str) -> usize {
 
 	let instance_create_info = VkInstanceCreateInfo {
 		s_type: VkStructureType::InstanceCreateInfo,
-		p_next: 0,
+		p_next: NULL,
 		flags: 0,
 		p_application_info: &VkApplicationInfo {
 			s_type: VkStructureType::ApplicationInfo,
-			p_next: 0,
+			p_next: NULL,
 			p_application_name: program_name.as_ptr(),
 			application_version: 2,
 			p_engine_name: engine_name.as_ptr(),
@@ -139,17 +140,17 @@ pub fn create_instance(app_name: &str) -> usize {
 
 	unsafe {
 		extern "system" {
-			fn vkGetInstanceProcAddr(instance: LazyPointer,
+			fn vkGetInstanceProcAddr(instance: VoidPointer,
 				name: *const i8)
 			-> extern "system" fn(
 				pCreateInfo: *const VkInstanceCreateInfo,
-				pAllocator: LazyPointer,
-				pInstance: *mut usize) -> VkResult;
+				pAllocator: VoidPointer,
+				pInstance: *mut VoidPointer) -> VkResult;
 		}
 		let name = CString::new("vkCreateInstance").unwrap();
 		check_error("Failed to create vulkan instance.",
-			(vkGetInstanceProcAddr(0, name.as_ptr()))
-			(&instance_create_info, 0, &mut instance)
+			(vkGetInstanceProcAddr(NULL, name.as_ptr()))
+			(&instance_create_info, NULL, &mut instance)
 		);
 	};
 

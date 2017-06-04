@@ -4,7 +4,7 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
-use super::LazyPointer;
+use ami::void_pointer::*;
 
 #[repr(C)]
 pub struct XcbScreen {
@@ -34,11 +34,11 @@ struct XcbScreenIterator {
 }
 
 extern {
-	fn xcb_get_setup(c: LazyPointer) -> LazyPointer;
-	fn xcb_setup_roots_iterator(setup: LazyPointer) -> XcbScreenIterator;
+	fn xcb_get_setup(c: VoidPointer) -> VoidPointer;
+	fn xcb_setup_roots_iterator(setup: VoidPointer) -> XcbScreenIterator;
 }
 
-pub fn create_screen(connection: LazyPointer) -> (u32, u32, u32) {
+pub fn create_screen(connection: VoidPointer) -> (u32, u32, u32) {
 	let setup = unsafe { xcb_get_setup(connection) };
 	let screen = unsafe { xcb_setup_roots_iterator(setup).data };
 	let root = unsafe { (*screen).root };

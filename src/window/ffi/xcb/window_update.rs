@@ -4,13 +4,13 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
-use super::LazyPointer;
+use ami::void_pointer::*;
 
 extern {
-	fn xcb_flush(c: LazyPointer) -> i32;
+	fn xcb_flush(c: VoidPointer) -> i32;
 }
 
-pub fn window_update(connection: LazyPointer) {
+pub fn window_update(connection: VoidPointer) {
 	unsafe {
 		xcb_flush(connection);
 	}

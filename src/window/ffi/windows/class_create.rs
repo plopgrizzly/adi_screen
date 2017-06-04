@@ -4,7 +4,8 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
-use super::{ LazyPointer, string };
+use ami::void_pointer::*;
+use super::{ string };
 use image::Image;
 
 use std::mem;
@@ -13,30 +14,30 @@ use std::mem;
 struct WndClassEx {
 	cb_size: u32,
 	style: u32,
-	lpfn_wnd_proc: extern "C" fn(a: LazyPointer, b: u32, c: LazyPointer,
-		d: LazyPointer) -> isize,
+	lpfn_wnd_proc: extern "C" fn(a: VoidPointer, b: u32, c: VoidPointer,
+		d: VoidPointer) -> isize,
 	cb_cls_extra: i32,
 	cb_wnd_extra: i32,
-	h_instance: LazyPointer,
-	h_icon: LazyPointer,
-	h_cursor: LazyPointer,
-	hbr_background: LazyPointer,
+	h_instance: VoidPointer,
+	h_icon: VoidPointer,
+	h_cursor: VoidPointer,
+	hbr_background: VoidPointer,
 	lpsz_menu_name: usize, // Char *
 	lpsz_class_name: *const [u8;80],
-	h_icon_sm: LazyPointer,
+	h_icon_sm: VoidPointer,
 }
 
 extern "system" {
-	fn CreateIcon(hi: LazyPointer, w: i32, h: i32, planes: u8,
-		bitspixel: u8, and: *const u8, xor: *const u8) -> LazyPointer;
-	fn LoadCursorW(hi: LazyPointer, cursorName: usize) -> LazyPointer;
-	fn GetStockObject(fnObject: i32) -> LazyPointer;
+	fn CreateIcon(hi: VoidPointer, w: i32, h: i32, planes: u8,
+		bitspixel: u8, and: *const u8, xor: *const u8) -> VoidPointer;
+	fn LoadCursorW(hi: VoidPointer, cursorName: usize) -> VoidPointer;
+	fn GetStockObject(fnObject: i32) -> VoidPointer;
 	fn RegisterClassExW(a: *const WndClassEx) -> u16;
 }
 
-pub fn class_create(hi: LazyPointer, title: &str, icon: Image,
-	wnd_proc: extern "C" fn(a: LazyPointer, b: u32, c: LazyPointer,
-		d: LazyPointer) -> isize)
+pub fn class_create(hi: VoidPointer, title: &str, icon: Image,
+	wnd_proc: extern "C" fn(a: VoidPointer, b: u32, c: VoidPointer,
+		d: VoidPointer) -> isize)
 	-> [u8; 80]
 {
 	let mut name : [u8; 80] = [0u8; 80];

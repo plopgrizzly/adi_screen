@@ -4,10 +4,11 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
+use ami::void_pointer::*;
 use Input;
 use input::keyboard::english;
 use Key;
-use super::{ LazyPointer, convert_mouse_pos, should_resize };
+use super::{ convert_mouse_pos, should_resize };
 
 const KEY_DOWN: u8 = 2;
 const KEY_UP: u8 = 3;
@@ -46,7 +47,7 @@ struct Event {
 }
 
 impl Event {
-	fn create(connection: LazyPointer) -> Event {
+	fn create(connection: VoidPointer) -> Event {
 		Event {
 			pointer: unsafe {
 				xcb_poll_for_event(connection)
@@ -94,11 +95,11 @@ impl Drop for Event {
 
 #[link(name = "xcb")] // TODO: Attempt linking during run-time
 extern {
-	fn xcb_poll_for_event(c: LazyPointer) -> *mut XcbGenericEvent;
+	fn xcb_poll_for_event(c: VoidPointer) -> *mut XcbGenericEvent;
 	fn free(event: *mut XcbGenericEvent) -> ();
 }
 
-pub fn poll_event(connection: LazyPointer, input: &mut Vec<Input>,
+pub fn poll_event(connection: VoidPointer, input: &mut Vec<Input>,
 	wh: &mut (u32, u32)) -> bool
 {
 	let e = Event::create(connection);

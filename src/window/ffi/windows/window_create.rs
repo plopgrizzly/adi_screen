@@ -4,7 +4,7 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
-use super::LazyPointer;
+use ami::void_pointer::*;
 
 const WS_OVERLAPPEDWINDOW : u32 = 0x00C00000 | 0x00080000 | 0x00040000
 	| 0x00010000 | 0x00020000;
@@ -24,12 +24,12 @@ struct Rect {
 extern "system" {
 	fn CreateWindowExW(a: u32, class_name: *const [u8;80],
 		window_name: *const [u8;80], style: u32, x: i32, y: i32,
-		w: i32, h: i32, parent: LazyPointer, menu: LazyPointer,
-		hInstance: LazyPointer, param: LazyPointer) -> LazyPointer;
+		w: i32, h: i32, parent: VoidPointer, menu: VoidPointer,
+		hInstance: VoidPointer, param: VoidPointer) -> VoidPointer;
 	fn AdjustWindowRect(a: *mut Rect, dwStyle: u32, bMenu: i32) -> i32;
 }
 
-pub fn window_create(connection: LazyPointer, size: (isize, isize), name: [u8; 80]) -> LazyPointer {
+pub fn window_create(connection: VoidPointer, size: (isize, isize), name: [u8; 80]) -> VoidPointer {
 	let mut wr = Rect { left: 0, top: 0, right: size.0, bottom: size.1 };
 	unsafe {
 		AdjustWindowRect(&mut wr, WS_OVERLAPPEDWINDOW, 0)

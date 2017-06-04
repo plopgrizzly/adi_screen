@@ -11,14 +11,15 @@ mod window_create;
 mod window_fullscreen;
 mod window_poll_event;
 
+use ami::void_pointer::*;
 use Input;
 use image::Image;
-use super::{ LazyPointer, convert_mouse_pos, should_resize };
+use super::{ convert_mouse_pos, should_resize };
 
 const MWW : isize = super::MWW as isize;
 const MWH : isize = super::MWH as isize;
 
-pub struct Connection { pub native: LazyPointer }
+pub struct Connection { pub native: VoidPointer }
 impl Connection {
 	fn create() -> Connection {
 		Connection { native: connection_create::connection_create() }
@@ -27,8 +28,8 @@ impl Connection {
 pub struct Class { name: [u8; 80] }
 impl Class {
 	fn create(connection: &Connection, name: &str, image: Image, wnd_proc:
-		extern "C" fn(a: LazyPointer, b: u32, c: LazyPointer,
-			d: LazyPointer) -> isize)
+		extern "C" fn(a: VoidPointer, b: u32, c: VoidPointer,
+			d: VoidPointer) -> isize)
 		-> Class
 	{
 		Class {
@@ -37,7 +38,7 @@ impl Class {
 		}
 	}
 }
-pub struct Window { pub native: LazyPointer }
+pub struct Window { pub native: VoidPointer }
 impl Window {
 	fn create(connection: &Connection, size: (isize, isize), class: Class) -> Window {
 		let c = connection.native;

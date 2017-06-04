@@ -3,6 +3,8 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
+use ami::void_pointer::*;
+
 mod ffi;
 
 use self::ffi::vulkan;
@@ -12,11 +14,8 @@ use style;
 use Window;
 use window::WindowFunctions;
 
-type VkInstance = usize;
 type VkQueue = usize;
 type VkPhysicalDevice = usize;
-type VkDevice = usize;
-type VkCommandBuffer = usize;
 
 type VkSurface = u64;
 type VkSwapchain = u64;
@@ -41,13 +40,13 @@ type VkC = u32; // Size of enum is 4 bytes
 #[repr(C)]
 #[derive(Copy, Clone)] // TODO: don't copy this.
 pub struct Vw {
-	pub instance: VkInstance, // Vulkan instance
+	pub instance: VoidPointer, // Vulkan instance
 	surface: VkSurface, // Surface that we render to.
 	present_queue_index: u32,
 	present_queue: VkQueue,
 	gpu: VkPhysicalDevice,
-	device: VkDevice, // The logical device
-	command_buffer: VkCommandBuffer,
+	device: VoidPointer, // The logical device
+	command_buffer: VoidPointer,
 	swapchain: VkSwapchain,
 	width:u32, height:u32, // Swapchain Dimensions.
 	present_images: [VkImage; 2], // 2 for double-buffering

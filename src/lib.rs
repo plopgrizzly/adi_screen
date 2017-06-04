@@ -23,4 +23,6 @@ pub use sprite::{ Sprite, Transform };
 pub use style::Style;
 pub use gui::Button as GuiButton;
 
+extern crate ami;
+
 pub extern crate adi_clock;

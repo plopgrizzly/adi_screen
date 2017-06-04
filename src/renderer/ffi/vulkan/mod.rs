@@ -4,6 +4,8 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
  */
 
+use ami::void_pointer::*;
+
 use window::NativeWindow;
 
 mod create_command_buffer;
@@ -15,7 +17,7 @@ mod create_surface;
 mod destroy;
 
 // VkInstance
-pub struct Instance { pub native: usize }
+pub struct Instance { pub native: VoidPointer }
 impl Instance {
 	pub fn create(app_name: &str) -> Instance {
 		Instance { native: create_instance::create_instance(app_name) }
@@ -32,8 +34,8 @@ impl Instance {
 } */
 
 // VkSurface
-#[allow(dead_code)]
-pub struct Surface { pub native: u64, instance: usize }
+//#[allow(dead_code)]
+pub struct Surface { pub native: u64, instance: VoidPointer }
 impl Surface {
 	pub fn create(instance: &Instance, nw: &NativeWindow) -> Surface {
 		let instance = instance.native;
@@ -68,7 +70,7 @@ impl Gpu {
 }
 
 // VkDevice
-pub struct GpuInterface { pub native: usize }
+pub struct GpuInterface { pub native: VoidPointer }
 impl GpuInterface {
 	pub fn create(instance: &Instance, gpu: &Gpu) -> GpuInterface {
 		let instance = instance.native;
@@ -95,7 +97,7 @@ impl Queue {
 	}
 }
 
-pub struct CommandBuffer { pub native: usize, pub command_pool: u64 }
+pub struct CommandBuffer { pub native: VoidPointer, pub command_pool: u64 }
 impl CommandBuffer {
 	pub fn create(gpu_interface: &GpuInterface,gpu: &Gpu) -> CommandBuffer {
 		let present_queue_index = gpu.present_queue_index;
@@ -109,15 +111,14 @@ impl CommandBuffer {
 
 use std::fmt;
 use std::{ u64, usize };
-use super::LazyPointer;
 
 type VkDeviceMemory = u64;
 // type VkDescriptorSet = u64;
 // type VkDescriptorSetLayout = u64;
 // type VkDescriptorPool = u64;
 
-type VkDevice = LazyPointer;
-type VkCommandBuffer = LazyPointer;
+type VkDevice = VoidPointer;
+type VkCommandBuffer = VoidPointer;
 
 // type VkStructureType = u32; // Size of enum is 4 bytes
 // type VkFlags = u32;

@@ -4,24 +4,24 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
-use super::LazyPointer;
+use ami::void_pointer::*;
 
 extern {
-	fn vkDestroyInstance(instance: usize, pAllocator: LazyPointer) -> ();
+	fn vkDestroyInstance(instance: usize, pAllocator: VoidPointer) -> ();
 	fn vkDestroySurfaceKHR(instance: usize, surface: u64,
-		pAllocator: LazyPointer) -> ();
+		pAllocator: VoidPointer) -> ();
 }
 
 #[allow(dead_code)]
 pub fn instance(instance: usize) -> () {
 	unsafe {
-		vkDestroyInstance(instance, 0);
+		vkDestroyInstance(instance, NULL);
 	}
 }
 
 #[allow(dead_code)]
 pub fn surface(instance: usize, surface: u64) -> () {
 	unsafe {
-		vkDestroySurfaceKHR(instance, surface, 0);
+		vkDestroySurfaceKHR(instance, surface, NULL);
 	}
 }

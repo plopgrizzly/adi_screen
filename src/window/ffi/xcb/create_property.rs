@@ -4,9 +4,8 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
+use ami::void_pointer::*;
 use std::ffi::CString;
-
-use super::LazyPointer;
 
 #[repr(C)]
 struct XcbInternAtomReply {
@@ -18,14 +17,14 @@ struct XcbInternAtomReply {
 }
 
 extern {
-	fn xcb_intern_atom(c: LazyPointer, only_if_exists: u8,
+	fn xcb_intern_atom(c: VoidPointer, only_if_exists: u8,
 		name_len: u16, name: *const i8) -> u32;
-	fn xcb_intern_atom_reply(c: LazyPointer, cookie: u32,
-		e: LazyPointer) -> *mut XcbInternAtomReply;
+	fn xcb_intern_atom_reply(c: VoidPointer, cookie: u32,
+		e: VoidPointer) -> *mut XcbInternAtomReply;
 	fn free(p: *mut XcbInternAtomReply);
 }
 
-pub fn create_property(connection: LazyPointer, name: &str, fake: bool,
+pub fn create_property(connection: VoidPointer, name: &str, fake: bool,
 	name2: &str, fake2: bool) -> (u32, u32)
 {
 	let fake = if fake { 1 } else { 0 };
@@ -44,11 +43,11 @@ pub fn create_property(connection: LazyPointer, name: &str, fake: bool,
 	};
 
 	let reply = unsafe {
-		xcb_intern_atom_reply(connection, cookie, 0)
+		xcb_intern_atom_reply(connection, cookie, NULL)
 	};
 
 	let reply2 = unsafe {
-		xcb_intern_atom_reply(connection, cookie2, 0)
+		xcb_intern_atom_reply(connection, cookie2, NULL)
 	};
 
 	let atom = unsafe { (*reply).atom };

@@ -4,10 +4,10 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
+use ami::void_pointer::*;
 use std::ffi::CString;
 
 use image::Image;
-use super::LazyPointer;
 
 #[repr(C)]
 struct XcbInternAtomReply {
@@ -19,22 +19,22 @@ struct XcbInternAtomReply {
 }
 
 extern {
-	fn xcb_intern_atom(c: LazyPointer, only_if_exists: u8,
+	fn xcb_intern_atom(c: VoidPointer, only_if_exists: u8,
 		name_len: u16, name: *const i8) -> u32;
-	fn xcb_intern_atom_reply(c: LazyPointer, cookie: u32,
-		e: LazyPointer) -> *mut XcbInternAtomReply;
-	fn xcb_change_property(c: LazyPointer, mode: u8, window: u32,
+	fn xcb_intern_atom_reply(c: VoidPointer, cookie: u32,
+		e: VoidPointer) -> *mut XcbInternAtomReply;
+	fn xcb_change_property(c: VoidPointer, mode: u8, window: u32,
 		property: u32, t: u32, format: u8, data_len: u32,
 		data: *const u32) -> u32;
 }
 
-pub fn window_icon(window: u32, connection: LazyPointer, icon: Image) {
+pub fn window_icon(window: u32, connection: VoidPointer, icon: Image) {
 	let cookie = unsafe {
 		xcb_intern_atom(connection, 1, 12,
 			CString::new("_NET_WM_ICON").unwrap().as_ptr())
 	};
 	let reply = unsafe {
-		xcb_intern_atom_reply(connection, cookie, 0)
+		xcb_intern_atom_reply(connection, cookie, NULL)
 	};
 	unsafe {
 		let width = icon.size.0 as usize;

@@ -14,6 +14,4 @@ pub mod opengl;
 #[cfg(any(target_os = "macos", target_os = "ios"))]
 pub mod metal;
 
-pub mod crumble;
-
-type LazyPointer = usize;
+pub mod agi;

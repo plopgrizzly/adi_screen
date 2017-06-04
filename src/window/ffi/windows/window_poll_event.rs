@@ -4,10 +4,11 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
+use ami::void_pointer::*;
 use Input;
 use input::keyboard::{ english, FSC, ESC };
 use Key;
-use super::{ LazyPointer, convert_mouse_pos, should_resize };
+use super::{ convert_mouse_pos, should_resize };
 
 static mut ADI_WNDPROCMSG : u8 = 0b0000_0000;
 
@@ -41,10 +42,10 @@ struct Point {
 
 #[repr(C)]
 struct Msg {
-	hwnd: LazyPointer,
+	hwnd: VoidPointer,
 	message: u32,
-	w_param: LazyPointer,
-	l_param: LazyPointer,
+	w_param: VoidPointer,
+	l_param: VoidPointer,
 	time: u32,
 	pt: Point,
 }
@@ -59,20 +60,20 @@ struct Rect {
 }
 
 extern "system" {
-	fn PeekMessageW(lpMsg: *mut Msg, h_wnd: LazyPointer, msg_filter_min: u32,
+	fn PeekMessageW(lpMsg: *mut Msg, h_wnd: VoidPointer, msg_filter_min: u32,
 		msg_filter_max: u32, remove_msg: u32) -> i32;
 	fn TranslateMessage(lpMsg: *const Msg) -> i32;
 	fn DispatchMessageW(lpMsg: *const Msg) -> usize;
 	fn GetCursorPos(point: *mut Point) -> i32;
-	fn ScreenToClient(h_wnd: LazyPointer, point: *mut Point) -> i32;
-	fn GetClientRect(h_wnd: LazyPointer, out: *mut Rect) -> i32;
+	fn ScreenToClient(h_wnd: VoidPointer, point: *mut Point) -> i32;
+	fn GetClientRect(h_wnd: VoidPointer, out: *mut Rect) -> i32;
 	fn PostQuitMessage(exit_code: i32) -> ();
-	fn DefWindowProcW(hw: LazyPointer, uMsg: u32, wParam: LazyPointer,
-		lParam: LazyPointer) -> isize;
+	fn DefWindowProcW(hw: VoidPointer, uMsg: u32, wParam: VoidPointer,
+		lParam: VoidPointer) -> isize;
 }
 
-pub extern "C" fn wnd_proc(h_wnd: LazyPointer, u_msg: u32, w_param: LazyPointer,
-	l_param: LazyPointer) -> isize
+pub extern "C" fn wnd_proc(h_wnd: VoidPointer, u_msg: u32, w_param: VoidPointer,
+	l_param: VoidPointer) -> isize
 {
 	match u_msg {
 		0x0007 => unsafe { ADI_WNDPROCMSG |= RESUMED },
@@ -93,7 +94,7 @@ pub extern "C" fn wnd_proc(h_wnd: LazyPointer, u_msg: u32, w_param: LazyPointer,
 	}
 }
 
-fn get_mouse(window: LazyPointer, wh: &(u32, u32), is_miw: &mut bool)
+fn get_mouse(window: VoidPointer, wh: &(u32, u32), is_miw: &mut bool)
 	-> (f32, f32, bool)
 {
 	let mut pos = Point { x: 0, y: 0 };
@@ -116,7 +117,7 @@ fn get_mouse(window: LazyPointer, wh: &(u32, u32), is_miw: &mut bool)
 	(pos.0, pos.1, miw_changed)
 }
 
-pub fn window_poll_event(window: LazyPointer, input: &mut Vec<Input>,
+pub fn window_poll_event(window: VoidPointer, input: &mut Vec<Input>,
 	miw: &mut bool, wh: &mut (u32, u32)) -> bool
 {
 	let mut msg = Msg { hwnd: 0, message: 0, w_param: 0, l_param: 0, time: 0,

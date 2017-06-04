@@ -4,13 +4,13 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
-use super::LazyPointer;
+use ami::void_pointer::*;
 
 extern {
-	fn xcb_disconnect(c: LazyPointer) -> ();
+	fn xcb_disconnect(c: VoidPointer) -> ();
 }
 
-pub fn connection(connection: LazyPointer) -> () {
+pub fn connection(connection: VoidPointer) -> () {
 	unsafe {
 		xcb_disconnect(connection);
 	}

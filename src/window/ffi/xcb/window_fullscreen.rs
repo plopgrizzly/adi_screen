@@ -4,7 +4,7 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
-use super::LazyPointer;
+use ami::void_pointer::*;
 
 #[repr(C)]
 struct XcbClientMessageEvent {
@@ -17,11 +17,11 @@ struct XcbClientMessageEvent {
 }
 
 extern {
-	fn xcb_send_event(c: LazyPointer, p: u8, dest: u32,
+	fn xcb_send_event(c: VoidPointer, p: u8, dest: u32,
 		event_mask: u32, event: *const XcbClientMessageEvent) -> ();
 }
 
-pub fn window_fullscreen(window: u32, connection: LazyPointer, a: u32, b: u32) {
+pub fn window_fullscreen(window: u32, connection: VoidPointer, a: u32, b: u32) {
 	let event = XcbClientMessageEvent {
 		response_type: 33, // Client Message
 		format: 32,

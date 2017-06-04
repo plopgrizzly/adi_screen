@@ -4,8 +4,9 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
+use ami::void_pointer::*;
 use std::ffi::CString;
-use super::{ LazyPointer, VkResult, VkStructureType, check_error };
+use super::{ VkResult, VkStructureType, check_error };
 
 #[cfg(feature = "checks")]
 const NUM_LAYERS : u32 = 1;
@@ -15,7 +16,7 @@ const NUM_LAYERS : u32 = 0;
 #[repr(C)]
 struct VkDeviceQueueCreateInfo {
 	s_type: VkStructureType,
-	p_next: LazyPointer,
+	p_next: VoidPointer,
 	flags: u32,
 	queue_family_index: u32,
 	queue_count: u32,
@@ -25,7 +26,7 @@ struct VkDeviceQueueCreateInfo {
 #[repr(C)]
 struct VkDeviceCreateInfo {
 	s_type: VkStructureType,
-	p_next: LazyPointer,
+	p_next: VoidPointer,
 	flags: u32,
 	queue_create_info_count: u32,
 	p_queue_create_infos: *const VkDeviceQueueCreateInfo,
@@ -33,7 +34,7 @@ struct VkDeviceCreateInfo {
 	enabled_layer_names: *const [*const i8; NUM_LAYERS as usize],
 	enabled_extension_count: u32,
 	enabled_extension_names: *const *const i8,
-	enabled_features: LazyPointer,
+	enabled_features: VoidPointer,
 }
 
 extern {
@@ -61,20 +62,20 @@ fn layer_names(_: &()) -> [*const i8; NUM_LAYERS as usize] {
 	[ ]
 }
 
-pub fn create_gpu_interface(instance: usize, gpu: usize,
-	present_queue_index: u32) -> usize
+pub fn create_gpu_interface(instance: VoidPointer, gpu: usize,
+	present_queue_index: u32) -> VoidPointer
 {
-	let mut device = 0;
+	let mut device = NULL;
 	let ext = CString::new("VK_KHR_swapchain").unwrap();
 	let lay = layers();
 	let create_info = VkDeviceCreateInfo {
 		s_type: VkStructureType::DeviceCreateInfo,
-		p_next: 0,
+		p_next: NULL,
 		flags: 0,
 		queue_create_info_count: 1,
 		p_queue_create_infos: &VkDeviceQueueCreateInfo {
 			s_type: VkStructureType::DeviceQueueCreateInfo,
-			p_next: 0,
+			p_next: NULL,
 			flags: 0,
 			queue_family_index: present_queue_index,
 			queue_count: 1,
@@ -84,23 +85,23 @@ pub fn create_gpu_interface(instance: usize, gpu: usize,
 		enabled_layer_names: &layer_names(&lay),
 		enabled_extension_count: 1,
 		enabled_extension_names: &ext.as_ptr(),
-		enabled_features: 0,
+		enabled_features: NULL,
 	};
 
 	unsafe {
 		extern "system" {
-			fn vkGetInstanceProcAddr(instance: LazyPointer,
+			fn vkGetInstanceProcAddr(instance: VoidPointer,
 				name: *const i8)
 			-> extern "system" fn(
 				physicalDevice: usize,
 				pCreateInfo: *const VkDeviceCreateInfo,
-				pAllocator: LazyPointer,
-				pDevice: *mut usize) -> VkResult;
+				pAllocator: VoidPointer,
+				pDevice: *mut VoidPointer) -> VkResult;
 		}
 		let name = CString::new("vkCreateDevice").unwrap();
 		check_error("vkCreateDevice failure.",
 			(vkGetInstanceProcAddr(instance, name.as_ptr()))
-			(gpu, &create_info, 0, &mut device)
+			(gpu, &create_info, NULL, &mut device)
 		);
 	};
 

@@ -4,20 +4,20 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
+use ami::void_pointer::*;
 use std;
-use super::LazyPointer;
 
 extern {
 	fn xcb_connect(displayname: *const i8, screenp: *const i32)
-		-> LazyPointer;
+		-> VoidPointer;
 }
 
-pub fn create_connection() -> LazyPointer {
+pub fn create_connection() -> VoidPointer {
 	let connection = unsafe {
 		xcb_connect(std::ptr::null(), std::ptr::null())
 	};
 
-	if connection == 0 {
+	if connection == NULL {
 		panic!("Couldn't connect to X Server.");
 	}
 

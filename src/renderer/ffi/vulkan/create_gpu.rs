@@ -4,6 +4,7 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
+use ami::void_pointer::*;
 use std::ffi::CString;
 use std::ptr::null_mut;
 use super::{ VkResult, check_error };
@@ -25,16 +26,16 @@ struct VkQueueFamilyProperties {
 	min_image_transfer_granularity: VkExtent3D,
 }
 
-pub fn create_gpu(instance: usize, surface: u64) -> (usize, u32) {
+pub fn create_gpu(instance: VoidPointer, surface: u64) -> (usize, u32) {
 	let mut num_gpus = 0;
 	let mut gpus;
 
 	unsafe {
 		extern "system" {
-			fn vkGetInstanceProcAddr(instance: usize,
+			fn vkGetInstanceProcAddr(instance: VoidPointer,
 				name: *const i8)
 			-> extern "system" fn(
-				instance: usize,
+				instance: VoidPointer,
 				pPhysicalDeviceCount : *mut u32,
 				pPhysicalDevices: *mut usize) -> VkResult;
 		}
@@ -54,7 +55,7 @@ pub fn create_gpu(instance: usize, surface: u64) -> (usize, u32) {
 
 	let vk_properties = unsafe {
 		extern "system" {
-			fn vkGetInstanceProcAddr(instance: usize,
+			fn vkGetInstanceProcAddr(instance: VoidPointer,
 				name: *const i8)
 			-> extern "system" fn(
 				physicalDevice: usize,

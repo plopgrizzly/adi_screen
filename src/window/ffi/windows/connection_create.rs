@@ -4,13 +4,13 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
-use super::LazyPointer;
+use ami::VoidPointer;
 
 extern "system" {
-	fn GetModuleHandleW(a: LazyPointer) -> LazyPointer;
+	fn GetModuleHandleW(a: VoidPointer) -> VoidPointer;
 }
 
-pub fn connection_create() -> LazyPointer {
+pub fn connection_create() -> VoidPointer {
 	unsafe {
 		GetModuleHandleW(0)
 	}

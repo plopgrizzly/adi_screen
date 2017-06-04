@@ -4,7 +4,7 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
-use super::LazyPointer;
+use ami::void_pointer::*;
 
 #[repr(C)]
 #[derive(Copy, Clone)]
@@ -18,16 +18,16 @@ struct Rect {
 const WS_VISIBLE : u32 = 0x10000000;
 
 extern "system" {
-	fn GetWindowRect(hw: LazyPointer, out: *mut Rect) -> i32;
-	//	fn SetWindowLongPtrW(hw: LazyPointer, n_index: i32, new: usize) -> usize; // 64-bit
-	fn GetWindowLongW(hw: LazyPointer, n_index: i32) -> usize;
-	fn SetWindowLongW(hw: LazyPointer, n_index: i32, new: usize) -> usize;
-	fn SetWindowPos(hw: LazyPointer, insert_after: LazyPointer, x: i32,
+	fn GetWindowRect(hw: VoidPointer, out: *mut Rect) -> i32;
+	//	fn SetWindowLongPtrW(hw: VoidPointer, n_index: i32, new: usize) -> usize; // 64-bit
+	fn GetWindowLongW(hw: VoidPointer, n_index: i32) -> usize;
+	fn SetWindowLongW(hw: VoidPointer, n_index: i32, new: usize) -> usize;
+	fn SetWindowPos(hw: VoidPointer, insert_after: VoidPointer, x: i32,
 		y: i32, w: i32, h: i32, flags: u32) -> i32;
 	fn GetSystemMetrics(index: i32) -> i32;
 }
 
-pub fn window_fullscreen(window: LazyPointer, state: &mut bool,
+pub fn window_fullscreen(window: VoidPointer, state: &mut bool,
 	size: &mut (i32, i32, i32, i32), style: &mut usize)
 {
 	let flags = 0x0040 | 0x0020;

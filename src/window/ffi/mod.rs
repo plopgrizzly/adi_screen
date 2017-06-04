@@ -43,18 +43,6 @@ pub use self::xcb::NativeWindow;
 
 use Input;
 
-type LazyPointer = usize;
-
-trait LazyCast<T> {
-	fn lazy_cast(&self) -> *mut T;
-}
-
-impl<T> LazyCast<T> for LazyPointer {
-	fn lazy_cast(&self) -> *mut T {
-		unsafe { *(&self as *const _ as *const *mut _) }
-	}
-}
-
 const MWW : u32 = 640;
 const MWH : u32 = 360;
 

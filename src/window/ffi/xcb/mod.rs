@@ -19,12 +19,13 @@ mod window_update;
 
 use Input;
 use image::Image;
-use super::{ LazyPointer, convert_mouse_pos, should_resize };
+use ami::void_pointer::*;
+use super::{ convert_mouse_pos, should_resize };
 
 const MWW : u16 = super::MWW as u16;
 const MWH : u16 = super::MWH as u16;
 
-pub struct Connection { pub native: LazyPointer }
+pub struct Connection { pub native: VoidPointer }
 impl Connection {
 	fn create() -> Connection {
 		Connection { native: create_connection::create_connection() }
