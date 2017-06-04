@@ -4,7 +4,7 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
-use ami::VoidPointer;
+use ami::void_pointer::*;
 
 extern "system" {
 	fn GetModuleHandleW(a: VoidPointer) -> VoidPointer;
@@ -12,6 +12,6 @@ extern "system" {
 
 pub fn connection_create() -> VoidPointer {
 	unsafe {
-		GetModuleHandleW(0)
+		GetModuleHandleW(NULL)
 	}
 }

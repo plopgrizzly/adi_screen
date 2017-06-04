@@ -120,8 +120,8 @@ fn get_mouse(window: VoidPointer, wh: &(u32, u32), is_miw: &mut bool)
 pub fn window_poll_event(window: VoidPointer, input: &mut Vec<Input>,
 	miw: &mut bool, wh: &mut (u32, u32)) -> bool
 {
-	let mut msg = Msg { hwnd: 0, message: 0, w_param: 0, l_param: 0, time: 0,
-		pt: Point { x: 0, y: 0 } };
+	let mut msg = Msg { hwnd: NULL, message: 0, w_param: NULL, l_param: NULL,
+		time: 0, pt: Point { x: 0, y: 0 } };
 
 	if unsafe { ADI_WNDPROCMSG & RESIZED != 0 } {
 		let clia = {
@@ -163,7 +163,7 @@ pub fn window_poll_event(window: VoidPointer, input: &mut Vec<Input>,
 	}
 
 	if unsafe {
-		PeekMessageW(&mut msg, 0, 0, 0, 0x0001)
+		PeekMessageW(&mut msg, NULL, 0, 0, 0x0001)
 	} == 0 { // no messages available
 		return false;
 	}
@@ -195,10 +195,10 @@ pub fn window_poll_event(window: VoidPointer, input: &mut Vec<Input>,
 		0x0100 | 0x0104 => {
 			let scan = ((msg.l_param
 				& 0b00000001_11111111_00000000_00000000) >> 16)
-				as u16;
-			let chr = english(msg.w_param as u16, scan);
+					.as_int() as u16;
+			let chr = english(msg.w_param.as_int() as u16, scan);
 			if msg.l_param & 0b01000000_00000000_00000000_00000000
-				!= 0
+				!= NULL
 			{
 				match chr {
 					// These keys shouldn't repeat.
@@ -216,12 +216,13 @@ pub fn window_poll_event(window: VoidPointer, input: &mut Vec<Input>,
 		0x0101 | 0x0105 => {
 			let scan = ((msg.l_param
 				& 0b00000001_11111111_00000000_00000000) >> 16)
-				as u16;
-			let chr = english(msg.w_param as u16, scan);
+					.as_int() as u16;
+			let chr = english(msg.w_param.as_int() as u16, scan);
 			input.push(Input::KeyUp(chr))
 		}
 		SCROLL => {
-			let a = (((msg.w_param as u32) >> 16) & 0xFFFF) as i16;
+			let a = (((msg.w_param.as_int() as u32) >> 16) & 0xFFFF)
+				as i16;
 
 			if a > 0 {
 				let reps = a / 120;

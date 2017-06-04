@@ -35,7 +35,7 @@ pub fn window_fullscreen(window: VoidPointer, state: &mut bool,
 	if *state {
 		unsafe {
 			SetWindowLongW(window, -16, *style);
-			SetWindowPos(window, !0usize - 1, size.0, size.1,
+			SetWindowPos(window, !NULL - 1, size.0, size.1,
 				size.2, size.3, flags);
 		}
 	} else {
@@ -49,7 +49,7 @@ pub fn window_fullscreen(window: VoidPointer, state: &mut bool,
 			GetWindowRect(window, &mut rc);
 
 			SetWindowLongW(window, -16, WS_VISIBLE as usize);
-			SetWindowPos(window, !0usize, 0, 0, w, h, flags);
+			SetWindowPos(window, !NULL, 0, 0, w, h, flags);
 		}
 
 		let sx = rc.left as i32;

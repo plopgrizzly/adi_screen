@@ -26,7 +26,7 @@ build = "build.rs"
 
 [dependencies]
 adi_clock = "0.2.0"
-ami = "0.1.1"
+ami = { path = "C:/Users/Jeron/ami/" }
 
 [build-dependencies.gcc]
 version = "0.3.38"

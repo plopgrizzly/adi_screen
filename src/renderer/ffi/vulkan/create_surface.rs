@@ -25,8 +25,8 @@ struct SurfaceCreateInfo {
 	p_next: VoidPointer,
 	flags: u32,
 	// TODO
-	hinstance: usize,
-	hwnd: usize,
+	hinstance: VoidPointer,
+	hwnd: VoidPointer,
 }
 
 #[cfg(target_os = "android")]
@@ -61,9 +61,9 @@ pub fn create_surface(instance: VoidPointer, native_window: &NativeWindow)
 				pAllocator: VoidPointer,
 				surface: *mut u64) -> VkResult;
 		}
-		check_error(ERROR,
-			vkCreateXcbSurfaceKHR(instance, &surface_create_info, NULL, &mut surface)
-		);
+		check_error(ERROR, vkCreateXcbSurfaceKHR(
+			instance, &surface_create_info, NULL, &mut surface
+		));
 	};
 
 	surface
@@ -73,10 +73,10 @@ pub fn create_surface(instance: VoidPointer, native_window: &NativeWindow)
 pub fn create_surface(instance: VoidPointer, native_window: &NativeWindow)
 	-> u64
 {
-	let mut surface = NULL;
+	let mut surface = 0;
 	let surface_create_info = SurfaceCreateInfo {
 		s_type: VkStructureType::SurfaceCreateInfo,
-		p_next: 0,
+		p_next: NULL,
 		flags: 0,
 		hinstance: native_window.get_connection(),
 		hwnd: native_window.get_window(),
@@ -90,9 +90,9 @@ pub fn create_surface(instance: VoidPointer, native_window: &NativeWindow)
 				pAllocator: VoidPointer,
 				surface: *mut u64) -> VkResult;
 		}
-		check_error(ERROR,
-			vkCreateWin32SurfaceKHR(instance, &surface_create_info, 0, &mut surface)
-		);
+		check_error(ERROR, vkCreateWin32SurfaceKHR(
+			instance, &surface_create_info, NULL, &mut surface
+		));
 	};
 
 	surface
@@ -102,10 +102,10 @@ pub fn create_surface(instance: VoidPointer, native_window: &NativeWindow)
 pub fn create_surface(instance: VoidPointer, native_window: &NativeWindow)
 	-> u64
 {
-	let mut surface = NULL;
+	let mut surface = 0;
 	let surface_create_info = SurfaceCreateInfo {
 		s_type: VkStructureType::SurfaceCreateInfo,
-		p_next: 0,
+		p_next: NULL,
 		flags: 0,
 		window: native_window.get_window(),
 	};
@@ -117,9 +117,9 @@ pub fn create_surface(instance: VoidPointer, native_window: &NativeWindow)
 				pAllocator: VoidPointer,
 				surface: *mut u64) -> VkResult;
 		}
-		check_error(ERROR,
-			vkCreateAndroidSurfaceKHR(instance, &surface_create_info, 0, &mut surface)
-		);
+		check_error(ERROR, vkCreateAndroidSurfaceKHR(
+			instance, &surface_create_info, NULL, &mut surface
+		));
 	};
 
 	surface

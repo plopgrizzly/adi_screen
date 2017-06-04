@@ -44,12 +44,12 @@ pub fn window_create(connection: VoidPointer, size: (isize, isize), name: [u8; 8
 		0, 0,		// x/y coords
 		width as i32,	// width
 		height as i32,	// height
-		0,		// handle to parent
-		0,		// handle to menu
+		NULL,		// handle to parent
+		NULL,		// handle to menu
 		connection,	// hInstance
-		0)		// no extra parameters
+		NULL)		// no extra parameters
 	};
-	if window == 0 {
+	if window == NULL {
 		panic!("Couldn't Create a Window!");
 	}
 	window
