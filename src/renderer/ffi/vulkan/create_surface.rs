@@ -5,7 +5,6 @@
 **/
 
 use ami::void_pointer::*;
-use window::NativeWindow;
 use super::{ VkResult, VkStructureType, check_error };
 
 #[cfg(any(target_os = "linux", target_os = "macos"))]
@@ -41,16 +40,16 @@ struct SurfaceCreateInfo {
 const ERROR : &'static str = "Failed to create surface.";
 
 #[cfg(any(target_os = "linux", target_os = "macos"))]
-pub fn create_surface(instance: VoidPointer, native_window: &NativeWindow)
-	-> u64
+pub fn create_surface_xcb(instance: VoidPointer, connection: VoidPointer,
+	window: u32) -> u64
 {
 	let mut surface = 0;
 	let surface_create_info = SurfaceCreateInfo {
 		s_type: VkStructureType::SurfaceCreateInfo,
 		p_next: NULL,
 		flags: 0,
-		connection: native_window.get_connection(),
-		window: native_window.get_window(),
+		connection: connection,
+		window: window,
 	};
 
 	unsafe {
@@ -70,8 +69,7 @@ pub fn create_surface(instance: VoidPointer, native_window: &NativeWindow)
 }
 
 #[cfg(target_os = "windows")]
-pub fn create_surface(instance: VoidPointer, native_window: &NativeWindow)
-	-> u64
+pub fn create_surface(instance: VoidPointer, native_window: &::AwiWindow) -> u64
 {
 	let mut surface = 0;
 	let surface_create_info = SurfaceCreateInfo {
@@ -99,8 +97,7 @@ pub fn create_surface(instance: VoidPointer, native_window: &NativeWindow)
 }
 
 #[cfg(target_os = "android")]
-pub fn create_surface(instance: VoidPointer, native_window: &NativeWindow)
-	-> u64
+pub fn create_surface(instance: VoidPointer, native_window: &::AwiWindow) -> u64
 {
 	let mut surface = 0;
 	let surface_create_info = SurfaceCreateInfo {
@@ -123,4 +120,25 @@ pub fn create_surface(instance: VoidPointer, native_window: &NativeWindow)
 	};
 
 	surface
+}
+
+pub fn create_surface(instance: VoidPointer, native_window: &::AwiWindow) -> u64
+{
+	let connection = native_window.get_connection();
+
+	match connection {
+		::AwiConnection::Xcb(connection,window) => {
+			create_surface_xcb(instance, connection, window)
+		}
+		::AwiConnection::Wayland => panic!("Wayland Rendering Not Supported Yet"),
+		::AwiConnection::DirectFB => panic!("DirectFB Rendering Not Supported Yet"),
+		::AwiConnection::Windows => panic!("Windows Rendering Not Supported Yet"),
+		::AwiConnection::Android => panic!("Android Rendering Not Supported Yet"),
+		::AwiConnection::IOS => panic!("IOS Rendering Not Supported Yet"),
+		::AwiConnection::AldaronsOS => panic!("AldaronsOS Rendering Not Supported Yet"),
+		::AwiConnection::Arduino => panic!("Arduino Rendering Not Supported Yet"),
+		::AwiConnection::Switch => panic!("Switch Rendering Not Supported Yet"),
+		::AwiConnection::Web => panic!("Web Assembly Rendering Not Supported Yet"),
+		::AwiConnection::NoOS => panic!("No OS Rendering Not Supported Yet"),
+	}
 }

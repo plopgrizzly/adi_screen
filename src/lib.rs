@@ -8,21 +8,27 @@ pub const VERSION : &'static str = "adi_screen 0.2.2";
 
 mod image;
 mod renderer;
-mod input;
+// mod input;
 
 mod window;
 mod sprite;
 mod style;
 mod gui;
 
-pub use input::keyboard::Key;
-pub use input::joystick::Button;
-pub use input::{ Input };
+// pub use input::{ Input };
 pub use window::{ Window };
 pub use sprite::{ Sprite, Transform };
 pub use style::Style;
 pub use gui::Button as GuiButton;
 
 extern crate ami;
+extern crate window as awi;
 
 pub extern crate adi_clock;
+
+use awi::Window as AwiWindow;
+use awi::WindowConnection as AwiConnection;
+pub use awi::Input;
+pub use awi::Key;
+pub use awi::Button;
+pub use awi::Joystick;

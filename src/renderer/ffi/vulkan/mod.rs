@@ -6,8 +6,6 @@
 
 use ami::void_pointer::*;
 
-use window::NativeWindow;
-
 mod create_command_buffer;
 mod create_gpu;
 mod create_gpu_interface;
@@ -37,7 +35,7 @@ impl Instance {
 //#[allow(dead_code)]
 pub struct Surface { pub native: u64, instance: VoidPointer }
 impl Surface {
-	pub fn create(instance: &Instance, nw: &NativeWindow) -> Surface {
+	pub fn create(instance: &Instance, nw: &::AwiWindow) -> Surface {
 		let instance = instance.native;
 
 		Surface {

@@ -1,4 +1,5 @@
 extern crate adi_screen;
+extern crate aci_ppm;
 
 use adi_screen::{ Window, Input, Sprite, Style, Transform, Key };
 
@@ -63,7 +64,7 @@ fn redraw(context: &mut Context) {
 
 fn main() {
 	let mut window = Window::create("project_name",
-		include_bytes!("res/logo.ppm"), &[]);
+		aci_ppm::decode(include_bytes!("res/logo.ppm")).unwrap(), &[]);
 	let style = Style::create().subtransparent(&mut window,
 		include_bytes!("res/logo.ppm"), (0, 0, 0));
 	let sprite = Sprite::create(&mut window, &include!("res/sprite.data"),
@@ -78,14 +79,19 @@ fn main() {
 		window: window,
 	};
 
-	loop {
-		let input = context.window.update();
-		match input {
-			Input::Back => break,
-			Input::Redraw => redraw(&mut context),
-			_ => {},
+	'mainloop: loop {
+		redraw(&mut context);
+
+		let queue = context.window.update();
+
+		for input in queue {
+			match input {
+				Input::Back => break 'mainloop,
+				_ => {},
+			}
+
+			// Run the update functions
+			context.player.update(&mut context.window, input);
 		}
-		// Run the update functions
-		context.player.update(&mut context.window, input);
 	}
 }

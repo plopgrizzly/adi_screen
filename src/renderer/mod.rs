@@ -8,7 +8,6 @@ use ami::void_pointer::*;
 mod ffi;
 
 use self::ffi::vulkan;
-use window::NativeWindow;
 
 use style;
 use Window;
@@ -281,7 +280,7 @@ extern {
 	fn vw_vulkan_swapchain_delete(v: *mut Vw) -> ();
 }
 
-pub fn open(window_name: &str, native: &NativeWindow) -> Vw {
+pub fn open(window_name: &str, native: &::AwiWindow) -> Vw {
 	let instance = vulkan::Instance::create(window_name);
 	let surface = vulkan::Surface::create(&instance, native);
 	let gpu = vulkan::Gpu::create(&surface);

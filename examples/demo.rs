@@ -4,6 +4,7 @@
 **/
 
 extern crate adi_screen;
+extern crate aci_ppm;
 
 use adi_screen::{ Transform, Sprite, Window, Style, Input, GuiButton };
 
@@ -46,13 +47,10 @@ fn resize(context: &mut Context) {
 		.apply(&mut context.window, &context.logo, 0);
 }
 
-fn update(context: &mut Context) -> bool {
-	let message = context.window.update();
-
+fn update(context: &mut Context, message: Input) -> bool {
 	match message {
-		Input::Redraw => redraw(context),
 		Input::Resize => resize(context),
-		Input::Back => return false, // Quit
+		Input::Back => return true, // Quit
 		Input::Resume => println!("Resume ( Gain Focus )"),
 		Input::Pause => println!("Pause ( Lose Focus )"),
 		Input::KeyDown(a) => println!("press {}", a),
@@ -81,15 +79,16 @@ fn update(context: &mut Context) -> bool {
 	if pressed {
 		println!("button been pressed!");
 	}
-	true
+	false
 }
 
 fn init2() -> Context {
 	// Load Resources - Images
+	let icon = aci_ppm::decode(include_bytes!("res/logo.ppm")).unwrap();
 	let image_logo = include_bytes!("res/logo.ppm");
 
 	// Create Window
-	let mut window = Window::create("Demo", image_logo, &[]);
+	let mut window = Window::create("Demo", icon, &[]);
 
 	// Create Styles
 	let style_logo = Style::create().opaque(&mut window, image_logo);
@@ -119,5 +118,15 @@ fn init2() -> Context {
 fn main() {
 	let mut context = init2();
 
-	while update(&mut context) { }
+	'mainloop: loop {
+		redraw(&mut context);
+
+		let queue = context.window.update();
+
+		for message in queue {
+			if update(&mut context, message) {
+				break 'mainloop;
+			}
+		}
+	}
 }
