@@ -3,10 +3,6 @@
  * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
 **/
 
-// use window::Window;
-
-// mod ffi;
-
 use adi_clock::Timer;
 use adi_clock::Pulse;
 use Input;

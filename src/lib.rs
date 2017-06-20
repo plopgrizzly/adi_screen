@@ -8,21 +8,19 @@ pub const VERSION : &'static str = "adi_screen 0.2.2";
 
 mod image;
 mod renderer;
-// mod input;
 
 mod window;
 mod sprite;
 mod style;
 mod gui;
 
-// pub use input::{ Input };
 pub use window::{ Window };
 pub use sprite::{ Sprite, Transform };
 pub use style::Style;
 pub use gui::Button as GuiButton;
 
 extern crate ami;
-extern crate window as awi;
+extern crate awi;
 
 pub extern crate adi_clock;
 

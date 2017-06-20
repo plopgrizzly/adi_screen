@@ -49,12 +49,13 @@ fn resize(context: &mut Context) {
 
 fn update(context: &mut Context, message: Input) -> bool {
 	match message {
+		Input::Redraw => redraw(context),
 		Input::Resize => resize(context),
 		Input::Back => return true, // Quit
 		Input::Resume => println!("Resume ( Gain Focus )"),
 		Input::Pause => println!("Pause ( Lose Focus )"),
-		Input::KeyDown(a) => println!("press {}", a),
-		Input::KeyUp(a) => println!("release {}", a),
+		Input::KeyPress(a) => println!("press {}", a),
+		Input::KeyRelease(a) => println!("release {}", a),
 		Input::KeyRepeat(a) => println!("repeat {}", a),
 		Input::Cursor(x, y) => println!("Cursor({}, {})", x, y),
 		Input::LeftDown(x, y) => println!("Left Down ({}, {})", x, y),
@@ -74,6 +75,9 @@ fn update(context: &mut Context, message: Input) -> bool {
 		Input::JoystickThrottle(x) => println!("Throttle ({})", x),
 		Input::JoystickButtonDown(a) => println!("Button Down ({})", a),
 		Input::JoystickButtonUp(a) =>  println!("Button Up ({})", a),
+		Input::Text(a) => println!("Text: {}", a),
+		Input::Msg(_) => println!("Message"),
+//		Input::Msg(a) => println!("Message: {}", a),
 	};
 	let pressed = context.button.update(&mut context.window, message);
 	if pressed {
@@ -119,11 +123,7 @@ fn main() {
 	let mut context = init2();
 
 	'mainloop: loop {
-		redraw(&mut context);
-
-		let queue = context.window.update();
-
-		for message in queue {
+		for message in context.window.update() {
 			if update(&mut context, message) {
 				break 'mainloop;
 			}

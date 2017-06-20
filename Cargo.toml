@@ -26,7 +26,7 @@ build = "build.rs"
 
 [dependencies]
 adi_clock = "0.2.0"
-window = { path = "/home/aldaron/aldarons_tech/window" }
+awi = { path = "/home/aldaron/aldarons_tech/window" }
 ami = "0.2.1"
 
 [build-dependencies.gcc]
