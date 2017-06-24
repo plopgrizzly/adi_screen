@@ -85,8 +85,7 @@ impl Window {
 
 	/// Update the window and return the user input.  This should run in a
 	/// loop.
-	pub fn update(&mut self) -> Vec<::Input> {
-		let queue;
+	pub fn update(&mut self, input_queue: &mut ::InputQueue) -> () {
 		let color = self.color;
 
 		renderer::draw_clear(self, color.0, color.1, color.2);
@@ -97,9 +96,11 @@ impl Window {
 		self.time.1 = self.time.0.wait(); // 60 fps
 		// Update Screen
 		renderer::draw_update(self);
-		queue = self.window.update();
-		// Should Resize?
-		if queue.contains(&Input::Resize) {
+
+		self.window.update(input_queue);
+
+		// Resize
+		if input_queue.get_resized() {
 			let (w, h) = self.window.get_dimensions();
 			let (w, h) = (w as f32, h as f32);
 
@@ -109,8 +110,6 @@ impl Window {
 			self.ymultiply = 1.0 / self.aspect;
 			renderer::resize(self);
 		}
-		// Return
-		queue
 	}
 
 	/// Returns a number between 0-1. This function is used for animations.

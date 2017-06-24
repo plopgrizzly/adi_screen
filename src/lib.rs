@@ -26,7 +26,11 @@ pub extern crate adi_clock;
 
 use awi::Window as AwiWindow;
 use awi::WindowConnection as AwiConnection;
+
 pub use awi::Input;
 pub use awi::Key;
 pub use awi::Button;
 pub use awi::Joystick;
+pub use awi::Msg;
+pub use awi::Click;
+pub use awi::InputQueue;

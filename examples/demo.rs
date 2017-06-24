@@ -6,37 +6,113 @@
 extern crate adi_screen;
 extern crate aci_ppm;
 
-use adi_screen::{ Transform, Sprite, Window, Style, Input, GuiButton };
+use adi_screen::{
+	Transform,
+	Sprite,
+	Window,
+	Style,
+	Input,
+	GuiButton,
+	Msg,
+	InputQueue
+};
 
-struct Context {
+struct DemoApp {
 	window: Window,
 	image: Sprite,
 	triangle: Sprite,
 	logo: Sprite,
 	square: Sprite,
 	button: GuiButton,
+	running: bool,
 }
 
-fn redraw(context: &mut Context) {
-	let disp = context.window.pulse_full_smooth(8.0);
-	let disp2 = context.window.pulse_full_linear(4.0);
+impl DemoApp {
+	fn animate(&mut self) {
+		let disp = self.window.pulse_full_smooth(8.0);
+		let disp2 = self.window.pulse_full_linear(4.0);
 
-	Transform::create()
-		.translate(-0.5, -0.5, 0.0)//5.0 * disp)
-		.translate(disp * 1.0, 0.0, 0.0)
-		.rotate(0.0, 0.0, disp)
-		.perspective(&context.window, 90.0)
-		.apply(&mut context.window, &context.triangle, 0);
-	Transform::create()
-		.translate(-0.5, 0.5, 0.0)//5.0 * disp)
-		.translate(disp2 * 1.0, 0.0, 0.0)
-		.perspective(&context.window, 90.0)
-		.apply(&mut context.window, &context.triangle, 1);
+		Transform::create()
+			.translate(-0.5, -0.5, 0.0)//5.0 * disp)
+			.translate(disp * 1.0, 0.0, 0.0)
+			.rotate(0.0, 0.0, disp)
+			.perspective(&self.window, 90.0)
+			.apply(&mut self.window, &self.triangle, 0);
+		Transform::create()
+			.translate(-0.5, 0.5, 0.0)//5.0 * disp)
+			.translate(disp2 * 1.0, 0.0, 0.0)
+			.perspective(&self.window, 90.0)
+			.apply(&mut self.window, &self.triangle, 1);
 
-	context.window.background(disp, 0.0, disp);
+		self.window.background(disp, 0.0, disp);
+	}
+
+	fn input(&mut self, input: Input) {
+		use Input::*;
+		use Msg::*;
+
+		match input {
+			Msg(Quit) | Msg(Back) => self.running = false,
+			Resize => resize(self),
+			Resume => println!("Resume ( Gain Focus )"),
+			Pause => println!("Pause ( Lose Focus )"),
+			KeyPress(a) => println!("Key Press: {}", a),
+			KeyRelease(a) => println!("Key Release: {}", a),
+			Cursor(xy) => {
+				if let Some((x, y)) = xy {
+					println!("Cursor: ({}, {})", x, y)
+				} else {
+					println!("Cursor: Out of window")
+				}
+			},
+			CursorPress(a, (x, y)) => {
+				println!("Cursor Press {}: ({}, {})", a, x, y)
+			},
+			CursorRelease(a, xy) => {
+				if let Some((x, y)) = xy {
+					println!("CursRel {} ({}, {})", a, x, y)
+				} else {
+					println!("CursRel {}: Out of window", a)
+				}
+			},
+			ScrollUp(x, y) => println!("Scroll Up ({}, {})", x, y),
+			ScrollDown(x, y) => println!("Scroll Down ({}, {})", x, y),
+			ScrollRight(x, y) => println!("Scroll Right ({}, {})", x, y),
+			ScrollLeft(x, y) => println!("Scroll Left ({}, {})", x, y),
+			JoystickMove(x, y) => println!("Joystick ({}, {})", x, y),
+			JoystickPov(x, y) => println!("POV Hat ({}, {})", x, y),
+			JoystickThrottle(x) => println!("Throttle ({})", x),
+			JoystickButtonDown(a) => println!("Button Down ({})", a),
+			JoystickButtonUp(a) =>  println!("Button Up ({})", a),
+			Text(a) => match a {
+				'\u{7f}' => println!("Delete"),
+				'\u{08}' => println!("Backspace"),
+				'\u{91}' => println!("Left"),
+				'\u{92}' => println!("Right"),
+				'\u{9e}' => println!("Up"),
+				'\u{9f}' => println!("Down"),
+				'\n' => println!("New Line"),
+				_ => println!("Text Input: {} {}", a, a as u32)
+			},
+			Msg(a) => println!("Message: {}", a),
+		};
+		let pressed = self.button.update(&mut self.window, input);
+		if pressed {
+			println!("button been pressed!");
+		}
+	}
+
+	fn update(&mut self, input_queue: &mut InputQueue) {
+		self.animate();
+		self.window.update(input_queue);
+
+		for input in input_queue.iter() {
+			self.input(*input);
+		}
+	}
 }
 
-fn resize(context: &mut Context) {
+fn resize(context: &mut DemoApp) {
 	Transform::create().scale(0.1, 0.1, 1.0)
 		.orthographic(&context.window)
 		.apply(&mut context.window, &context.square, 0);
@@ -47,46 +123,7 @@ fn resize(context: &mut Context) {
 		.apply(&mut context.window, &context.logo, 0);
 }
 
-fn update(context: &mut Context, message: Input) -> bool {
-	match message {
-		Input::Redraw => redraw(context),
-		Input::Resize => resize(context),
-		Input::Back => return true, // Quit
-		Input::Resume => println!("Resume ( Gain Focus )"),
-		Input::Pause => println!("Pause ( Lose Focus )"),
-		Input::KeyPress(a) => println!("press {}", a),
-		Input::KeyRelease(a) => println!("release {}", a),
-		Input::KeyRepeat(a) => println!("repeat {}", a),
-		Input::Cursor(x, y) => println!("Cursor({}, {})", x, y),
-		Input::LeftDown(x, y) => println!("Left Down ({}, {})", x, y),
-		Input::LeftUp(x, y) => println!("Left Up ({}, {})", x, y),
-		Input::MiddleDown(x, y) => println!("Middle Down ({}, {})", x, y),
-		Input::MiddleUp(x, y) => println!("Middle Up ({}, {})", x, y),
-		Input::RightDown(x, y) => println!("Right Down ({}, {})", x, y),
-		Input::RightUp(x, y) => println!("Right Up ({}, {})", x, y),
-		Input::ScrollUp(x, y) => println!("Scroll Up ({}, {})", x, y),
-		Input::ScrollDown(x, y) => println!("Scroll Down ({}, {})", x, y),
-		Input::ScrollRight(x, y) => println!("Scroll Right ({}, {})", x, y),
-		Input::ScrollLeft(x, y) => println!("Scroll Left ({}, {})", x, y),
-		Input::EnterWindow => println!("Enter Window"),
-		Input::LeaveWindow => println!("Leave Window"),
-		Input::JoystickMove(x, y) => println!("Joystick ({}, {})", x, y),
-		Input::JoystickPov(x, y) => println!("POV Hat ({}, {})", x, y),
-		Input::JoystickThrottle(x) => println!("Throttle ({})", x),
-		Input::JoystickButtonDown(a) => println!("Button Down ({})", a),
-		Input::JoystickButtonUp(a) =>  println!("Button Up ({})", a),
-		Input::Text(a) => println!("Text: {}", a),
-		Input::Msg(_) => println!("Message"),
-//		Input::Msg(a) => println!("Message: {}", a),
-	};
-	let pressed = context.button.update(&mut context.window, message);
-	if pressed {
-		println!("button been pressed!");
-	}
-	false
-}
-
-fn init2() -> Context {
+fn init2() -> DemoApp {
 	// Load Resources - Images
 	let icon = aci_ppm::decode(include_bytes!("res/logo.ppm")).unwrap();
 	let image_logo = include_bytes!("res/logo.ppm");
@@ -102,7 +139,7 @@ fn init2() -> Context {
 
 	// Create Sprites
 	let shape_image = include!("res/image.data");
-	Context {
+	DemoApp {
 		logo: Sprite::create(&mut window, &shape_image, style_logo, 1),
 		button: GuiButton::create(&mut window, (-1.0, -1.0)),
 		triangle: Sprite::create(&mut window,
@@ -116,17 +153,15 @@ fn init2() -> Context {
 		square: Sprite::create(&mut window,
 			&include!("res/square.data"), style_gradient, 1),
 		window: window,
+		running: true,
 	}
 }
 
 fn main() {
-	let mut context = init2();
+	let mut app = init2();
+	let mut input_queue = InputQueue::create();
 
-	'mainloop: loop {
-		for message in context.window.update() {
-			if update(&mut context, message) {
-				break 'mainloop;
-			}
-		}
+	while app.running {
+		app.update(&mut input_queue);
 	}
 }

@@ -47,8 +47,13 @@ impl Button {
 
 	pub fn update(&mut self, window: &mut Window, input: Input) -> bool {
 		match input {
-			Input::Cursor(x, y) => {
-				self.button_check(window, x, y);
+			Input::Cursor(xy) => {
+				if let Some((x, y)) = xy {
+					self.button_check(window, x, y);
+				} else {
+					self.held = false;
+					self.away(window);
+				}
 			},
 			Input::Resize => {
 				let pos = (self.xmin, self.ymin);
@@ -62,19 +67,15 @@ impl Button {
 				self.resize(window);
 				self.away(window);
 			},
-			Input::LeftDown(x, y) => {
+			Input::CursorPress(_, (x, y)) => {
 				self.held = true;
 				self.button_check(window, x, y);
 			},
-			Input::LeftUp(x, y) => {
-				if self.held {
+			Input::CursorRelease(_, xy) => if self.held {
+				if let Some((x, y)) = xy {
 					self.held = false;
 					return self.button_check(window, x, y);
 				}
-			},
-			Input::LeaveWindow => {
-				self.held = false;
-				self.away(window);
 			},
 			_ => {},
 		}
