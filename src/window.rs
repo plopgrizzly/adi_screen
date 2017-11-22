@@ -1,53 +1,56 @@
-/**
- * adi_screen - Aldaron's Device Interface - Screen - "window/mod.rs"
- * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
-**/
+// Aldaron's Device Interface / Screen
+// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
+// Licensed under the MIT LICENSE
+//
+// src/window.rs
 
 use adi_clock::Timer;
 use adi_clock::Pulse;
 use Input;
-use renderer;
-use renderer::{ Vw, Style, Shape };
-
-use awi::Window as AwiWindow;
+use afi;
+use adi_gpu;
+use adi_gpu::{ /*Vw, Style,*/ Shape, Display };
+use aci_png;
+use Texture;
 
 /// Window represents a connection to a display that can also recieve input.
 pub struct Window {
-	pub vw: Vw, // TODO: pub
-	pub window: AwiWindow, // TODO: pub
-	pub sprites: Vec<Shape>, // TODO: pub
+	pub window: Display, // TODO: pub
+//	pub sprites: Vec<Shape>, // TODO: pub
 	time: (Timer, f32),
 	minsize: (u32, (f32, f32)),
 	aspect: f32,
 	ymultiply: f32,
-	shaders: Vec<Style>,
+//	shaders: Vec<Style>,
 	color: (f32, f32, f32),
 	pub input: Vec<Input>, // TODO: pub
 	pub joystick: ::Joystick, // TODO: pub
+	pub(crate) button: Texture,
 }
 
 pub trait WindowFunctions {
-	fn shader(&self, i: usize) -> Style;
+//	fn shader(&self, i: usize) -> Style;
 	fn unit_ratio(&self) -> f32;
 	fn toggle_fullscreen(&mut self) -> ();
 	fn dim(&self) -> (u32, u32);
 }
 
 impl WindowFunctions for Window {
-	fn shader(&self, i: usize) -> Style {
-		self.shaders[i]
-	}
+//	fn shader(&self, i: usize) -> Style {
+//		self.shaders[i]
+//	}
 
 	fn unit_ratio(&self) -> f32 {
 		self.aspect
 	}
 
 	fn toggle_fullscreen(&mut self) -> () {
-		self.window.fullscreen();
+//		self.window.fullscreen();
 	}
 
 	fn dim(&self) -> (u32, u32) {
-		self.window.get_dimensions()
+//		self.window.get_dimensions()
+		(640, 360)
 	}
 }
 
@@ -55,22 +58,30 @@ impl Window {
 	/// Create a window for drawing to. name is the name of the window. icon
 	/// is the window's icon in ppm format. shaders is a list of custom
 	/// shaders. 
-	pub fn create(name: &str, icon: (u32, u32, &[u8]),
-		shaders: &[renderer::Shader]) -> Window
+	pub fn new(name: &str, icon: afi::Graphic/*, shaders: &[renderer::Shader]*/)
+		-> Window
 	{
-		let native = AwiWindow::create(name, icon);
+		let mut native = Display::new(name, icon);
 		let mut input = Vec::new();
-		input.push(Input::Resize);
+		let button = Texture(adi_gpu::Texture::new(&mut native,
+			aci_png::decode(include_bytes!("gui/res/button.png"))
+				.unwrap()));
 		let mut window = Window {
-			vw: renderer::open(name, &native), window: native,
-			sprites: Vec::new(),
-			time: (Timer::create(1.0 / 60.0), 0.0),
+			/*vw: renderer::open(name, &native), */window: native,
+			/*sprites: Vec::new(),*/
+			time: (Timer::new(1.0 / 60.0), 0.0),
 			minsize: (64, (0.0, 0.0)), aspect: 0.0, ymultiply: 0.0,
-			shaders: Vec::new(), input: input,
+			/*shaders: Vec::new(),*/ input: input,
 			color: (0.0, 0.0, 0.0), joystick: ::Joystick::create(),
+			button: button,
 		};
-		renderer::make_styles(&mut window.vw, shaders, &mut window.shaders);
+//		renderer::make_styles(&mut window.vw, shaders, &mut window.shaders);
 		window
+	}
+
+	/// Adjust the location and direction of the camera.
+	pub fn camera(&mut self, xyz: (f32,f32,f32), rotate_xyz: (f32,f32,f32)) {
+		self.window.camera(xyz, rotate_xyz);
 	}
 
 	/// Set the background color of the window.
@@ -86,29 +97,29 @@ impl Window {
 	/// Update the window and return the user input.  This should run in a
 	/// loop.
 	pub fn update(&mut self, input_queue: &mut ::InputQueue) -> () {
-		let color = self.color;
+//		let color = self.color;
 
-		renderer::draw_clear(self, color.0, color.1, color.2);
-		for i in 0..self.sprites.len() {
-			renderer::Shape::draw(self, i);
-		}
+//		renderer::draw_clear(self, color.0, color.1, color.2);
+//		for i in 0..self.sprites.len() {
+//			renderer::Shape::draw(self, i);
+//		}
 		// TODO: Automatically decrease to 30fps if needed.
 		self.time.1 = self.time.0.wait(); // 60 fps
 		// Update Screen
-		renderer::draw_update(self);
+//		renderer::draw_update(self);
 
 		self.window.update(input_queue);
 
 		// Resize
 		if input_queue.get_resized() {
-			let (w, h) = self.window.get_dimensions();
+			let (w, h) = self.dim();
 			let (w, h) = (w as f32, h as f32);
 
 			(self.minsize.1).0 = 2.0 * (self.minsize.0 as f32) / w;
 			(self.minsize.1).1 = 2.0 * (self.minsize.0 as f32) / h;
 			self.aspect = h / w;
 			self.ymultiply = 1.0 / self.aspect;
-			renderer::resize(self);
+//			renderer::resize(self);
 		}
 	}
 
@@ -144,7 +155,7 @@ impl Window {
 
 impl Drop for Window {
 	fn drop(&mut self) -> () {
-		renderer::close(&mut self.vw);
+//		renderer::close(&mut self.vw);
 		println!("adi_screen: Quit.");
 	}
 }

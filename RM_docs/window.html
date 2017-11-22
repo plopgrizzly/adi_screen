@@ -1,0 +1,52 @@
+<base target="_parent">
+<link rel="stylesheet" href="https://plopgrizzly.github.io/adi/style.css"/>
+<div>
+
+<h2>Window</h2>
+<h3>use adi_screen::Window;</h3>
+<p>Window represents a connection to a display that can also recieve input.
+</p>
+<h4>fn <i>create</i>(<mark>name</mark>: &str, <mark>icon</mark>: &'static [u8],
+<mark>shaders</mark>: &[vw::Shader]) -> Window </h4>
+<p>
+Create a window for drawing to.  <mark>name</mark> is the name of the window.
+<mark>icon</mark> is the window's icon in ppm format.  <mark>shaders</mark> is a
+list of custom shaders.
+</p>
+
+<h4>fn <i>background</i>(&mut <mark>self</mark>, <mark>r</mark>: f32,
+<mark>g</mark>: f32, <mark>b</mark>: f32) -> ()</h4>
+<p>Set the background color of the window.</p>
+
+<h4>fn <i>pulse_half_linear</i>(&<mark>self</mark>, <mark>rate_spr</mark>: f32)
+-> f32</h4>
+<p>Returns a number between 0-1.  This function is used for animations.  It will
+take <mark>rate_spr</mark> seconds to go from 0 to 1.
+</p>
+<h4>fn <i>pulse_full_linear</i>(&<mark>self</mark>, <mark>rate_spr</mark>: f32)
+-> f32</h4>
+<p>Returns a number between 0-1.  This function is used for animations.  It will
+take <mark>rate_spr</mark> seconds to go from 0 to 1 and back to 0.</p>
+<h4>fn <i>pulse_half_smooth</i>(&<mark>self</mark>, <mark>rate_spr</mark>: f32)
+-> f32</h4>
+<p>Returns a number between 0-1.  This function is used for animations.  It will
+take <mark>rate_spr</mark> seconds to go from 0 to 1.  It uses cosine underneath
+to make the animation look smooth, by making the beginning and end of the
+animation slower than the middle.</p>
+<h4>fn <i>pulse_full_smooth</i>(&<mark>self</mark>, <mark>rate_spr</mark>: f32)
+-> f32</h4>
+<p>Returns a number between 0-1.  This function is used for animations.  It will
+take <mark>rate_spr</mark> seconds to go from 0 to 1 and back to 0.  It uses
+cosine underneath to make the animation look smooth, by making the beginning and
+end of the animation slower than the middle.</p>
+
+<h4>fn <i>unit_size</i>(&<mark>self</mark>) -> (f32, f32)</h4>
+<p>Get the minimal x and y dimension for a widget.</p>
+
+<h4>fn <i>update</i>(&mut <mark>self</mark>) -> Input</h4>
+<p>Update the window and return the user input.  This should run in a loop.</p>
+
+<hr>
+Author: Jeron Aldaron Lau - The Aldaron's Device Interface Documentation Is
+Public Domain
+</div>

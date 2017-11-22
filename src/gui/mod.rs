@@ -1,7 +1,8 @@
-/**
- * adi_screen - Aldaron's Device Interface - Screen - "gui/mod.rs"
- * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
-**/
+// Aldaron's Device Interface / Screen
+// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
+// Licensed under the MIT LICENSE
+//
+// src/gui/mod.rs
 
 mod button;
 pub use self::button::Button;

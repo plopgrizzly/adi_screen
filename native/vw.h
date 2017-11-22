@@ -1,7 +1,8 @@
-/**
- * Aldaron's Device Interface - "vw.h"
- * Copyright 2017 (c) Jeron Lau - Licensed under the GNU GENERAL PUBLIC LICENSE
-**/
+// Aldaron's Device Interface / Screen
+// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
+// Licensed under the MIT LICENSE
+//
+// native/vw.h
 
 #include <string.h>
 #include <stdio.h>

@@ -1,11 +1,12 @@
-/**
- * Aldaron's Device Interface - "vw.c"
- * Copyright 2017 (c) Jeron Lau - Licensed under the GNU GENERAL PUBLIC LICENSE
- *
- * This file is based off of LunarG's SDK example:
- * https://www.lunarg.com/vulkan-sdk/, and this tutorial by José Henriques:
- * http://jhenriques.net/vulkan_shaders.html,
-**/
+// Aldaron's Device Interface / Screen
+// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
+// Licensed under the MIT LICENSE
+//
+// native/vw.c
+// -
+// This file is based off of LunarG's SDK example:
+// https://www.lunarg.com/vulkan-sdk/, and this tutorial by José Henriques:
+// http://jhenriques.net/vulkan_shaders.html,
 
 #include "vw.h"
 

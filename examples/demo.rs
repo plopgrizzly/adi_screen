@@ -1,30 +1,42 @@
-/**
- * adi_screen - Aldaron's Device Interface - Screen - "examples/demo.rs"
- * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
-**/
+// Aldaron's Device Interface / Screen
+// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
+// Licensed under the MIT LICENSE
+//
+// examples/demo.rs
 
 extern crate adi_screen;
-extern crate aci_ppm;
+extern crate aci_png;
 
 use adi_screen::{
 	Transform,
 	Sprite,
 	Window,
-	Style,
 	Input,
 	GuiButton,
 	Msg,
-	InputQueue
+	InputQueue,
+	SpriteBuilder,
+	Texture
 };
+
+const SHAPE_IMAGE: &[f32] = &include!("res/image.data");
+const SHAPE_TEXC: &[f32] = &include!("res/image.texc");
 
 struct DemoApp {
 	window: Window,
-	image: Sprite,
-	triangle: Sprite,
-	logo: Sprite,
-	square: Sprite,
-	button: GuiButton,
+	drawable: Drawable,
 	running: bool,
+	gpu_data: GpuData,
+}
+
+struct Drawable {
+	triangle_a: Sprite,
+	triangle_b: Sprite,
+	button: GuiButton,
+}
+
+struct GpuData {
+	tex_logo: Texture,
 }
 
 impl DemoApp {
@@ -36,13 +48,13 @@ impl DemoApp {
 			.translate(-0.5, -0.5, 0.0)//5.0 * disp)
 			.translate(disp * 1.0, 0.0, 0.0)
 			.rotate(0.0, 0.0, disp)
-			.perspective(&self.window, 90.0)
-			.apply(&mut self.window, &self.triangle, 0);
+			.projection()
+			.apply(&mut self.window, &self.drawable.triangle_a);
 		Transform::create()
 			.translate(-0.5, 0.5, 0.0)//5.0 * disp)
 			.translate(disp2 * 1.0, 0.0, 0.0)
-			.perspective(&self.window, 90.0)
-			.apply(&mut self.window, &self.triangle, 1);
+			.projection()
+			.apply(&mut self.window, &self.drawable.triangle_b);
 
 		self.window.background(disp, 0.0, disp);
 	}
@@ -53,7 +65,7 @@ impl DemoApp {
 
 		match input {
 			Msg(Quit) | Msg(Back) => self.running = false,
-			Resize => resize(self),
+			Resize => self.drawable = resize(&mut self.window, self.gpu_data.tex_logo),
 			Resume => println!("Resume ( Gain Focus )"),
 			Pause => println!("Pause ( Lose Focus )"),
 			KeyPress(a) => println!("Key Press: {}", a),
@@ -95,8 +107,9 @@ impl DemoApp {
 				_ => println!("Text Input: {} {}", a, a as u32)
 			},
 			Msg(a) => println!("Message: {}", a),
+			_ => println!("Other")
 		};
-		let pressed = self.button.update(&mut self.window, input);
+		let pressed = self.drawable.button.update(&mut self.window, input);
 		if pressed {
 			println!("button been pressed!");
 		}
@@ -112,54 +125,61 @@ impl DemoApp {
 	}
 }
 
-fn resize(context: &mut DemoApp) {
-	Transform::create().scale(0.1, 0.1, 1.0)
-		.orthographic(&context.window)
-		.apply(&mut context.window, &context.square, 0);
-	Transform::create().orthographic(&context.window)
-		.apply(&mut context.window, &context.image, 0);
-	Transform::create().scale(0.5, 0.5, 1.0)
-		.orthographic(&context.window)
-		.apply(&mut context.window, &context.logo, 0);
+fn resize(window: &mut Window, tex_logo: Texture) -> Drawable {
+	let logo = SpriteBuilder::new(&SHAPE_IMAGE)
+		.texture(window, tex_logo, &SHAPE_TEXC);
+	let button = GuiButton::create(window, (-1.0, -1.0));
+	let triangle_a = SpriteBuilder::new(&include!("res/triangle.data"))
+		.gradient(window, &include!("res/triangle.texc"));
+	let triangle_b = SpriteBuilder::new(&include!("res/triangle.data"))
+		.gradient(window, &include!("res/triangle.texc"));
+//	let _ = triangle_a.clone();
+	let image = {
+		let image = SpriteBuilder::new(&SHAPE_IMAGE)
+			.texture(window, tex_logo, &SHAPE_TEXC);
+// TODO
+//		image.style(&mut window, 0, &style_bear);
+		image
+	};
+	let square = SpriteBuilder::new(&include!("res/square.data"))
+		.solid(window, [0.5, 0.5, 0.5, 0.5]);
+
+	Transform::create().scale(0.1, 0.1, 1.0).projection()
+		.apply(window, &square);
+	Transform::create().projection().apply(window, &image);
+	Transform::create().scale(0.5, 0.5, 1.0).projection()
+		.apply(window, &logo);
+
+	Drawable { triangle_a, triangle_b, button }
 }
 
 fn init2() -> DemoApp {
 	// Load Resources - Images
-	let icon = aci_ppm::decode(include_bytes!("res/logo.ppm")).unwrap();
-	let image_logo = include_bytes!("res/logo.ppm");
+	let icon = aci_png::decode(include_bytes!("res/logo.png")).unwrap();
 
 	// Create Window
-	let mut window = Window::create("Demo", icon, &[]);
+	let mut window = Window::new("Demo", icon);
 
 	// Create Styles
-	let style_logo = Style::create().opaque(&mut window, image_logo);
-	let style_gradient = Style::create().gradient();
-	let style_bear = Style::create().subtransparent(&mut window,
-		include_bytes!("res/plopgrizzly.ppm"), (0, 255, 0));
+//	let style_logo = Style::create().opaque(&mut window, icon);
+//	let style_bear = Style::create().subtransparent(&mut window,
+//		include_bytes!("res/plopgrizzly.ppm"), (0, 255, 0));
 
-	// Create Sprites
-	let shape_image = include!("res/image.data");
+	let tex_logo = Texture::new(&mut window, aci_png::decode(
+		include_bytes!("res/logo.png")
+	).unwrap());
+
 	DemoApp {
-		logo: Sprite::create(&mut window, &shape_image, style_logo, 1),
-		button: GuiButton::create(&mut window, (-1.0, -1.0)),
-		triangle: Sprite::create(&mut window,
-			&include!("res/triangle.data"), style_gradient, 2),
-		image: {
-			let image = Sprite::create(&mut window, &shape_image,
-				style_logo, 1);
-			image.style(&mut window, 0, &style_bear);
-			image
-		},
-		square: Sprite::create(&mut window,
-			&include!("res/square.data"), style_gradient, 1),
+		drawable: resize(&mut window, tex_logo),
 		window: window,
 		running: true,
+		gpu_data: GpuData { tex_logo },
 	}
 }
 
 fn main() {
 	let mut app = init2();
-	let mut input_queue = InputQueue::create();
+	let mut input_queue = InputQueue::new();
 
 	while app.running {
 		app.update(&mut input_queue);

@@ -1,69 +1,106 @@
-/**
- * adi_screen - Aldaron's Device Interface - Screen - "sprite.rs"
- * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
-**/
+// Aldaron's Device Interface / Screen
+// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
+// Licensed under the MIT LICENSE
+//
+// src/sprite.rs
 
 use std::ptr::null_mut;
 use std::f32::consts::PI;
 
 use Window;
+use { Texture, Model, Gradient, TexCoords };
 use window::WindowFunctions;
-use renderer::{ Shape };
-use Style;
+use adi_gpu::{ Shape, ShapeBuilder };
+use adi_gpu;
 
 #[must_use]
 /// Sprite represents anything that is rendered onto the screen.
-pub struct Sprite(usize);
+pub struct Sprite(Shape);
 
 #[must_use]
+pub struct SpriteBuilder(ShapeBuilder, bool, bool);
+
 /// Transform represents a transformation matrix.
-pub struct Transform([f32; 16]);
+pub struct Transform(adi_gpu::Transform);
 
-/// TransformApply represents a Transform that has been projected using auto(),
-/// orthographic(), or perspective(). 
-pub struct TransformApply(Transform);
-
-fn sprite(window: &mut Window, shape: Shape) -> usize {
+/*fn sprite(window: &mut Window, shape: Shape) -> usize {
 	window.sprites.push(shape); // Add sprite to end of vector
 	window.sprites.len() - 1 // Length - 1 to get index of sprite.
-}
+}*/
 
-impl Sprite {
-	/// Create a sprite. window is the window. v is sprite's vertices.
-	/// Format: x, y, z, 1.0, r, g, b, a,
-	/// Format: x, y, z, 1.0, texture coordinate x, texture coordinate y,
-	/// 1.0, 1.0,
-	///  style is the Style that will initially be applied to each of the
-	/// sprite's instances. instances is the initial number of instances
-	/// this sprite should have. 
-	pub fn create(window: &mut Window, v: &[f32], style: Style,
-		instances: u32) -> Sprite
-	{
-		let shape = Shape::create(window, v, style);
-		let index = sprite(window, shape);
-
-		match style {
-			Style::Texture(s, ref tx) => {
-				let shader = window.shader(s);
-				for _ in 0..instances {
-					Shape::add(window, index, tx, shader);
-				}
-			}
-			Style::Solid(s) => {
-				let shader = window.shader(s);
-				for _ in 0..instances {
-					Shape::add(window, index, null_mut(),
-						shader);
-				}
-			}
-			_ => panic!("This style type is unsupported.")
-		}
-
-		Sprite(index)
+impl SpriteBuilder {
+	/// Create a new `SpriteBuilder`.
+	#[inline(always)]
+	pub fn new(vertices: Model) -> Self {
+		SpriteBuilder(ShapeBuilder::new(vertices.0), false, false)
 	}
 
-	/// Change the style of self to style for instance i.
-	pub fn style(&self, window: &mut Window, i: usize, style: &Style) ->() {
+	/// Enable alpha blending for this sprite.
+	#[inline(always)]
+	pub fn alpha(self) -> Self {
+		SpriteBuilder(self.0, true, false)
+	}
+
+	/// Enable per-fragment alpha blending for this sprite.
+	pub fn blend(self) -> Self {
+		SpriteBuilder(self.0, true, true)
+	}
+
+	/// Create a sprite with a solid color.
+	#[inline(always)]
+	pub fn solid(&self, window: &mut Window, color: [f32; 4]) -> Sprite {
+		Sprite(self.0.push_solid(&mut window.window, color, self.1,
+			self.2))
+	}
+
+	/// Create a sprite shaded by a gradient (1 color per vertex).
+	#[inline(always)]
+	pub fn gradient(&self, window: &mut Window, colors: Gradient) -> Sprite {
+		Sprite(self.0.push_gradient(&mut window.window, colors.0,
+			self.1, self.2))
+	}
+
+	/// Create a sprite with a texture and texture coordinates.
+	#[inline(always)]
+	pub fn texture(&self, window: &mut Window, texture: Texture, tc: TexCoords)
+		-> Sprite
+	{
+		Sprite(self.0.push_texture(&mut window.window, texture.0, tc.0,
+			self.1, self.2))
+	}
+
+	/// Create a sprite with a texture, texture coordinates and alpha.
+	/// Automatically Enables Alpha Blending. (no need to call `alpha()`)
+	#[inline(always)]
+	pub fn faded(&self, window: &mut Window, texture: Texture, tc: TexCoords,
+		alpha: f32) -> Sprite
+	{
+		Sprite(self.0.push_faded(&mut window.window, texture.0, tc.0,
+			alpha, self.2))
+	}
+
+	/// Create a sprite with a texture and texture coordinates and tint.
+	#[inline(always)]
+	pub fn tinted(&self, window: &mut Window, texture: Texture,
+		tc: TexCoords, tint: [f32; 4]) -> Sprite
+	{
+		Sprite(self.0.push_tinted(&mut window.window, texture.0, tc.0,
+			tint, self.1, self.2))
+	}
+
+	/// Create a sprite with a texture and texture coordinates and tint per
+	/// vertex.
+	#[inline(always)]
+	pub fn complex(&self, window: &mut Window, texture: Texture,
+		tc: TexCoords, tint_pv: Gradient) -> Sprite
+	{
+		Sprite(self.0.push_complex(&mut window.window, texture.0, tc.0,
+			tint_pv.0, self.1, self.2))
+	}
+}
+
+/*	/// Change the style of self to style for instance i.
+	pub fn style(&self, window: &mut Window, i: usize, style: &Style) -> (){
 		match *style {
 			Style::Invisible => {
 				Shape::enable(window, self.0, i, false);
@@ -78,155 +115,50 @@ impl Sprite {
 					shader);
 			}
 		}
-	}
+	}*/
 
-	/// Change the vertices of self to v.
+/*	/// Change the vertices of self to v.
 	pub fn vertices(&mut self, window: &mut Window, v: &[f32]) -> () {
-		Shape::vertices(window, self.0, v);
-	}
-}
+		self.0.vertices(window, self.0, v);
+	}*/
+//}
 
 impl Transform {
-	fn combine(mut self, matrix: [f32; 16]) -> Transform {
-		self.0 = [
-			(self.0[0] * matrix[0]) + (self.0[1] * matrix[4]) +
-			(self.0[2] * matrix[8]) + (self.0[3] * matrix[12]),
-			(self.0[0] * matrix[1]) + (self.0[1] * matrix[5]) +
-			(self.0[2] * matrix[9]) + (self.0[3] * matrix[13]),
-			(self.0[0] * matrix[2]) + (self.0[1] * matrix[6]) +
-			(self.0[2] * matrix[10]) + (self.0[3] * matrix[14]),
-			(self.0[0] * matrix[3]) + (self.0[1] * matrix[7]) +
-			(self.0[2] * matrix[11]) + (self.0[3] * matrix[15]),
-
-			(self.0[4] * matrix[0]) + (self.0[5] * matrix[4]) +
-			(self.0[6] * matrix[8]) + (self.0[7] * matrix[12]),
-			(self.0[4] * matrix[1]) + (self.0[5] * matrix[5]) +
-			(self.0[6] * matrix[9]) + (self.0[7] * matrix[13]),
-			(self.0[4] * matrix[2]) + (self.0[5] * matrix[6]) +
-			(self.0[6] * matrix[10]) + (self.0[7] * matrix[14]),
-			(self.0[4] * matrix[3]) + (self.0[5] * matrix[7]) +
-			(self.0[6] * matrix[11]) + (self.0[7] * matrix[15]),
-
-			(self.0[8] * matrix[0]) + (self.0[9] * matrix[4]) +
-			(self.0[10] * matrix[8]) + (self.0[11] * matrix[12]),
-			(self.0[8] * matrix[1]) + (self.0[9] * matrix[5]) +
-			(self.0[10] * matrix[9]) + (self.0[11] * matrix[13]),
-			(self.0[8] * matrix[2]) + (self.0[9] * matrix[6]) +
-			(self.0[10] * matrix[10]) + (self.0[11] * matrix[14]),
-			(self.0[8] * matrix[3]) + (self.0[9] * matrix[7]) +
-			(self.0[10] * matrix[11]) + (self.0[11] * matrix[15]),
-
-			(self.0[12] * matrix[0]) + (self.0[13] * matrix[4]) +
-			(self.0[14] * matrix[8]) + (self.0[15] * matrix[12]),
-			(self.0[12] * matrix[1]) + (self.0[13] * matrix[5]) +
-			(self.0[14] * matrix[9]) + (self.0[15] * matrix[13]),
-			(self.0[12] * matrix[2]) + (self.0[13] * matrix[6]) +
-			(self.0[14] * matrix[10]) + (self.0[15] * matrix[14]),
-			(self.0[12] * matrix[3]) + (self.0[13] * matrix[7]) +
-			(self.0[14] * matrix[11]) + (self.0[15] * matrix[15])
-		];
-		self
-	}
-
 	/// Create a transform that does nothing. ( Underneath, this is an
 	/// identity matrix ).
-	pub fn create() -> Transform {
-		Transform ([
-			1., 0., 0., 0.,
-			0., 1., 0., 0.,
-			0., 0., 1., 0.,
-			0., 0., 0., 1.,
-		])
+	pub fn new() -> Transform {
+		Transform (adi_gpu::Transform::new())
 	}
 
 	/// Translate self by x, y and z.
 	pub fn translate(mut self, x:f32, y:f32, z:f32) -> Transform {
-		self.0[12] += x;
-		self.0[13] += y;
-		self.0[14] += z;
-		self
+		Transform(self.0.translate(x, y, z))
 	}
 
 	/// Scale self by x, y and z.
 	pub fn scale(mut self, x:f32, y:f32, z:f32) -> Transform {
-		self.0[0] *= x;
-		self.0[5] *= y;
-		self.0[15] *= z;
-		self
+		Transform(self.0.scale(x, y, z))
 	}
 
 	/// Rotate self by yaw, pitch and roll.
 	pub fn rotate(self, yaw:f32, pitch:f32, roll:f32) -> Transform {
-		let num9 = roll * PI;
-		let num6 = num9.sin();
-		let num5 = num9.cos();
-		let num8 = pitch * PI;
-		let num4 = num8.sin();
-		let num3 = num8.cos();
-		let num7 = yaw * PI;
-		let num2 = num7.sin();
-		let num = num7.cos();
-
-		let qx = ((num * num4) * num5) + ((num2 * num3) * num6);
-		let qy = ((num2 * num3) * num5) - ((num * num4) * num6);
-		let qz = ((num * num3) * num6) - ((num2 * num4) * num5);
-		let qw = ((num * num3) * num5) + ((num2 * num4) * num6);
-
-		let m1 = [
-			qw, qz, -qy, qx,
-			-qz, qw, qx, qy,
-			qy, -qx, qw, qz,
-			-qx, -qy, -qz, qw,
-		];
-		let m2 = [
-			qw, qz, -qy, -qx,
-			-qz, qw, qx, -qy,
-			qy, -qx, qw, -qz,
-			qx, qy, qz, qw,
-		];
-		self.combine(m1).combine(m2)
-	}
-
-	/// Apply perspective with fov degrees for field of view. Note: The
-	/// return value is TransformApply.
-	pub fn perspective(self, window: &Window, fov: f32) -> TransformApply {
-		let scale = (fov * 0.5 * PI / 180.).tan().recip();
-		let xscale = scale * window.unit_ratio();
-		let t = self.combine([
-				xscale,	0.,	0.,	0.,
-				0.,	scale,	0.,	0.,
-				0.,	0.,	1.,	1.,
-				0.,	0.,	0., 	1.,
-			]);
-
-		TransformApply(t)
-	}
-
-	/// Apply an orthographic projection ( depth doesn't change x and y
-	/// position ). Note: The return value is TransformApply.
-	pub fn orthographic(self, window: &Window) -> TransformApply {
-		TransformApply(self.scale(window.unit_ratio(), 1.0, 1.0))
+		Transform(self.0.rotate(yaw, pitch, roll))
 	}
 
 	/// Multiply by a projection that scales width and height by the
 	/// smallest widget size. The widget is put at position pos. Position
 	/// isn't affected by aspect ratio.
-	pub fn auto(self, window: &mut Window, pos: (f32, f32))
-		-> TransformApply
-	{
+	pub fn auto(self, window: &mut Window, pos: (f32, f32)) -> Transform {
 		let size = window.unit_size();
 		let t = self.scale(size.0, size.1, 1.0)
 			.translate(pos.0, pos.1, 0.0);
-		TransformApply(t)
+		t
 	}
-}
 
-impl TransformApply {
 	/// Apply a TransformApply onto instance i of Sprite.
-	pub fn apply(self, window: &mut Window, sprite: &Sprite, i: usize)
-		-> TransformApply
-	{
-		Shape::matrix(window, sprite.0, i, self.0 .0);
+	pub fn apply(self, window: &mut Window, sprite: &Sprite) -> Transform {
+		sprite.0.transform(&mut window.window, &self.0);
+
 		self
 	}
 }

@@ -1,13 +1,18 @@
-/**
- * adi_screen - Aldaron's Device Interface - Screen - "gui/button.rs"
- * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
-**/
+// Aldaron's Device Interface / Screen
+// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
+// Licensed under the MIT LICENSE
+//
+// src/gui/button.rs
+
+use adi_gpu::Shape;
+use SpriteBuilder;
 
 use Input;
 use Window;
 use Sprite;
-use Style;
 use Transform;
+use Model;
+use TexCoords;
 
 pub struct Button {
 	sprite: Sprite,
@@ -20,19 +25,31 @@ pub struct Button {
 
 impl Button {
 	pub fn create(window: &mut Window, pos: (f32,f32)) -> Button {
-		let v = [
-			 0.0,  0.0, 0.0, 1.0,	0.0, 0.0, 1.0, 1.0,
-			 1.0,  1.0, 0.0, 1.0,	1.0 / 3.0, 1.0, 1.0, 1.0,
-			 1.0,  0.0, 0.0, 1.0,	1.0 / 3.0, 0.0, 1.0, 1.0,
+		let model = Model::new(window,
+			(&[0, 1, 2, 1, 0, 3],
+			&[
+				0.0,  0.0, 0.0, 1.0,
+				1.0,  1.0, 0.0, 1.0,
+				1.0,  0.0, 0.0, 1.0,
+				0.0,  1.0, 0.0, 1.0,
+			])
+		);
 
-			 1.0,  1.0, 0.0, 1.0,	1.0 / 3.0, 1.0, 1.0, 1.0,
-			 0.0,  0.0, 0.0, 1.0,	0.0, 0.0, 1.0, 1.0,
-			 0.0,  1.0, 0.0, 1.0,	0.0, 1.0, 1.0, 1.0,
-		];
+		let tc = TexCoords::new(window, &[
+			0.0, 0.0, 1.0, 1.0,
+			1.0 / 3.0, 1.0, 1.0, 1.0,
+			1.0 / 3.0, 0.0, 1.0, 1.0,
 
-		let style = Style::create().opaque(window,
-			include_bytes!("res/button.ppm"));
-		let spr = Sprite::create(window, &v, style, 1);
+			1.0 / 3.0, 1.0, 1.0, 1.0,
+			0.0, 0.0, 1.0, 1.0,
+			0.0, 1.0, 1.0, 1.0,
+		]);
+
+//		let style = Shape::Texture(&v, 0/*include_bytes!("res/button.ppm")*/,&tc);
+//		let spr = Sprite::create(window, style, 1);
+
+		let button = window.button;
+		let spr = SpriteBuilder::new(model).texture(window, button, tc);
 		let size = window.unit_size();
 
 		let button = Button {
@@ -85,8 +102,8 @@ impl Button {
 	// Private Functions
 
 	fn resize(&mut self, window: &mut Window) {
-		Transform::create().auto(window, (self.xmin, self.ymin))
-			.apply(window, &self.sprite, 0);
+		Transform::new().auto(window, (self.xmin, self.ymin))
+			.apply(window, &self.sprite);
 	}
 
 	fn modify(&mut self, window: &mut Window, num: f32) {
@@ -101,7 +118,8 @@ impl Button {
 			 0.0,  0.0, 0.0, 1.0,	xmin, 0.0, 1.0, 1.0,
 			 0.0,  1.0, 0.0, 1.0,	xmin, 1.0, 1.0, 1.0,
 		];
-		self.sprite.vertices(window, &v);
+// TODO
+//		self.sprite.vertices(window, &v);
 	}
 
 	fn away(&mut self, window: &mut Window) {

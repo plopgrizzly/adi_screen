@@ -1,31 +1,28 @@
-/**
- * adi_screen - Aldaron's Device Interface - Screen - "lib.rs"
- * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
-**/
-
-/// The version of adi_screen that's being used
-pub const VERSION : &'static str = "adi_screen 0.2.2";
-
-mod image;
-mod renderer;
+// Aldaron's Device Interface / Screen
+// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
+// Licensed under the MIT LICENSE
+//
+// src/lib.rs
 
 mod window;
 mod sprite;
-mod style;
 mod gui;
+mod texture;
+mod gpu_data;
 
 pub use window::{ Window };
-pub use sprite::{ Sprite, Transform };
-pub use style::Style;
+pub use sprite::{ Sprite, SpriteBuilder, Transform };
 pub use gui::Button as GuiButton;
+pub use texture::Texture;
+pub use gpu_data::{ Model, Gradient, TexCoords };
 
+extern crate afi;
 extern crate ami;
 extern crate awi;
+extern crate adi_gpu;
+extern crate aci_png;
 
 pub extern crate adi_clock;
-
-use awi::Window as AwiWindow;
-use awi::WindowConnection as AwiConnection;
 
 pub use awi::Input;
 pub use awi::Key;

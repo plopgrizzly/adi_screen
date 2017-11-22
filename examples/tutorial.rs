@@ -1,7 +1,14 @@
-extern crate adi_screen;
-extern crate aci_ppm;
+// Aldaron's Device Interface / Screen
+// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
+// Licensed under the MIT LICENSE
+//
+// examples/tutorial.rs
 
-use adi_screen::{ Window, Input, Sprite, Style, Transform, Key };
+extern crate adi_screen;
+extern crate aci_png;
+
+use adi_screen::{ Window, Input, Sprite, Transform, Key, Msg, InputQueue,
+	Texture, SpriteBuilder };
 
 struct Player {
 	sprite: Sprite,
@@ -13,17 +20,17 @@ struct Player {
 }
 
 impl Player {
-	fn update(&mut self, window: &mut Window, input: Input) {
+	fn update(&mut self, window: &mut Window, input: &Input) {
 		let mut resize = false;
-		match input {
-			Input::KeyDown(Key::Up) => self.up = true,
-			Input::KeyDown(Key::Down) => self.down = true,
-			Input::KeyDown(Key::Left) => self.left = true,
-			Input::KeyDown(Key::Right) => self.right = true,
-			Input::KeyUp(Key::Up) => { self.up = false; },
-			Input::KeyUp(Key::Down) => { self.down = false; },
-			Input::KeyUp(Key::Left) => { self.left = false; },
-			Input::KeyUp(Key::Right) => { self.right = false; },
+		match *input {
+			Input::KeyPress(Key::Up) => self.up = true,
+			Input::KeyPress(Key::Down) => self.down = true,
+			Input::KeyPress(Key::Left) => self.left = true,
+			Input::KeyPress(Key::Right) => self.right = true,
+			Input::KeyRelease(Key::Up) => { self.up = false; },
+			Input::KeyRelease(Key::Down) => { self.down = false; },
+			Input::KeyRelease(Key::Left) => { self.left = false; },
+			Input::KeyRelease(Key::Right) => { self.right = false; },
 			Input::Resize => resize = true,
 			_ => {},
 		}
@@ -62,13 +69,21 @@ fn redraw(context: &mut Context) {
 	context.window.background(disp2, disp2, disp2);
 }
 
+fn resize(window: &mut Window, tex_logo: Texture) -> Sprite {
+	SpriteBuilder::new(&include!("res/sprite.data")).texture(
+		window, tex_logo, &include!("res/sprite.texc"))
+}
+
 fn main() {
 	let mut window = Window::create("project_name",
-		aci_ppm::decode(include_bytes!("res/logo.ppm")).unwrap(), &[]);
-	let style = Style::create().subtransparent(&mut window,
-		include_bytes!("res/logo.ppm"), (0, 0, 0));
-	let sprite = Sprite::create(&mut window, &include!("res/sprite.data"),
-		style, 1);
+		&aci_png::decode(include_bytes!("res/logo.png")).unwrap());
+	let mut queue = InputQueue::new();
+
+	let tex_logo = Texture::new(&mut window, aci_png::decode(
+		include_bytes!("res/logo.png")
+	).unwrap().as_slice());
+
+	let sprite = resize(&mut window, tex_logo);
 
 	let mut context = Context {
 		player: Player {
@@ -82,11 +97,14 @@ fn main() {
 	'mainloop: loop {
 		redraw(&mut context);
 
-		let queue = context.window.update();
+		context.window.update(&mut queue);
 
-		for input in queue {
-			match input {
-				Input::Back => break 'mainloop,
+		for input in queue.iter() {
+			match *input {
+				Input::Msg(Msg::Back) | Input::Msg(Msg::Quit)
+					=> break 'mainloop,
+				Input::Resize => context.player.sprite
+					= resize(&mut context.window, tex_logo),
 				_ => {},
 			}
 

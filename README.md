@@ -2,26 +2,41 @@
 Portable rust library for rendering onto a computer screen or phone screen.  Can
 be used for video games or applications.
 
-### support
+### To Use Vulkan on Windows
+Download the vulkan runtime installer from
+https://codeload.github.com/plopgrizzly/vulkan-runtime-installer/zip/master
+Then, run VulkanRT-1.0.46.0-Installer.exe inside the downloaded zip file, and go
+through the install process.
 
-| Platform              | Vulkan | OpenGL | Metal | Window | Touch | Touchpad | Mouse | Keyboard | Joystick |
-|-----------------------|--------|--------|-------|--------|-------|----------|-------|----------|----------|
-| XCB on Linux          | Yes    | No     | No    | Yes    | No    | Yes      | Yes   | Yes      | Yes      |
-| Windows               | Yes    | No     | No    | Yes    | No    | No       | Yes   | Yes      | No       |
+## support
+Aldaron's Device Interface / Screen supports:
+* XCB + Vulkan, XCB Input, Linux Joystick Input
+* WinAPI + Vulkan, WinAPI Input (except TouchPad),
 
-# next planned release
+Aldaron's Device Interface / Screen will support:
+* XCB + OpenGLES
+* MacOS Window + OpenGL
+* MacOS Window + Metal
+* Android + OpenGLES
+* Android + Vulkan
+* WinAPI TouchPad
+* WinAPI Joystick
+* WinAPI Touchscreen
+* XCB Touchscreen
+* Wayland + OpenGLES
+* Wayland + Vulkan
+* Wayland Touchscreen
+* WinAPI + OpenGL
+* Raspberry Pi Direct To Display + Vulkan
+* Web Assembly + WebGL
 
-## adi_screen 0.2.1
+## Features
+Aldaron's Device Interface / Screen can:
+* Create a window
+* Render graphics with sprites
+* Obtain user input
+
+Aldaron's Device Interface / Screen will be able to:
 * Give sprites auto depth-sort.
-
-# current releases
-
-## adi_screen 0.2.0
-* Fixed 2 keys being pressed at same time causing problems on XCB
-* Made scrolling fast work on Windows ( increments of 120 )
-* Added joystick support for Linux
-* Fixed cursor being reported in wrong place when maximized on Windows
-* Fixed screen resolution being wrong when maximized on Windows
-
-## adi_screen 0.1.0
-* Initial Release
+* Render text
+* Use only Rust, no C code

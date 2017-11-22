@@ -1,9 +1,8 @@
-/**
- * adi_screen - Aldaron's Device Interface - Screen - "build.rs"
- * Copyright 2017 (c) Jeron Lau - Licensed under the MIT LICENSE
-**/
-
-extern crate gcc;
+// Aldaron's Device Interface / Screen
+// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
+// Licensed under the MIT LICENSE
+//
+// build.rs
 
 #[cfg(target_os = "linux")]
 fn link() {
@@ -19,6 +18,6 @@ fn link() {
 }
 
 fn main() {
-	gcc::Config::new().file("native/vw.c").flag("-Wall").flag("-Werror").compile("libaldaronvw.a");
+//	gcc::Config::new().file("native/vw.c").flag("-Wall").flag("-Werror").compile("libaldaronvw.a");
 	link();
 }
