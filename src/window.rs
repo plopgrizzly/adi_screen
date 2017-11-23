@@ -9,37 +9,27 @@ use adi_clock::Pulse;
 use Input;
 use afi;
 use adi_gpu;
-use adi_gpu::{ /*Vw, Style,*/ Shape, Display };
+use adi_gpu::Display;
 use aci_png;
 use Texture;
 
 /// Window represents a connection to a display that can also recieve input.
 pub struct Window {
 	pub window: Display, // TODO: pub
-//	pub sprites: Vec<Shape>, // TODO: pub
 	time: (Timer, f32),
 	minsize: (u32, (f32, f32)),
 	aspect: f32,
-	ymultiply: f32,
-//	shaders: Vec<Style>,
-	color: (f32, f32, f32),
-	pub input: Vec<Input>, // TODO: pub
 	pub joystick: ::Joystick, // TODO: pub
 	pub(crate) button: Texture,
 }
 
 pub trait WindowFunctions {
-//	fn shader(&self, i: usize) -> Style;
 	fn unit_ratio(&self) -> f32;
 	fn toggle_fullscreen(&mut self) -> ();
 	fn dim(&self) -> (u32, u32);
 }
 
 impl WindowFunctions for Window {
-//	fn shader(&self, i: usize) -> Style {
-//		self.shaders[i]
-//	}
-
 	fn unit_ratio(&self) -> f32 {
 		self.aspect
 	}
@@ -58,25 +48,18 @@ impl Window {
 	/// Create a window for drawing to. name is the name of the window. icon
 	/// is the window's icon in ppm format. shaders is a list of custom
 	/// shaders. 
-	pub fn new(name: &str, icon: afi::Graphic/*, shaders: &[renderer::Shader]*/)
+	pub fn new(name: &str, icon: afi::Graphic, background: (f32, f32, f32))
 		-> Window
 	{
-		let mut native = Display::new(name, icon);
-		let mut input = Vec::new();
+		let mut native = Display::new(name, icon, background);
 		let button = Texture(adi_gpu::Texture::new(&mut native,
 			aci_png::decode(include_bytes!("gui/res/button.png"))
 				.unwrap()));
-		let mut window = Window {
-			/*vw: renderer::open(name, &native), */window: native,
-			/*sprites: Vec::new(),*/
-			time: (Timer::new(1.0 / 60.0), 0.0),
-			minsize: (64, (0.0, 0.0)), aspect: 0.0, ymultiply: 0.0,
-			/*shaders: Vec::new(),*/ input: input,
-			color: (0.0, 0.0, 0.0), joystick: ::Joystick::create(),
-			button: button,
-		};
-//		renderer::make_styles(&mut window.vw, shaders, &mut window.shaders);
-		window
+		Window {
+			window: native, time: (Timer::new(1.0 / 60.0), 0.0),
+			minsize: (64, (0.0, 0.0)), aspect: 0.0,
+			joystick: ::Joystick::create(), button: button,
+		}
 	}
 
 	/// Adjust the location and direction of the camera.
@@ -85,8 +68,8 @@ impl Window {
 	}
 
 	/// Set the background color of the window.
-	pub fn background(&mut self, r: f32, g: f32, b: f32) -> () {
-		self.color = (r, g, b);
+	pub fn background(&mut self, rgb: (f32, f32, f32)) -> () {
+		self.window.bg_color(rgb);
 	}
 
 	/// Get the minimal x and y dimension for a widget.
@@ -94,33 +77,33 @@ impl Window {
 		self.minsize.1
 	}
 
-	/// Update the window and return the user input.  This should run in a
-	/// loop.
-	pub fn update(&mut self, input_queue: &mut ::InputQueue) -> () {
-//		let color = self.color;
+	/// Get input if there is, otherwise return `None`.
+	pub fn input(&mut self) -> Option<Input> {
+		let mut input = self.window.input();
 
-//		renderer::draw_clear(self, color.0, color.1, color.2);
-//		for i in 0..self.sprites.len() {
-//			renderer::Shape::draw(self, i);
-//		}
-		// TODO: Automatically decrease to 30fps if needed.
-		self.time.1 = self.time.0.wait(); // 60 fps
-		// Update Screen
-//		renderer::draw_update(self);
+		if input == None && self.aspect == 0.0 {
+			input = Some(Input::Resize);
+		}
 
-		self.window.update(input_queue);
-
-		// Resize
-		if input_queue.get_resized() {
+		if input == Some(Input::Resize) {
 			let (w, h) = self.dim();
 			let (w, h) = (w as f32, h as f32);
 
 			(self.minsize.1).0 = 2.0 * (self.minsize.0 as f32) / w;
 			(self.minsize.1).1 = 2.0 * (self.minsize.0 as f32) / h;
 			self.aspect = h / w;
-			self.ymultiply = 1.0 / self.aspect;
-//			renderer::resize(self);
 		}
+
+		input
+	}
+
+	/// Update the window and return the user input.  This should run in a
+	/// loop.
+	pub fn update(&mut self) -> () {
+		// TODO: Automatically decrease to 30fps if needed.
+		self.time.1 = self.time.0.wait(); // 60 fps
+		// Update Screen
+		self.window.update();
 	}
 
 	/// Returns a number between 0-1. This function is used for animations.

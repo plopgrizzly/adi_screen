@@ -4,12 +4,8 @@
 //
 // src/sprite.rs
 
-use std::ptr::null_mut;
-use std::f32::consts::PI;
-
 use Window;
 use { Texture, Model, Gradient, TexCoords };
-use window::WindowFunctions;
 use adi_gpu::{ Shape, ShapeBuilder };
 use adi_gpu;
 
@@ -22,11 +18,6 @@ pub struct SpriteBuilder(ShapeBuilder, bool, bool);
 
 /// Transform represents a transformation matrix.
 pub struct Transform(adi_gpu::Transform);
-
-/*fn sprite(window: &mut Window, shape: Shape) -> usize {
-	window.sprites.push(shape); // Add sprite to end of vector
-	window.sprites.len() - 1 // Length - 1 to get index of sprite.
-}*/
 
 impl SpriteBuilder {
 	/// Create a new `SpriteBuilder`.
@@ -131,12 +122,12 @@ impl Transform {
 	}
 
 	/// Translate self by x, y and z.
-	pub fn translate(mut self, x:f32, y:f32, z:f32) -> Transform {
+	pub fn translate(self, x:f32, y:f32, z:f32) -> Transform {
 		Transform(self.0.translate(x, y, z))
 	}
 
 	/// Scale self by x, y and z.
-	pub fn scale(mut self, x:f32, y:f32, z:f32) -> Transform {
+	pub fn scale(self, x:f32, y:f32, z:f32) -> Transform {
 		Transform(self.0.scale(x, y, z))
 	}
 

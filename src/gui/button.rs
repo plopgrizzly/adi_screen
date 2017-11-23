@@ -4,7 +4,6 @@
 //
 // src/gui/button.rs
 
-use adi_gpu::Shape;
 use SpriteBuilder;
 
 use Input;
@@ -106,10 +105,10 @@ impl Button {
 			.apply(window, &self.sprite);
 	}
 
-	fn modify(&mut self, window: &mut Window, num: f32) {
+	fn modify(&mut self, _window: &mut Window, num: f32) {
 		let xmin = num / 3.0;
 		let xmax = (num + 1.0) / 3.0;
-		let v = [
+		let _v = [
 			 0.0,  0.0, 0.0, 1.0,	xmin, 0.0, 1.0, 1.0,
 			 1.0,  1.0, 0.0, 1.0,	xmax, 1.0, 1.0, 1.0,
 			 1.0,  0.0, 0.0, 1.0,	xmax, 0.0, 1.0, 1.0,

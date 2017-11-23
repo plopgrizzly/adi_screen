@@ -30,4 +30,3 @@ pub use awi::Button;
 pub use awi::Joystick;
 pub use awi::Msg;
 pub use awi::Click;
-pub use awi::InputQueue;
