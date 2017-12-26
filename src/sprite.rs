@@ -16,6 +16,123 @@ pub struct Sprite(Shape);
 #[must_use]
 pub struct SpriteBuilder(ShapeBuilder, bool, bool);
 
+#[must_use]
+pub struct SpriteList(Vec<Sprite>, adi_gpu::Model, adi_gpu::Transform, bool,
+	bool);
+
+impl SpriteList {
+	/// Create a new list of `Sprite`s.
+	#[inline(always)]
+	pub fn new(model: Model) -> SpriteList {
+		SpriteList(vec![], model.0, adi_gpu::Transform::new(), false,
+			false)
+	}
+
+	/// Set the transform.
+	#[inline(always)]
+	pub fn transform(self, transform: Transform) -> SpriteList {
+		SpriteList(self.0, self.1, transform.0, self.3, self.4)
+	}
+
+	/// Set the model.
+	#[inline(always)]
+	pub fn model(self, model: Model) -> SpriteList {
+		SpriteList(self.0, model.0, self.2, self.3, self.4)
+	}
+
+	/// Enable alpha blending for following sprites.
+	#[inline(always)]
+	pub fn alpha(self) -> Self {
+		SpriteList(self.0, self.1, self.2, true, false)
+	}
+
+	/// Enable per-fragment alpha blending for following sprites.
+	#[inline(always)]
+	pub fn blend(self) -> Self {
+		SpriteList(self.0, self.1, self.2, true, true)
+	}
+
+	/// Disable all alpha blending for following sprites.
+	#[inline(always)]
+	pub fn opaque(self) -> Self {
+		SpriteList(self.0, self.1, self.2, false, false)
+	}
+
+	/// Create a sprite with a solid color.
+	#[inline(always)]
+	pub fn solid(mut self, window: &mut Window, color: [f32; 4]) -> Self {
+		self.0.push(Sprite(ShapeBuilder::new(self.1).push_solid(
+			&mut window.window, self.2, color, self.3, self.4)));
+		self
+	}
+
+	/// Create a sprite shaded by a gradient (1 color per vertex).
+	#[inline(always)]
+	pub fn gradient(mut self, window: &mut Window, colors: Gradient)
+		-> Self
+	{
+		self.0.push(Sprite(ShapeBuilder::new(self.1).push_gradient(
+			&mut window.window, self.2, colors.0, self.3, self.4)));
+		self
+	}
+
+	/// Create a sprite with a texture and texture coordinates.
+	#[inline(always)]
+	pub fn texture(mut self, window: &mut Window, texture: Texture,
+		tc: TexCoords) -> Self
+	{
+		self.0.push(Sprite(ShapeBuilder::new(self.1).push_texture(
+			&mut window.window, self.2, texture.0, tc.0, self.3,
+			self.4)));
+		self
+	}
+
+	/// Create a sprite with a texture, texture coordinates and alpha.
+	/// Automatically Enables Alpha Blending. (no need to call `alpha()`)
+	#[inline(always)]
+	pub fn faded(mut self, window: &mut Window, texture: Texture,
+		tc: TexCoords, alpha: f32) -> Self
+	{
+		self.0.push(Sprite(ShapeBuilder::new(self.1).push_faded(
+			&mut window.window, self.2, texture.0, tc.0, alpha,
+			self.4)));
+		self
+	}
+
+	/// Create a sprite with a texture and texture coordinates and tint.
+	#[inline(always)]
+	pub fn tinted(mut self, window: &mut Window, texture: Texture,
+		tc: TexCoords, tint: [f32; 4]) -> Self
+	{
+		self.0.push(Sprite(ShapeBuilder::new(self.1).push_tinted(
+			&mut window.window, self.2, texture.0, tc.0, tint,
+			self.3, self.4)));
+		self
+	}
+
+	/// Create a sprite with a texture and texture coordinates and tint per
+	/// vertex.
+	#[inline(always)]
+	pub fn complex(mut self, window: &mut Window, texture: Texture,
+		tc: TexCoords, tint_pv: Gradient) -> Self
+	{
+		self.0.push(Sprite(ShapeBuilder::new(self.1).push_complex(
+			&mut window.window, self.2, texture.0, tc.0, tint_pv.0,
+			self.3, self.4)));
+		self
+	}
+
+	#[inline(always)]
+	pub fn to_vec(self) -> Vec<Sprite> {
+		self.0
+	}
+
+	#[inline(always)]
+	pub fn first(mut self) -> Sprite {
+		self.0.pop().unwrap()
+	}
+}
+
 /// Transform represents a transformation matrix.
 pub struct Transform(adi_gpu::Transform);
 
@@ -33,11 +150,12 @@ impl SpriteBuilder {
 	}
 
 	/// Enable per-fragment alpha blending for this sprite.
+	#[inline(always)]
 	pub fn blend(self) -> Self {
 		SpriteBuilder(self.0, true, true)
 	}
 
-	/// Create a sprite with a solid color.
+/*	/// Create a sprite with a solid color.
 	#[inline(always)]
 	pub fn solid(&self, window: &mut Window, color: [f32; 4]) -> Sprite {
 		Sprite(self.0.push_solid(&mut window.window, color, self.1,
@@ -87,7 +205,7 @@ impl SpriteBuilder {
 	{
 		Sprite(self.0.push_complex(&mut window.window, texture.0, tc.0,
 			tint_pv.0, self.1, self.2))
-	}
+	}*/
 }
 
 /*	/// Change the style of self to style for instance i.
@@ -147,7 +265,9 @@ impl Transform {
 	}
 
 	/// Apply a TransformApply onto instance i of Sprite.
-	pub fn apply(self, window: &mut Window, sprite: &Sprite) -> Transform {
+	pub fn apply(self, window: &mut Window, sprite: &mut Sprite)
+		-> Transform
+	{
 		sprite.0.transform(&mut window.window, &self.0);
 
 		self

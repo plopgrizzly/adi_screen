@@ -11,7 +11,7 @@ mod texture;
 mod gpu_data;
 
 pub use window::{ Window };
-pub use sprite::{ Sprite, SpriteBuilder, Transform };
+pub use sprite::{ Sprite, SpriteBuilder, SpriteList, Transform };
 pub use gui::Button as GuiButton;
 pub use texture::Texture;
 pub use gpu_data::{ Model, Gradient, TexCoords };

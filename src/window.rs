@@ -47,11 +47,11 @@ impl WindowFunctions for Window {
 impl Window {
 	/// Create a window for drawing to. name is the name of the window. icon
 	/// is the window's icon in ppm format. shaders is a list of custom
-	/// shaders. 
-	pub fn new(name: &str, icon: afi::Graphic, background: (f32, f32, f32))
-		-> Window
+	/// shaders. `fog` is a tuple: (distance, depth).
+	pub fn new(name: &str, icon: afi::Graphic, background: (f32, f32, f32),
+		fog: (f32, f32)) -> Window
 	{
-		let mut native = Display::new(name, icon, background);
+		let mut native = Display::new(name, icon, background, fog);
 		let button = Texture(adi_gpu::Texture::new(&mut native,
 			aci_png::decode(include_bytes!("gui/res/button.png"))
 				.unwrap()));

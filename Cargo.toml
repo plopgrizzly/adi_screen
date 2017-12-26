@@ -46,14 +46,14 @@ build = "build.rs"
 ################################################################################
 
 [dependencies]
-afi = "^0.1"
-adi_clock = { path = "/home/aldaron/plopgrizzly/devel/adi_clock" }
-awi = { path = "/home/aldaron/plopgrizzly/devel/awi" }
+afi = "^0.3"
+adi_clock = { path = "../adi_clock" }
+awi = { path = "../awi" }
 ami = "^0.5"
-adi_gpu = { path = "/home/aldaron/plopgrizzly/devel/adi_gpu" }
-aci_png = "^0.3"
+adi_gpu = { path = "../adi_gpu" }
+aci_png = "^0.5"
 
 [dev-dependencies]
-aci_ppm = "^0.2"
+aci_ppm = "^0.4"
 
 ################################################################################

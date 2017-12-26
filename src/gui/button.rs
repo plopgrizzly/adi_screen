@@ -4,7 +4,7 @@
 //
 // src/gui/button.rs
 
-use SpriteBuilder;
+use SpriteList;
 
 use Input;
 use Window;
@@ -48,7 +48,8 @@ impl Button {
 //		let spr = Sprite::create(window, style, 1);
 
 		let button = window.button;
-		let spr = SpriteBuilder::new(model).texture(window, button, tc);
+		let spr = SpriteList::new(model).texture(window, button, tc)
+			.first();
 		let size = window.unit_size();
 
 		let button = Button {
@@ -102,7 +103,7 @@ impl Button {
 
 	fn resize(&mut self, window: &mut Window) {
 		Transform::new().auto(window, (self.xmin, self.ymin))
-			.apply(window, &self.sprite);
+			.apply(window, &mut self.sprite);
 	}
 
 	fn modify(&mut self, _window: &mut Window, num: f32) {
@@ -144,7 +145,7 @@ impl Button {
 				self.over(window);
 			}
 			true
-		}else{
+		} else {
 			self.held = false;
 			self.away(window);
 			false
