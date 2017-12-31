@@ -52,6 +52,7 @@ awi = { path = "../awi" }
 ami = "^0.5"
 adi_gpu = { path = "../adi_gpu" }
 aci_png = "^0.5"
+rusttype = "0.3.0"
 
 [dev-dependencies]
 aci_ppm = "^0.4"

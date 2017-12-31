@@ -5,4 +5,8 @@
 // src/gui/mod.rs
 
 mod button;
+mod text;
 pub use self::button::Button;
+pub use self::text::Font;
+pub use self::text::DEFAULT_FONT;
+pub use self::text::Text;

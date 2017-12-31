@@ -13,6 +13,7 @@ mod gpu_data;
 pub use window::{ Window };
 pub use sprite::{ Sprite, SpriteBuilder, SpriteList, Transform };
 pub use gui::Button as GuiButton;
+pub use gui::{ Text, DEFAULT_FONT };
 pub use texture::Texture;
 pub use gpu_data::{ Model, Gradient, TexCoords };
 
@@ -21,6 +22,7 @@ extern crate ami;
 extern crate awi;
 extern crate adi_gpu;
 extern crate aci_png;
+extern crate rusttype;
 
 pub extern crate adi_clock;
 

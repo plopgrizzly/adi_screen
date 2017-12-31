@@ -23,7 +23,8 @@ pub struct Button {
 }
 
 impl Button {
-	pub fn create(window: &mut Window, pos: (f32,f32)) -> Button {
+	/// Add a new button to the screen.
+	pub fn new(window: &mut Window, pos: (f32,f32)) -> Button {
 		let model = Model::new(window,
 			(&[0, 1, 2, 1, 0, 3],
 			&[

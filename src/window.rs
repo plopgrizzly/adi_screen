@@ -26,7 +26,7 @@ pub struct Window {
 pub trait WindowFunctions {
 	fn unit_ratio(&self) -> f32;
 	fn toggle_fullscreen(&mut self) -> ();
-	fn dim(&self) -> (u32, u32);
+	fn wh(&self) -> (u32, u32);
 }
 
 impl WindowFunctions for Window {
@@ -38,9 +38,8 @@ impl WindowFunctions for Window {
 //		self.window.fullscreen();
 	}
 
-	fn dim(&self) -> (u32, u32) {
-//		self.window.get_dimensions()
-		(640, 360)
+	fn wh(&self) -> (u32, u32) {
+		self.window.wh()
 	}
 }
 
@@ -86,7 +85,7 @@ impl Window {
 		}
 
 		if input == Some(Input::Resize) {
-			let (w, h) = self.dim();
+			let (w, h) = self.wh();
 			let (w, h) = (w as f32, h as f32);
 
 			(self.minsize.1).0 = 2.0 * (self.minsize.0 as f32) / w;

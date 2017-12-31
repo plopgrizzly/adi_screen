@@ -17,6 +17,11 @@ impl Texture {
 		Texture(adi_gpu::Texture::new(&mut window.window, image_data))
 	}
 
+	/// Load an empty texture into gpu memory.
+	pub fn empty(window: &mut Window, w: u32, h: u32) -> Texture {
+		Texture(adi_gpu::Texture::empty(&mut window.window, w, h))
+	}
+
 	/// Load multiple texture from graphic data into gpu memory.
 	pub fn new_vec<F>(window: &mut Window,
 		loader: F, files: &[&[u8]])
@@ -30,5 +35,20 @@ impl Texture {
 		}
 
 		Ok(textures)
+	}
+
+	/// Get the width
+	pub fn w(&self) -> u32 {
+		self.0.w()
+	}
+
+	/// Get the height
+	pub fn h(&self) -> u32 {
+		self.0.h()
+	}
+
+	/// Set the pixels for the texture.
+	pub fn set(&mut self, window: &mut Window, data: &[u32]) -> () {
+		self.0.set(&mut window.window, data)
 	}
 }
