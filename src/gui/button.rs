@@ -39,9 +39,6 @@ impl Button {
 			0.0, 0.0, 1.0, 1.0,
 			1.0 / 3.0, 1.0, 1.0, 1.0,
 			1.0 / 3.0, 0.0, 1.0, 1.0,
-
-			1.0 / 3.0, 1.0, 1.0, 1.0,
-			0.0, 0.0, 1.0, 1.0,
 			0.0, 1.0, 1.0, 1.0,
 		]);
 
@@ -50,7 +47,7 @@ impl Button {
 
 		let button = window.button;
 		let spr = SpriteList::new(model).texture(window, button, tc)
-			.first();
+			.only();
 		let size = window.unit_size();
 
 		let button = Button {

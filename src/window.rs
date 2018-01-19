@@ -57,7 +57,7 @@ impl Window {
 		Window {
 			window: native, time: (Timer::new(1.0 / 60.0), 0.0),
 			minsize: (64, (0.0, 0.0)), aspect: 0.0,
-			joystick: ::Joystick::create(), button: button,
+			joystick: ::Joystick::new(), button: button,
 		}
 	}
 

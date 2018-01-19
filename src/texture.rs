@@ -7,6 +7,13 @@
 use adi_gpu;
 use Window;
 
+#[macro_export] macro_rules! textures {
+	( $window:expr, $decode:expr, $( $x:expr ),*) => {
+		&[ $( $crate::Texture::new($window,
+			$decode(include_bytes!($x)).unwrap()) ),* ]
+	}
+}
+
 /// A reference to an image in GPU memory.
 #[derive(Copy,Clone)]
 pub struct Texture(pub(crate) adi_gpu::Texture);

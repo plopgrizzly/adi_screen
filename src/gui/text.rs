@@ -33,7 +33,6 @@ impl Text {
 		let win_size = window.wh();
 		let w = ((win_size.0 as f32 * self.2 .0) as u32) * (text.len() as u32) / 2;
 		let h = (win_size.0 as f32 * self.2 .1) as u32;
-		println!("{}, {}", w, h);
 		let mut texture = Texture::empty(window, w, h);
 		let model = Model::new(window,
 			(&[0, 1, 2, 1, 0, 3],
@@ -53,7 +52,7 @@ impl Text {
 		let sprite = SpriteList::new(model)
 //			.alpha()
 			.texture(window, texture, tc)
-			.first();
+			.only();
 
 		//
 
@@ -92,9 +91,6 @@ impl<'a> Font<'a> {
 			if let Some(bb) = g.pixel_bounding_box() {
 				g.draw(|x, y, v| {
 					let c = unsafe { ::std::mem::transmute([
-//						color.0 as u8,
-//						color.1 as u8,
-//						color.2 as u8,
 						(color.0 as f32 * v) as u8,
 						(color.1 as f32 * v) as u8,
 						(color.2 as f32 * v) as u8,

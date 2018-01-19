@@ -76,7 +76,8 @@ fn resize(window: &mut Window, tex_logo: Texture) -> Sprite {
 
 fn main() {
 	let mut window = Window::create("project_name",
-		&aci_png::decode(include_bytes!("res/logo.png")).unwrap());
+		&aci_png::decode(include_bytes!("res/logo.png")).unwrap(),
+		(0.25, 0.25, 1.0), (20.0, 10.0));
 	let mut queue = InputQueue::new();
 
 	let tex_logo = Texture::new(&mut window, aci_png::decode(

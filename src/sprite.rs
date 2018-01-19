@@ -128,7 +128,7 @@ impl SpriteList {
 	}
 
 	#[inline(always)]
-	pub fn first(mut self) -> Sprite {
+	pub fn only(mut self) -> Sprite {
 		self.0.pop().unwrap()
 	}
 }
