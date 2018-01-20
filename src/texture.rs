@@ -7,6 +7,7 @@
 use adi_gpu;
 use Window;
 
+/// Macro to load multiple textures into an array.
 #[macro_export] macro_rules! textures {
 	( $window:expr, $decode:expr, $( $x:expr ),*) => {
 		&[ $( $crate::Texture::new($window,

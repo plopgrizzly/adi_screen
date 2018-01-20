@@ -24,7 +24,7 @@ pub struct Text(Option<(Texture, Sprite)>, (f32, f32), (f32, f32));
 
 impl Text {
 	/// Add an empty text box to the screen.
-	pub fn new(window: &mut Window, pos: (f32,f32), wh: (f32,f32)) -> Text {
+	pub fn new(_: &mut Window, pos: (f32,f32), wh: (f32,f32)) -> Text {
 		Text(None, pos, wh)
 	}
 

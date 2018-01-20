@@ -14,8 +14,10 @@ use adi_gpu;
 pub struct Sprite(Shape);
 
 #[must_use]
+/// Builder for a `Sprite`.
 pub struct SpriteBuilder(ShapeBuilder, bool, bool);
 
+/// Builder for multiple `Sprite`s.
 #[must_use]
 pub struct SpriteList(Vec<Sprite>, adi_gpu::Model, adi_gpu::Transform, bool,
 	bool);
@@ -122,11 +124,13 @@ impl SpriteList {
 		self
 	}
 
+	/// Convert into a `Vec` of `Sprite`s
 	#[inline(always)]
 	pub fn to_vec(self) -> Vec<Sprite> {
 		self.0
 	}
 
+	/// Convert into 1 `Sprite` if there's only 1 in the list.
 	#[inline(always)]
 	pub fn only(mut self) -> Sprite {
 		self.0.pop().unwrap()

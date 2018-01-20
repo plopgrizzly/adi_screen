@@ -13,6 +13,7 @@ use Transform;
 use Model;
 use TexCoords;
 
+/// A GUI Button Sprite.
 pub struct Button {
 	sprite: Sprite,
 	xmin: f32,
@@ -60,6 +61,8 @@ impl Button {
 		button
 	}
 
+	/// Update appearance of button, depending on state of mouse, and return
+	/// `true` when the button is pressed.
 	pub fn update(&mut self, window: &mut Window, input: Input) -> bool {
 		match input {
 			Input::Cursor(xy) => {
