@@ -6,6 +6,7 @@
 
 use adi_clock::Timer;
 use adi_clock::Pulse;
+use adi_clock::Clock;
 use Input;
 use afi;
 use adi_gpu;
@@ -17,6 +18,9 @@ use Texture;
 pub struct Window {
 	pub window: Display, // TODO: pub
 	time: (Timer, f32),
+	clock: Clock,
+	since_clock: f32,
+	since_frame: f32,
 	minsize: (u32, (f32, f32)),
 	aspect: f32,
 	pub joystick: ::Joystick, // TODO: pub
@@ -56,6 +60,7 @@ impl Window {
 				.unwrap()));
 		Window {
 			window: native, time: (Timer::new(1.0 / 60.0), 0.0),
+			clock: Clock::new(), since_clock: 0.0, since_frame: 0.0,
 			minsize: (64, (0.0, 0.0)), aspect: 0.0,
 			joystick: ::Joystick::new(), button: button,
 		}
@@ -100,9 +105,15 @@ impl Window {
 	/// loop.
 	pub fn update(&mut self) -> () {
 		// TODO: Automatically decrease to 30fps if needed.
-		self.time.1 = self.time.0.wait(); // 60 fps
+		// self.time.1 = self.time.0.wait(); // 60 fps
 		// Update Screen
 		self.window.update();
+		// Update how much time has passed since previous frame.
+		{
+			let old_time = self.since_clock;
+			self.since_clock = self.clock.since();
+			self.since_frame = self.since_clock - old_time;
+		}
 	}
 
 	/// Returns a number between 0-1. This function is used for animations.
@@ -132,6 +143,11 @@ impl Window {
 	/// the beginning and end of the animation slower than the middle.
 	pub fn pulse_full_smooth(&self, rate_spr: f32) -> f32 {
 		self.time.1.pulse_full_smooth(rate_spr)
+	}
+
+	/// Get the time passed since the previous window frame.
+	pub fn since(&self) -> f32 {
+		self.since_frame
 	}
 }
 

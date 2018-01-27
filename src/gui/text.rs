@@ -14,6 +14,7 @@ use TexCoords;
 use SpriteList;
 use Window;
 use window::WindowFunctions;
+use Transform;
 
 /// A font that's built into the library.
 pub const DEFAULT_FONT: &'static [u8] =
@@ -50,7 +51,9 @@ impl Text {
 			0.0, 1.0, 1.0, 1.0,
 		]);
 		let sprite = SpriteList::new(model)
-//			.alpha()
+			.transform(Transform::new().translate(self.1 .0, self.1 .1, 0.0))
+			.gui()
+			.blend()
 			.texture(window, texture, tc)
 			.only();
 
@@ -64,6 +67,11 @@ impl Text {
 		texture.set(window, buf.as_slice());
 
 		self.0 = Some((texture, sprite));
+	}
+
+	/// Set the position for the text.
+	fn position(&mut self, x: f32, y: f32) {
+		
 	}
 }
 

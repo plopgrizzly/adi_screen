@@ -18,51 +18,70 @@ pub struct SpriteBuilder(ShapeBuilder, bool, bool);
 
 #[must_use]
 pub struct SpriteList(Vec<Sprite>, adi_gpu::Model, adi_gpu::Transform, bool,
-	bool);
+	bool, bool, bool);
 
 impl SpriteList {
 	/// Create a new list of `Sprite`s.
 	#[inline(always)]
 	pub fn new(model: Model) -> SpriteList {
 		SpriteList(vec![], model.0, adi_gpu::Transform::new(), false,
-			false)
+			false, true, true)
 	}
 
 	/// Set the transform.
 	#[inline(always)]
 	pub fn transform(self, transform: Transform) -> SpriteList {
-		SpriteList(self.0, self.1, transform.0, self.3, self.4)
+		SpriteList(self.0, self.1, transform.0, self.3, self.4, self.5, self.6)
 	}
 
 	/// Set the model.
 	#[inline(always)]
 	pub fn model(self, model: Model) -> SpriteList {
-		SpriteList(self.0, model.0, self.2, self.3, self.4)
+		SpriteList(self.0, model.0, self.2, self.3, self.4, self.5, self.6)
 	}
 
 	/// Enable alpha blending for following sprites.
 	#[inline(always)]
 	pub fn alpha(self) -> Self {
-		SpriteList(self.0, self.1, self.2, true, false)
+		SpriteList(self.0, self.1, self.2, true, false, self.5, self.6)
 	}
 
 	/// Enable per-fragment alpha blending for following sprites.
 	#[inline(always)]
 	pub fn blend(self) -> Self {
-		SpriteList(self.0, self.1, self.2, true, true)
+		SpriteList(self.0, self.1, self.2, true, true, self.5, self.6)
 	}
 
 	/// Disable all alpha blending for following sprites.
 	#[inline(always)]
 	pub fn opaque(self) -> Self {
-		SpriteList(self.0, self.1, self.2, false, false)
+		SpriteList(self.0, self.1, self.2, false, false, self.5, self.6)
+	}
+
+	/// Enable fog and camera.
+	#[inline(always)]
+	pub fn fog_cam(self) -> Self {
+		SpriteList(self.0, self.1, self.2, self.3, self.4, true, true)
+	}
+
+	/// Disable fog and camera.
+	#[inline(always)]
+	pub fn gui(self) -> Self {
+		SpriteList(self.0, self.1, self.2, self.3, self.4, false, false)
+	}
+
+	/// Camera without fog.
+	#[inline(always)]
+	pub fn camera(self) -> Self {
+		SpriteList(self.0, self.1, self.2, self.3, self.4, false, true)
 	}
 
 	/// Create a sprite with a solid color.
 	#[inline(always)]
 	pub fn solid(mut self, window: &mut Window, color: [f32; 4]) -> Self {
 		self.0.push(Sprite(ShapeBuilder::new(self.1).push_solid(
-			&mut window.window, self.2, color, self.3, self.4)));
+			&mut window.window, self.2, color, self.3, self.4,
+			self.5, self.6)));
 		self
 	}
 
@@ -72,7 +91,8 @@ impl SpriteList {
 		-> Self
 	{
 		self.0.push(Sprite(ShapeBuilder::new(self.1).push_gradient(
-			&mut window.window, self.2, colors.0, self.3, self.4)));
+			&mut window.window, self.2, colors.0, self.3, self.4,
+			self.5, self.6)));
 		self
 	}
 
@@ -83,7 +103,7 @@ impl SpriteList {
 	{
 		self.0.push(Sprite(ShapeBuilder::new(self.1).push_texture(
 			&mut window.window, self.2, texture.0, tc.0, self.3,
-			self.4)));
+			self.4, self.5, self.6)));
 		self
 	}
 
@@ -95,7 +115,7 @@ impl SpriteList {
 	{
 		self.0.push(Sprite(ShapeBuilder::new(self.1).push_faded(
 			&mut window.window, self.2, texture.0, tc.0, alpha,
-			self.4)));
+			self.4, self.5, self.6)));
 		self
 	}
 
@@ -106,7 +126,7 @@ impl SpriteList {
 	{
 		self.0.push(Sprite(ShapeBuilder::new(self.1).push_tinted(
 			&mut window.window, self.2, texture.0, tc.0, tint,
-			self.3, self.4)));
+			self.3, self.4, self.5, self.6)));
 		self
 	}
 
@@ -118,7 +138,7 @@ impl SpriteList {
 	{
 		self.0.push(Sprite(ShapeBuilder::new(self.1).push_complex(
 			&mut window.window, self.2, texture.0, tc.0, tint_pv.0,
-			self.3, self.4)));
+			self.3, self.4, self.5, self.6)));
 		self
 	}
 
