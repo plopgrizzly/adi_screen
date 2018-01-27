@@ -18,7 +18,9 @@
 [package]
 name = "adi_screen"
 version = "0.3.0"
-authors = ["Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>"]
+authors = [
+	"Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>"
+]
 
 ################################################################################
 
@@ -40,8 +42,10 @@ categories = ["gui", "game-engines", "hardware-support", "multimedia::video",
 
 ################################################################################
 
-exclude = ["examples/*", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", ".gitignore"]
-build = "build.rs"
+exclude = [
+	"examples/*", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", ".gitignore",
+	"_config.yml", "ISSUE_TEMPLATE.md", "icon.png", "icon.ico"
+]
 
 ################################################################################
 
@@ -49,7 +53,7 @@ build = "build.rs"
 afi = "^0.3.1"
 adi_clock = "^0.3"
 ami = "^0.5"
-adi_gpu = { path = "../adi_gpu" }
+adi_gpu = "^0.1"
 aci_png = "^0.5.1"
 rusttype = "0.3.0"
 

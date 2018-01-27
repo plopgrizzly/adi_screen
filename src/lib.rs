@@ -4,6 +4,14 @@
 //
 // src/lib.rs
 
+//! Aldaron's Device Interface / Screen is a library developed by Plop Grizzly
+//! for interfacing with a computer screen or phone screen to render graphics.
+
+#![warn(missing_docs)]
+#![doc(html_logo_url = "http://plopgrizzly.com/adi_screen/icon.png",
+	html_favicon_url = "http://plopgrizzly.com/adi_screen/icon.ico",
+	html_root_url = "http://plopgrizzly.com/adi_screen/")]
+
 mod window;
 mod sprite;
 mod gui;

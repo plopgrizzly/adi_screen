@@ -16,14 +16,15 @@ use Texture;
 
 /// Window represents a connection to a display that can also recieve input.
 pub struct Window {
-	pub window: Display, // TODO: pub
+	pub(crate) window: Display,
 	time: (Timer, f32),
 	clock: Clock,
 	since_clock: f32,
 	since_frame: f32,
 	minsize: (u32, (f32, f32)),
 	aspect: f32,
-	pub joystick: ::Joystick, // TODO: pub
+	#[allow(unused)] // TODO: Unused
+	pub(crate) joystick: ::Joystick,
 	pub(crate) button: Texture,
 }
 
