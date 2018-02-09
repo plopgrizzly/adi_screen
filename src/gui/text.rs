@@ -70,8 +70,8 @@ impl Text {
 	}
 
 	/// Set the position for the text.
-	fn position(&mut self, x: f32, y: f32) {
-		
+	pub fn position(&mut self, x: f32, y: f32) {
+		self.1 = (x, y);
 	}
 }
 
