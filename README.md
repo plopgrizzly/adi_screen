@@ -1,4 +1,4 @@
-# Aldaron's Device Interface - Screen (adi_screen 0.3.0)
+# Aldaron's Device Interface - Screen (adi_screen 0.4.0)
 [Aldaron's Device Interface / Screen (adi_screen)](http://plopgrizzly.com/adi_screen)
 is a library developed by [Plop Grizzly](http://plopgrizzly.com)
 for interfacing with a computer screen or phone screen to render graphics.
@@ -13,11 +13,10 @@ It can be used for either making video games or applications.
 * Render graphics with sprites
 * Obtain user input
 * Sprites auto depth-sort for fast rendering.
-* Render text
+* Text Rendering
 
 **adi_screen**'s planned features:
 * Fully functioning octree
-* 2D Text (not affected by camera)
 
 ## Support
 **adi_screen**'s current support:
