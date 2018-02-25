@@ -6,8 +6,10 @@
 
 use Window;
 use { Texture, Model, Gradient, TexCoords };
-use adi_gpu::{ Shape, ShapeBuilder };
+use adi_gpu::{ Shape };
 use adi_gpu;
+use adi_gpu::DisplayTrait;
+use ami::Mat4;
 
 #[must_use]
 /// Sprite represents anything that is rendered onto the screen.
@@ -15,19 +17,19 @@ pub struct Sprite(Shape);
 
 #[must_use]
 /// Builder for a `Sprite`.
-pub struct SpriteBuilder(ShapeBuilder, bool, bool);
+pub struct SpriteBuilder(adi_gpu::Model, bool, bool);
 
 /// Builder for multiple `Sprite`s.
 #[must_use]
-pub struct SpriteList(Vec<Sprite>, adi_gpu::Model, adi_gpu::Transform, bool,
+pub struct SpriteList(Vec<Sprite>, adi_gpu::Model, Mat4, bool,
 	bool, bool, bool);
 
 impl SpriteList {
 	/// Create a new list of `Sprite`s.
 	#[inline(always)]
 	pub fn new(model: Model) -> SpriteList {
-		SpriteList(vec![], model.0, adi_gpu::Transform::new(), false,
-			false, true, true)
+		SpriteList(vec![], model.0, Mat4::new(), false, false,
+			true, true)
 	}
 
 	/// Set the transform.
@@ -81,8 +83,8 @@ impl SpriteList {
 	/// Create a sprite with a solid color.
 	#[inline(always)]
 	pub fn solid(mut self, window: &mut Window, color: [f32; 4]) -> Self {
-		self.0.push(Sprite(ShapeBuilder::new(self.1).push_solid(
-			&mut window.window, self.2, color, self.3, self.4,
+		self.0.push(Sprite(window.window.shape_solid(&self.1,
+			self.2, color, self.3, self.4,
 			self.5, self.6)));
 		self
 	}
@@ -92,8 +94,8 @@ impl SpriteList {
 	pub fn gradient(mut self, window: &mut Window, colors: Gradient)
 		-> Self
 	{
-		self.0.push(Sprite(ShapeBuilder::new(self.1).push_gradient(
-			&mut window.window, self.2, colors.0, self.3, self.4,
+		self.0.push(Sprite(window.window.shape_gradient(&self.1,
+			self.2, colors.0, self.3, self.4,
 			self.5, self.6)));
 		self
 	}
@@ -103,8 +105,8 @@ impl SpriteList {
 	pub fn texture(mut self, window: &mut Window, texture: Texture,
 		tc: TexCoords) -> Self
 	{
-		self.0.push(Sprite(ShapeBuilder::new(self.1).push_texture(
-			&mut window.window, self.2, texture.0, tc.0, self.3,
+		self.0.push(Sprite(window.window.shape_texture(&self.1,
+			self.2, texture.0, tc.0, self.3,
 			self.4, self.5, self.6)));
 		self
 	}
@@ -115,8 +117,8 @@ impl SpriteList {
 	pub fn faded(mut self, window: &mut Window, texture: Texture,
 		tc: TexCoords, alpha: f32) -> Self
 	{
-		self.0.push(Sprite(ShapeBuilder::new(self.1).push_faded(
-			&mut window.window, self.2, texture.0, tc.0, alpha,
+		self.0.push(Sprite(window.window.shape_faded(&self.1,
+			self.2, texture.0, tc.0, alpha,
 			self.4, self.5, self.6)));
 		self
 	}
@@ -126,8 +128,8 @@ impl SpriteList {
 	pub fn tinted(mut self, window: &mut Window, texture: Texture,
 		tc: TexCoords, tint: [f32; 4]) -> Self
 	{
-		self.0.push(Sprite(ShapeBuilder::new(self.1).push_tinted(
-			&mut window.window, self.2, texture.0, tc.0, tint,
+		self.0.push(Sprite(window.window.shape_tinted(&self.1,
+			self.2, texture.0, tc.0, tint,
 			self.3, self.4, self.5, self.6)));
 		self
 	}
@@ -138,9 +140,10 @@ impl SpriteList {
 	pub fn complex(mut self, window: &mut Window, texture: Texture,
 		tc: TexCoords, tint_pv: Gradient) -> Self
 	{
-		self.0.push(Sprite(ShapeBuilder::new(self.1).push_complex(
-			&mut window.window, self.2, texture.0, tc.0, tint_pv.0,
-			self.3, self.4, self.5, self.6)));
+		self.0.push(Sprite(window.window.shape_complex(&self.1, self.2,
+			texture.0, tc.0, tint_pv.0, self.3, self.4, self.5,
+			self.6)));
+
 		self
 	}
 
@@ -158,13 +161,13 @@ impl SpriteList {
 }
 
 /// Transform represents a transformation matrix.
-pub struct Transform(adi_gpu::Transform);
+pub struct Transform(Mat4);
 
 impl SpriteBuilder {
 	/// Create a new `SpriteBuilder`.
 	#[inline(always)]
 	pub fn new(vertices: Model) -> Self {
-		SpriteBuilder(ShapeBuilder::new(vertices.0), false, false)
+		SpriteBuilder(vertices.0, false, false)
 	}
 
 	/// Enable alpha blending for this sprite.
@@ -260,7 +263,7 @@ impl Transform {
 	/// Create a transform that does nothing. ( Underneath, this is an
 	/// identity matrix ).
 	pub fn new() -> Transform {
-		Transform (adi_gpu::Transform::new())
+		Transform (Mat4::new())
 	}
 
 	/// Translate self by x, y and z.
@@ -292,7 +295,7 @@ impl Transform {
 	pub fn apply(self, window: &mut Window, sprite: &mut Sprite)
 		-> Transform
 	{
-		sprite.0.transform(&mut window.window, &self.0);
+		window.window.transform(&mut sprite.0, &self.0);
 
 		self
 	}

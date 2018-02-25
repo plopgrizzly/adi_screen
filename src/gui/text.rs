@@ -60,7 +60,7 @@ impl Text {
 		//
 
 		let font = Font::new(font);
-		let mut buf = vec![0; (texture.w() * texture.h()) as usize];
+		let mut buf = vec![0; (texture.wh().0 * texture.wh().1) as usize];
 
 		font.render(w as usize, h as f32, buf.as_mut_slice(),
 			(255, 255, 255, 255), text);

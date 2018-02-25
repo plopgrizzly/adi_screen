@@ -9,13 +9,15 @@ use adi_clock::Pulse;
 use adi_clock::Clock;
 use Input;
 use afi;
-use adi_gpu;
 use adi_gpu::Display;
+use adi_gpu::DisplayTrait;
 use aci_png;
 use Texture;
+use awi;
 
 /// Window represents a connection to a display that can also recieve input.
 pub struct Window {
+	win: awi::Window,
 	pub(crate) window: Display,
 	time: (Timer, f32),
 	clock: Clock,
@@ -24,7 +26,7 @@ pub struct Window {
 	minsize: (u32, (f32, f32)),
 	aspect: f32,
 	#[allow(unused)] // TODO: Unused
-	pub(crate) joystick: ::Joystick,
+	pub(crate) joystick: ::ControllerManager,
 	pub(crate) button: Texture,
 }
 
@@ -44,7 +46,7 @@ impl WindowFunctions for Window {
 	}
 
 	fn wh(&self) -> (u32, u32) {
-		self.window.wh()
+		self.win.wh()
 	}
 }
 
@@ -53,17 +55,22 @@ impl Window {
 	/// is the window's icon in ppm format. shaders is a list of custom
 	/// shaders. `fog` is a tuple: (distance, depth).
 	pub fn new(name: &str, icon: afi::Graphic, background: (f32, f32, f32),
-		fog: (f32, f32)) -> Window
+		fog: Option<(f32, f32)>) -> Window
 	{
-		let mut native = Display::new(name, icon, background, fog);
-		let button = Texture(adi_gpu::Texture::new(&mut native,
+		let win = awi::Window::new(name, icon);
+		let mut native = Display::new(&win).unwrap();
+		let button = Texture(native.texture(
 			aci_png::decode(include_bytes!("gui/res/button.png"))
 				.unwrap()));
+
+		native.color(background);
+		native.fog(fog);
+
 		Window {
-			window: native, time: (Timer::new(1.0 / 60.0), 0.0),
+			win, window: native, time: (Timer::new(1.0 / 60.0), 0.0),
 			clock: Clock::new(), since_clock: 0.0, since_frame: 0.0,
 			minsize: (64, (0.0, 0.0)), aspect: 0.0,
-			joystick: ::Joystick::new(), button: button,
+			joystick: ::ControllerManager::new(vec![]), button: button,
 		}
 	}
 
@@ -74,7 +81,7 @@ impl Window {
 
 	/// Set the background color of the window.
 	pub fn background(&mut self, rgb: (f32, f32, f32)) -> () {
-		self.window.bg_color(rgb);
+		self.window.color(rgb);
 	}
 
 	/// Get the minimal x and y dimension for a widget.
@@ -84,15 +91,17 @@ impl Window {
 
 	/// Get input if there is, otherwise return `None`.
 	pub fn input(&mut self) -> Option<Input> {
-		let mut input = self.window.input();
+		let mut input = self.win.input();
 
 		if input == None && self.aspect == 0.0 {
 			input = Some(Input::Resize);
 		}
 
 		if input == Some(Input::Resize) {
-			let (w, h) = self.wh();
-			let (w, h) = (w as f32, h as f32);
+			let wh = self.wh();
+			let (w, h) = (wh.0 as f32, wh.1 as f32);
+
+			self.window.resize(wh);
 
 			(self.minsize.1).0 = 2.0 * (self.minsize.0 as f32) / w;
 			(self.minsize.1).1 = 2.0 * (self.minsize.0 as f32) / h;
@@ -109,6 +118,7 @@ impl Window {
 		// self.time.1 = self.time.0.wait(); // 60 fps
 		// Update Screen
 		self.window.update();
+		self.win.update();
 		// Update how much time has passed since previous frame.
 		{
 			let old_time = self.since_clock;

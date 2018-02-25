@@ -30,12 +30,13 @@ extern crate ami;
 extern crate adi_gpu;
 extern crate aci_png;
 extern crate rusttype;
+extern crate awi;
 
 pub extern crate adi_clock;
 
-pub use adi_gpu::window::Input;
-pub use adi_gpu::window::Key;
-pub use adi_gpu::window::Button;
-pub use adi_gpu::window::Joystick;
-pub use adi_gpu::window::Msg;
-pub use adi_gpu::window::Click;
+pub use awi::Input;
+pub use awi::Key;
+pub use awi::Button;
+pub use awi::ControllerManager;
+pub use awi::Msg;
+pub use awi::Click;

@@ -4,8 +4,12 @@
 //
 // src/texture.rs
 
+use afi::GraphicBuilder;
 use adi_gpu;
 use Window;
+
+pub use adi_gpu::DisplayTrait;
+pub use adi_gpu::TextureTrait;
 
 /// Macro to load multiple textures into an array.
 #[macro_export] macro_rules! textures {
@@ -22,12 +26,15 @@ pub struct Texture(pub(crate) adi_gpu::Texture);
 impl Texture {
 	/// Load a texture from graphic data into gpu memory.
 	pub fn new(window: &mut Window, image_data: ::afi::Graphic) -> Texture {
-		Texture(adi_gpu::Texture::new(&mut window.window, image_data))
+		Texture(window.window.texture(image_data))
 	}
 
 	/// Load an empty texture into gpu memory.
 	pub fn empty(window: &mut Window, w: u32, h: u32) -> Texture {
-		Texture(adi_gpu::Texture::empty(&mut window.window, w, h))
+		let size = (w as usize) * (h as usize);
+		let graphic = GraphicBuilder::new().rgba(w, h, vec![0; size]);
+
+		Texture(window.window.texture(graphic))
 	}
 
 	/// Load multiple texture from graphic data into gpu memory.
@@ -45,18 +52,13 @@ impl Texture {
 		Ok(textures)
 	}
 
-	/// Get the width
-	pub fn w(&self) -> u32 {
-		self.0.w()
-	}
-
-	/// Get the height
-	pub fn h(&self) -> u32 {
-		self.0.h()
+	/// Get the width and height of the texture.
+	pub fn wh(&self) -> (u32, u32) {
+		self.0.wh()
 	}
 
 	/// Set the pixels for the texture.
 	pub fn set(&mut self, window: &mut Window, data: &[u32]) -> () {
-		self.0.set(&mut window.window, data)
+		window.window.set_texture(&mut self.0, data);
 	}
 }
