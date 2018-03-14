@@ -13,11 +13,9 @@ use adi_gpu::Display;
 use adi_gpu::DisplayTrait;
 use aci_png;
 use Texture;
-use awi;
 
 /// Window represents a connection to a display that can also recieve input.
 pub struct Window {
-	win: awi::Window,
 	pub(crate) window: Display,
 	time: (Timer, f32),
 	clock: Clock,
@@ -46,7 +44,7 @@ impl WindowFunctions for Window {
 	}
 
 	fn wh(&self) -> (u32, u32) {
-		self.win.wh()
+		self.window.wh()
 	}
 }
 
@@ -54,11 +52,10 @@ impl Window {
 	/// Create a window for drawing to. name is the name of the window. icon
 	/// is the window's icon in ppm format. shaders is a list of custom
 	/// shaders. `fog` is a tuple: (distance, depth).
-	pub fn new(name: &str, icon: afi::Graphic, background: (f32, f32, f32),
+	pub fn new(name: &str, icon: &afi::Graphic, background: (f32, f32, f32),
 		fog: Option<(f32, f32)>) -> Window
 	{
-		let win = awi::Window::new(name, icon);
-		let mut native = Display::new(&win).unwrap();
+		let mut native = Display::new(name, icon).unwrap();
 		let button = Texture(native.texture(
 			aci_png::decode(include_bytes!("gui/res/button.png"))
 				.unwrap()));
@@ -67,7 +64,7 @@ impl Window {
 		native.fog(fog);
 
 		Window {
-			win, window: native, time: (Timer::new(1.0 / 60.0), 0.0),
+			window: native, time: (Timer::new(1.0 / 60.0), 0.0),
 			clock: Clock::new(), since_clock: 0.0, since_frame: 0.0,
 			minsize: (64, (0.0, 0.0)), aspect: 0.0,
 			joystick: ::ControllerManager::new(vec![]), button: button,
@@ -91,7 +88,7 @@ impl Window {
 
 	/// Get input if there is, otherwise return `None`.
 	pub fn input(&mut self) -> Option<Input> {
-		let mut input = self.win.input();
+		let mut input = self.window.input();
 
 		if input == None && self.aspect == 0.0 {
 			input = Some(Input::Resize);
@@ -118,7 +115,6 @@ impl Window {
 		// self.time.1 = self.time.0.wait(); // 60 fps
 		// Update Screen
 		self.window.update();
-		self.win.update();
 		// Update how much time has passed since previous frame.
 		{
 			let old_time = self.since_clock;
