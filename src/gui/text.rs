@@ -53,12 +53,10 @@ impl Text {
 		let sprite = SpriteList::new(model)
 			.transform(Transform::new().translate(self.1 .0, self.1 .1, 0.0))
 			.gui()
-			.blend()
 			.texture(window, texture, tc)
 			.only();
 
-		//
-
+		// Actually render the text.
 		let font = Font::new(font);
 		let mut buf = vec![0; (texture.wh().0 * texture.wh().1) as usize];
 
