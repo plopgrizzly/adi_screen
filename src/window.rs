@@ -23,8 +23,6 @@ pub struct Window {
 	since_frame: f32,
 	minsize: (u32, (f32, f32)),
 	aspect: f32,
-	#[allow(unused)] // TODO: Unused
-	pub(crate) joystick: ::ControllerManager,
 	pub(crate) button: Texture,
 }
 
@@ -66,8 +64,7 @@ impl Window {
 		Window {
 			window: native, time: (Timer::new(1.0 / 60.0), 0.0),
 			clock: Clock::new(), since_clock: 0.0, since_frame: 0.0,
-			minsize: (64, (0.0, 0.0)), aspect: 0.0,
-			joystick: ::ControllerManager::new(vec![]), button: button,
+			minsize: (64, (0.0, 0.0)), aspect: 0.0, button: button,
 		}
 	}
 
@@ -86,9 +83,14 @@ impl Window {
 		self.minsize.1
 	}
 
-	/// Get input if there is, otherwise return `None`.
-	pub fn input(&mut self) -> Option<Input> {
-		let mut input = self.window.input();
+	/// Update the window and return the user input.  This should run in a
+	/// loop.  Returns `None` when done looping through input.  After `None`
+	/// is returned, the next call will update the screen.
+	pub fn update(&mut self) -> Option<Input> {
+		// TODO: Automatically decrease to 30fps if needed.
+		// self.time.1 = self.time.0.wait(); // 60 fps
+		// Update Screen
+		let mut input = self.window.update();
 
 		if input == None && self.aspect == 0.0 {
 			input = Some(Input::Resize);
@@ -105,22 +107,14 @@ impl Window {
 			self.aspect = h / w;
 		}
 
-		input
-	}
-
-	/// Update the window and return the user input.  This should run in a
-	/// loop.
-	pub fn update(&mut self) -> () {
-		// TODO: Automatically decrease to 30fps if needed.
-		// self.time.1 = self.time.0.wait(); // 60 fps
-		// Update Screen
-		self.window.update();
 		// Update how much time has passed since previous frame.
-		{
+		if input.is_none() {
 			let old_time = self.since_clock;
 			self.since_clock = self.clock.since();
 			self.since_frame = self.since_clock - old_time;
 		}
+
+		input
 	}
 
 	/// Returns a number between 0-1. This function is used for animations.

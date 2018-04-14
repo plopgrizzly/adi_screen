@@ -20,8 +20,7 @@ mod gpu_data;
 
 pub use window::{ Window };
 pub use sprite::{ Sprite, SpriteBuilder, SpriteList, Transform };
-pub use gui::Button as GuiButton;
-pub use gui::{ Text, DEFAULT_FONT };
+pub use gui::{ Text, DEFAULT_FONT, Button as GuiButton };
 pub use texture::Texture;
 pub use gpu_data::{ Model, Gradient, TexCoords };
 
@@ -34,9 +33,4 @@ extern crate awi;
 
 pub extern crate adi_clock;
 
-pub use awi::Input;
-pub use awi::Key;
-pub use awi::Button;
-pub use awi::ControllerManager;
-pub use awi::Msg;
-pub use awi::Click;
+pub use awi::{ Input, Key, Click, Msg };
