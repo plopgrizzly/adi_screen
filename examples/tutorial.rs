@@ -1,8 +1,6 @@
-// Aldaron's Device Interface / Screen
-// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
+// tutorial.rs -- Aldaron's Device Interface / Screen
+// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
-//
-// examples/tutorial.rs
 
 extern crate adi_screen;
 extern crate aci_png;

@@ -1,61 +1,44 @@
-# Aldaron's Device Interface / Screen                                          #
-# Copyright (c) 2017-2018 Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>        #
-# Licensed under the MIT LICENSE                                               #
-#                             _        _                                       #
-#                            /@\——————/@\                                      #
-# .———  .                   |   o    o   |     .————      .            .       #
-# |   | |  .———   .———   .——.     []     .——.  |      .——    ———: ———: | .   . #
-# |   | |  |   |  |   |  \   \   <##>   /   /  |      |   |    /    /  | |   | #
-# |———  |  |   |  |   |   |   ¯        ¯   |   |   -- |   |   /    /   |  \ /  #
-# |     |  |   |  |———    |                |   |    | |   |  /    /    |   |   #
-# |     |   ———   |       |                |    ————  |   | :——— :———  |   |   #
-#                 |        \              /                              __/   #
-#                           ¯————————————¯                                     #
-# Cargo.toml                                                                   #
-
-################################################################################
+# Cargo.toml -- Aldaron's Device Interface / Screen
+# Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+# Licensed under the MIT LICENSE
+#                             _        _
+#                            /@\——————/@\
+# .———  .                   |   o    o   |     .————      .            .
+# |   | |  .———   .———   .——.     []     .——.  |      .——    ———: ———: | .   .
+# |   | |  |   |  |   |  \   \   <##>   /   /  |      |   |    /    /  | |   |
+# |———  |  |   |  |   |   |   ¯        ¯   |   |   -- |   |   /    /   |  \ /
+# |     |  |   |  |———    |                |   |    | |   |  /    /    |   |
+# |     |   ———   |       |                |    ————  |   | :——— :———  |   |
+#                 |        \              /                              __/
+#                           ¯————————————¯
 
 [package]
 name = "adi_screen"
-version = "0.5.0"
+version = "0.6.0"
 authors = [
-	"Jeron Aldaron Lau <jeron.lau@plopgrizzly.com>"
+	"Jeron A. Lau <jeron.lau@plopgrizzly.com>",
 ]
-
-################################################################################
 
 license = "MIT"
 documentation = "https://docs.rs/adi_screen"
 homepage = "http://plopgrizzly.com/adi_screen"
 repository = "https://github.com/plopgrizzly/adi_screen"
 
-################################################################################
-
 readme = "README.md"
-description = """
-    Aldaron's Device Interface / Screen is a library developed by Plop Grizzly
-    for interfacing with a computer screen or phone screen to render graphics.
-"""
+description = "Interface with a computer/phone screen screen to render graphics."
 keywords = [ "vulkan", "graphics", "gui", "hardware", "rendering" ]
 categories = ["gui", "game-engines", "hardware-support", "multimedia::video",
 	"rendering::graphics-api"]
-
-################################################################################
 
 exclude = [
 	"examples/*", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", ".gitignore",
 	"_config.yml", "ISSUE_TEMPLATE.md", "icon.png", "icon.ico"
 ]
 
-################################################################################
-
 [dependencies]
 afi = "^0.3.2"
 adi_clock = "^0.3"
 ami = "^0.6"
-adi_gpu = { path = "../adi_gpu" } # "^0.3"
+adi_gpu = "^0.4"
 aci_png = "^0.5.2"
 rusttype = "^0.4"
-awi = { path = "../awi" } # "^0.2"
-
-################################################################################

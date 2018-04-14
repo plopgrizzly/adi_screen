@@ -1,8 +1,6 @@
-// Aldaron's Device Interface / Screen
-// Copyright (c) 2017-2018, Jeron Lau <jeron.lau@plopgrizzly.com>
+// gpu_data.rs -- Aldaron's Device Interface / Screen
+// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
-//
-// src/gpu_data.rs
 
 use adi_gpu;
 use Window;

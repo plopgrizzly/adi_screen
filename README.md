@@ -1,4 +1,4 @@
-# Aldaron's Device Interface - Screen (adi_screen 0.5.0)
+# Aldaron's Device Interface - Screen (adi_screen 0.6.0)
 [Aldaron's Device Interface / Screen (adi_screen)](http://plopgrizzly.com/adi_screen)
 is a library developed by [Plop Grizzly](http://plopgrizzly.com)
 for interfacing with a computer screen or phone screen to render graphics.
@@ -20,23 +20,22 @@ It can be used for either making video games or applications.
 
 ## Support
 **adi_screen**'s current support:
-* XCB + Vulkan, XCB Input, Linux Joystick Input
-* WinAPI + Vulkan, WinAPI Input (except TouchPad),
+* XCB + Vulkan, XCB Input
+* WinAPI + Vulkan, WinAPI Input (except TouchPad)
+* WinAPI + OpenGL, WinAPI Input
+* XCB + OpenGLES, XCB Input
 
 **adi_screen**'s planned support:
-* XCB + OpenGLES
 * MacOS Window + OpenGL
-* MacOS Window + Metal
+* MacOS Window + Metal/(or MoltenVK?)
 * Android + OpenGLES
 * Android + Vulkan
 * WinAPI TouchPad
-* WinAPI Joystick
 * WinAPI Touchscreen
 * XCB Touchscreen
 * Wayland + OpenGLES
 * Wayland + Vulkan
 * Wayland Touchscreen
-* WinAPI + OpenGL
 * Raspberry Pi Direct To Display + Vulkan
 * Web Assembly + WebGL
 
@@ -47,7 +46,6 @@ Then, run VulkanRT-1.0.46.0-Installer.exe inside the downloaded zip file, and go
 through the install process.
 
 # Contributing
-
 If you'd like to help implement functions for unsupported platforms, fix bugs,
 improve the API or improve the Documentation, then contact me at
 jeron.lau@plopgrizzly.com. I'll appreciate any help.

@@ -1,8 +1,6 @@
-// Aldaron's Device Interface / Screen
-// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
+// lib.rs -- Aldaron's Device Interface / Screen
+// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
-//
-// src/lib.rs
 
 //! Aldaron's Device Interface / Screen is a library developed by Plop Grizzly
 //! for interfacing with a computer screen or phone screen to render graphics.
@@ -29,8 +27,7 @@ extern crate ami;
 extern crate adi_gpu;
 extern crate aci_png;
 extern crate rusttype;
-extern crate awi;
 
 pub extern crate adi_clock;
 
-pub use awi::{ Input, Key, Click, Msg };
+pub use adi_gpu::{ Input, Key, Click, Msg };

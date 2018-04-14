@@ -1,8 +1,6 @@
-// Aldaron's Device Interface / Screen
-// Copyright (c) 2017 Plop Grizzly, Jeron Lau <jeron.lau@plopgrizzly.com>
+// style.rs -- Aldaron's Device Interface / Screen
+// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
-//
-// src/style.rs
 
 /*const SHADER_COLOR : usize = 0;
 const SHADER_TEXTURE : usize = 1;
