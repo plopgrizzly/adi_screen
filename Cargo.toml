@@ -14,7 +14,7 @@
 
 [package]
 name = "adi_screen"
-version = "0.6.0"
+version = "0.7.0"
 authors = [
 	"Jeron A. Lau <jeron.lau@plopgrizzly.com>",
 ]
@@ -36,9 +36,8 @@ exclude = [
 ]
 
 [dependencies]
-afi = "^0.3.2"
 adi_clock = "^0.3"
 ami = "^0.6"
-adi_gpu = "^0.4"
-aci_png = "^0.5.2"
-rusttype = "^0.4"
+adi_gpu = "^0.5"
+aci_png = "^0.6"
+rusttype = "^0.5.2"

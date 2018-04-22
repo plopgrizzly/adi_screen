@@ -2,15 +2,70 @@
 // Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
 
-use adi_clock::Timer;
-use adi_clock::Pulse;
-use adi_clock::Clock;
+use adi_clock::{ Timer, Pulse, Clock };
 use Input;
-use afi;
-use adi_gpu::Display;
-use adi_gpu::DisplayTrait;
+use adi_gpu::{ Display, DisplayTrait };
 use aci_png;
 use Texture;
+use afi::Graphic;
+
+/// A builder for `Window`.
+pub struct WindowBuilder {
+	fog: Option<(f32, f32)>,
+	rgb: (f32, f32, f32),
+	name: String,
+	icon: Option<Graphic>,
+}
+
+impl WindowBuilder {
+	/// A new `WindowBuilder`.
+	pub fn new(name: &str, icon: Option<Graphic>) -> Self {
+		WindowBuilder {
+			fog: None,
+			rgb: (1.0, 1.0, 1.0),
+			name: name.to_string(),
+			icon,
+		}
+	}
+
+	/// Set fog (distance, depth), off by default.
+	pub fn fog(mut self, fog: (f32, f32)) -> Self {
+		self.fog = Some(fog);
+		self
+	}
+
+	/// Set background color, white by default.
+	pub fn background(mut self, rgb: (f32, f32, f32)) -> Self {
+		self.rgb = rgb;
+		self
+	}
+
+	/// Finish building the `Window`.
+	pub fn finish(self) -> Window {
+		let mut native = if let Some(i) = self.icon {
+			Display::new(&self.name, i)
+		} else {
+			let logo = aci_png::decode(
+				include_bytes!("res/logo.png"))
+				.unwrap();
+			Display::new(&self.name, logo)
+		}.unwrap();
+
+		let button = Texture(native.texture(
+			aci_png::decode(include_bytes!("gui/res/button.png"))
+				.unwrap()));
+
+		native.color(self.rgb);
+		native.fog(self.fog);
+
+		Window {
+			window: native, time: (Timer::new(1.0 / 60.0), 0.0),
+			clock: Clock::new(), since_clock: 0.0, since_frame: 0.0,
+			minsize: (64, (0.0, 0.0)), aspect: 0.0, button: button,
+			seconds: 0.0, fps_counter: 0, fps: 0
+		}
+	}
+}
 
 /// Window represents a connection to a display that can also recieve input.
 pub struct Window {
@@ -21,6 +76,11 @@ pub struct Window {
 	since_frame: f32,
 	minsize: (u32, (f32, f32)),
 	aspect: f32,
+	// Frame Rate Counting
+	seconds: f32,
+	fps_counter: u16,
+	fps: u16,
+	// Button Texture
 	pub(crate) button: Texture,
 }
 
@@ -45,35 +105,19 @@ impl WindowFunctions for Window {
 }
 
 impl Window {
-	/// Create a window for drawing to. name is the name of the window. icon
-	/// is the window's icon in ppm format. shaders is a list of custom
-	/// shaders. `fog` is a tuple: (distance, depth).
-	pub fn new(name: &str, icon: &afi::Graphic, background: (f32, f32, f32),
-		fog: Option<(f32, f32)>) -> Window
-	{
-		let mut native = Display::new(name, icon).unwrap();
-		let button = Texture(native.texture(
-			aci_png::decode(include_bytes!("gui/res/button.png"))
-				.unwrap()));
-
-		native.color(background);
-		native.fog(fog);
-
-		Window {
-			window: native, time: (Timer::new(1.0 / 60.0), 0.0),
-			clock: Clock::new(), since_clock: 0.0, since_frame: 0.0,
-			minsize: (64, (0.0, 0.0)), aspect: 0.0, button: button,
-		}
-	}
-
-	/// Adjust the location and direction of the camera.
-	pub fn camera(&mut self, xyz: (f32,f32,f32), rotate_xyz: (f32,f32,f32)) {
-		self.window.camera(xyz, rotate_xyz);
+	/// Update fog distance.
+	pub fn fog(&mut self, fog: Option<(f32, f32)>) {
+		self.window.fog(fog);
 	}
 
 	/// Set the background color of the window.
 	pub fn background(&mut self, rgb: (f32, f32, f32)) -> () {
 		self.window.color(rgb);
+	}
+
+	/// Adjust the location and direction of the camera.
+	pub fn camera(&mut self, xyz: (f32,f32,f32), rotate_xyz: (f32,f32,f32)) {
+		self.window.camera(xyz, rotate_xyz);
 	}
 
 	/// Get the minimal x and y dimension for a widget.
@@ -112,6 +156,15 @@ impl Window {
 			self.since_frame = self.since_clock - old_time;
 		}
 
+		// Count FPS
+		self.fps_counter += 1;
+
+		if self.since_clock >= self.seconds {
+			self.fps = self.fps_counter;
+			self.fps_counter = 0;
+			self.seconds += 1.0;
+		}
+
 		input
 	}
 
@@ -147,6 +200,11 @@ impl Window {
 	/// Get the time passed since the previous window frame.
 	pub fn since(&self) -> f32 {
 		self.since_frame
+	}
+
+	/// Return the current number of FPS the window is running at.
+	pub fn fps(&self) -> (u16, bool) {
+		(self.fps, self.fps_counter == 0)
 	}
 }
 

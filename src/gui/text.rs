@@ -14,6 +14,20 @@ use Window;
 use window::WindowFunctions;
 use Transform;
 
+/// Macro to set text.
+#[macro_export] macro_rules! text {
+	( $window:expr, $text:expr, $font:expr, $( $x:expr ),*) => {
+		let text: Text = $text;
+		let window: Window = $window;
+
+		// TODO don't use format!() 
+		text.update(window, &format!(text), font);
+
+//		&[ $( $crate::Texture::new($window,
+//			$decode(include_bytes!($x)).unwrap()) ),* ]
+	}
+}
+
 /// A font that's built into the library.
 pub const DEFAULT_FONT: &'static [u8] =
 	include_bytes!("res/font/SourceCodePro-Regular.ttf");
@@ -76,7 +90,8 @@ pub struct Font<'a>(&'a [u8], rusttype::Font<'a>);
 
 impl<'a> Font<'a> {
 	pub fn new(font_data: &'a [u8]) -> Font<'a> {
-		Font(font_data, FontCollection::from_bytes(font_data).into_font().unwrap())
+		Font(font_data, FontCollection::from_bytes(font_data).unwrap()
+			.into_font().unwrap())
 	}
 
 	pub(crate) fn render(&self, width: usize, height: f32, buffer: &mut [u32],

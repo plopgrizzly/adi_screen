@@ -16,13 +16,12 @@ mod gui;
 mod texture;
 mod gpu_data;
 
-pub use window::{ Window };
+pub use window::{ WindowBuilder, Window };
 pub use sprite::{ Sprite, SpriteBuilder, SpriteList, Transform };
 pub use gui::{ Text, DEFAULT_FONT, Button as GuiButton };
 pub use texture::Texture;
 pub use gpu_data::{ Model, Gradient, TexCoords };
 
-extern crate afi;
 extern crate ami;
 extern crate adi_gpu;
 extern crate aci_png;
@@ -30,4 +29,4 @@ extern crate rusttype;
 
 pub extern crate adi_clock;
 
-pub use adi_gpu::{ Input, Key, Click, Msg };
+pub use adi_gpu::{ afi, Input, Key, Click, Msg };
