@@ -28,15 +28,15 @@ impl WindowBuilder {
 		}
 	}
 
-	/// Set fog (distance, depth), off by default.
-	pub fn fog(mut self, fog: (f32, f32)) -> Self {
-		self.fog = Some(fog);
+	/// Set fog distance and fog depth, off by default.
+	pub fn fog(mut self, fog_distance: f32, fog_depth: f32) -> Self {
+		self.fog = Some((fog_distance, fog_depth));
 		self
 	}
 
 	/// Set background color, white by default.
-	pub fn background(mut self, rgb: (f32, f32, f32)) -> Self {
-		self.rgb = rgb;
+	pub fn background(mut self, r: f32, g: f32, b: f32) -> Self {
+		self.rgb = (r, g, b);
 		self
 	}
 
@@ -62,7 +62,8 @@ impl WindowBuilder {
 			window: native, time: (Timer::new(1.0 / 60.0), 0.0),
 			clock: Clock::new(), since_clock: 0.0, since_frame: 0.0,
 			minsize: (64, (0.0, 0.0)), aspect: 0.0, button: button,
-			seconds: 0.0, fps_counter: 0, fps: 0
+			seconds: 0.0, fps_counter: 0, fps: 0,
+			font: ::gui::Font::new(::gui::DEFAULT_FONT)
 		}
 	}
 }
@@ -82,6 +83,8 @@ pub struct Window {
 	fps: u16,
 	// Button Texture
 	pub(crate) button: Texture,
+	// Default Font
+	pub(crate) font: ::gui::Font,
 }
 
 pub trait WindowFunctions {

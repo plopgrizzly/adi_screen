@@ -8,7 +8,7 @@ use Input;
 use Window;
 use Sprite;
 use Transform;
-use Model;
+use ModelBuilder;
 use TexCoords;
 
 /// A GUI Button Sprite.
@@ -24,15 +24,13 @@ pub struct Button {
 impl Button {
 	/// Add a new button to the screen.
 	pub fn new(window: &mut Window, pos: (f32,f32)) -> Button {
-		let model = Model::new(window,
-			(&[0, 1, 2, 1, 0, 3],
-			&[
-				0.0,  0.0, 0.0, 1.0,
-				1.0,  1.0, 0.0, 1.0,
-				1.0,  0.0, 0.0, 1.0,
-				0.0,  1.0, 0.0, 1.0,
-			])
-		);
+		let model = ModelBuilder::new()
+			.shape(&[
+				(1.0, 0.0, 0.0, 1.0),
+				(0.0, 0.0, 0.0, 1.0),
+				(1.0, 1.0, 0.0, 1.0),
+				(0.0, 1.0, 0.0, 1.0)])
+			.finish(window);
 
 		let tc = TexCoords::new(window, &[
 			0.0, 0.0, 1.0, 1.0,
