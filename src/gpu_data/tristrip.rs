@@ -61,7 +61,7 @@ impl TriStrip {
 				(0, 1)
 			}
 		};*/
-//		let two_d = (0, 1);
+		let two_d = (0, 1);
 
 		// Step 2. Generate Shapes
 		// self.shape(vertices, None, 0, two_d);
@@ -72,6 +72,273 @@ impl TriStrip {
 		for i in vertices {
 			polygon.push(*i);
 		}
+
+		// Make convex shapes.
+/*		let mut first = true;
+		let mut length = 0;
+		while polygon.is_empty() == false {
+			self.points.push(vec![]);
+
+			let mut marked = vec![]; // mark vertices for removal
+			let mut keep = vec![]; // mark vertices for keeping
+			let mut last: Option<((f32,f32),(f32,f32))> = None; // last concave vertex
+			// Find concave verticex closest to point 0.
+			let mut concaves: Vec<(f32,f32,usize)> = vec![];
+			for i in 0..polygon.len() {
+				// Is concave?
+				let c1 = polygon[if i > 0 { i - 1 } else { polygon.len() - 1 }];
+				let c2 = polygon[if i < polygon.len() - 1 { i + 1 } else { 0 }];
+				let c = polygon[i];
+				let y1 = c1[1];
+				let y2 = c2[1];
+				let y = c[1];
+				let x1 = c1[0];
+				let x2 = c2[0];
+				let x = c[0];
+
+				if direction((x1, y1), (x, y), (x2, y2)) {
+					concaves.push((x,y, i));
+				}
+			}
+			if concaves.is_empty() {
+				for i in 0..polygon.len() {
+					marked.push(i);
+				}
+			} else {
+				// Find closest concave to 0
+				let mut cc: Option<(f32,usize)> = None;
+				for i in concaves {
+					let x = i.0 - polygon[0][0];
+					let y = i.1 - polygon[0][1];
+					let d1 = x * x + y * y;
+
+					if let Some(d2) = cc {
+						if d1 < d2.0 {
+							cc = Some((d1,i.2));
+						}
+					} else {
+						cc = Some((d1,i.2))
+					}
+				}
+				let cc = cc.unwrap();
+
+				// Find a convex shape
+				for i in 0..polygon.len() {
+					// Start at a convex point
+					let mut i = i + cc.1;
+					if i >= polygon.len() {
+						i -= polygon.len();
+					}
+					let i = i;
+
+					// Check if convex polygon possible
+					if let Some(l) = last {
+						// Is concave to breaking vertex?
+						let c = polygon[i];
+						let y = c[1];
+						let x = c[0];
+
+						if !direction(l.0, l.1, (x, y)) {
+							last = None;
+							marked.push(i);
+							keep.push(i);
+							println!("BACK {:?}", (x,y));
+						} else {
+							println!("SKIP {:?}", (x,y));
+						}
+					} else {
+						// Is concave?
+						let c1 = polygon[if i > 0 { i - 1 } else { polygon.len() - 1 }];
+						let c2 = polygon[if i < polygon.len() - 1 { i + 1 } else { 0 }];
+						let c = polygon[i];
+						let y1 = c1[1];
+						let y2 = c2[1];
+						let y = c[1];
+						let x1 = c1[0];
+						let x2 = c2[0];
+						let x = c[0];
+
+						if direction((x1, y1), (x, y), (x2, y2)) {
+							println!("Concave {:?}", (x,y));
+							last = Some(((x1, y1), (x, y)));
+							keep.push(i);
+						} else {
+							println!("Convex {:?}", (x,y));
+						}
+						// Add vertex
+						marked.push(i);
+					}
+				}
+			}
+
+			// Add marked vertices, and remove if not kept.
+			marked.sort();
+			marked.reverse();
+			for i in marked {
+				let v = if keep.contains(&i) {
+					polygon[i]
+				} else {
+					polygon.remove(i)
+				};
+
+				self.points[length].push(v);
+			}
+
+			println!("VVV: {:?}", self.points[length]);
+
+			length += 1;*/
+
+			/*if polygon.len() < 3 { // 4 ?
+				for i in 0..polygon.len() {
+					self.points[length].push(polygon.remove(i));
+				}
+			}
+			'a: for i in 0..polygon.len() {
+				if i >= polygon.len() { break 'a }
+
+				// Is point a split point (concave)?
+				let c1 = polygon[if i > 0 { i - 1 } else { polygon.len() - 1 }];
+				let c2 = polygon[if i < polygon.len() - 1 { i + 1 } else { 0 }];
+				let c = polygon[i];
+				let y1 = c1[1];
+				let y2 = c2[1];
+				let y = c[1];
+				let x1 = c1[0];
+				let x2 = c2[0];
+				let x = c[0];
+
+				if !direction((x1, y1), (x, y), (x2, y2)) {
+					println!("Cv");
+					self.points[length].push(polygon.remove(i));
+
+					if first {
+						self.points[length].push(polygon[if i == 0 { polygon.len() - 1 } else { i-1 }]);
+						first = false;
+					}
+					// break 'a;
+				} else {
+					// println!("Cc");
+					// concave
+					if first == false {
+						self.points[length].push(polygon[i]);
+						first = true;
+						length += 1;
+						self.points.push(vec![]);
+					}
+				}
+			}*/
+//			panic!("couldn't do it");
+//		}
+
+		// Sort points
+/*		let mut ysorted = vec![]; // indices
+		for i in 0..polygon.len() {
+			// Is point a split point (concave)?
+			let c1 = polygon[if i > 0 { i - 1 } else { polygon.len() - 1 }];
+			let c2 = polygon[if i < polygon.len() - 1 { i + 1 } else { 0 }];
+			let c = polygon[i];
+			let y1 = c1[1];
+			let y2 = c2[1];
+			let y = c[1];
+			let x1 = c1[0];
+			let x2 = c2[0];
+			let x = c[0];
+
+			ysorted.push((i,direction((x1, y1), (x, y), (x2, y2))));
+		}
+		ysorted.sort_by(|x,y|
+			if polygon[x.0][1] > polygon[y.0][1] - ::std::f32::EPSILON {
+				::std::cmp::Ordering::Greater
+			} else if polygon[x.0][1] < polygon[y.0][1] + ::std::f32::EPSILON {
+				::std::cmp::Ordering::Less
+			} else {
+				// Tie-breaker
+				if x.1 && !y.1 {
+					::std::cmp::Ordering::Greater
+				} else if y.1 && !x.1 {
+					::std::cmp::Ordering::Less
+				} else {
+//				if polygon[x.0][0] < polygon[y.0][0] - ::std::f32::EPSILON {
+//					::std::cmp::Ordering::Greater
+//				} else if polygon[x.0][0] > polygon[y.0][0] + ::std::f32::EPSILON {
+//					::std::cmp::Ordering::Less
+//				} else {
+					::std::cmp::Ordering::Equal
+				}
+			}
+		);*/
+//		ysorted.reverse();
+
+		// Break into convex polygons based on split points.
+/*		let mut contours = vec![vec![]];
+		for i in 0..ysorted.len() {
+			if ysorted[i].1 == false {
+				contours[contours.len()-1].push(ysorted[i].0);
+				continue;
+			}
+
+			contours[contours.len()-1].push(ysorted[i].0);
+			contours.push(vec![]);
+			contours[contours.len()-1].push(ysorted[i].0);
+		}
+		for i in 0..contours.len() {
+			let sp = contours[i][contours[i].len()-1];
+			contours[i].sort();
+			let sp = contours[i].binary_search(&sp).unwrap();
+			let nf = contours[i][if sp == 0 { contours[i].len() - 1 } else { sp - 1 }];
+			let fv = if nf > contours[i].len() - 1 { 0 } else { nf + 1 };
+		}*/
+
+/*		let mut last_split = None;
+		let mut last_fail = None;
+
+		for i in 0..ysorted.len() {
+			// Skip if not a split point.
+			if ysorted[i].1 == false { continue }
+			// Add convex polygon
+			self.points.push(vec![]);
+			// Index of this split point.
+			let p = ysorted[i].0;
+			// Last failed added index
+			let mut fail = None;
+			// Add vertices as long as y doesn't exceed split point
+			// (index is less than i)
+			let mut j = p;
+			loop {
+				// Add only if ysort is
+				// * less than split point
+				// * more than last_split
+				// * or is last_split or last_fail
+				{
+					// find index of j index in ysorted
+					let mut index = None;
+					for k in 0..ysorted.len() {
+						if j == ysorted[k].0 {
+							index = Some(k);
+						}
+					}
+					let index = index.unwrap(); // nvr panic
+					// if index is less than i = Good and more than/equal to last_split
+					if (index < i && index >= last_split.unwrap_or(0)) || last_fail == Some(index) {
+						let last_polygon = self.points.len()-1;
+						self.points[last_polygon].push(polygon[index]);
+					} else {
+						// Use point before fail to repeat in next polygon.
+						fail = Some(if index == 0 { polygon.len() - 1 } else { index - 1 });
+					}
+				}
+				// Next vertex
+				j += 1;
+				if j >= polygon.len() { j = 0 }
+				// Back to split point
+				if j == p { break }
+			}
+			// Add split point and last failed back
+			last_split = Some(p);
+			last_fail = fail;
+		}*/
+
+		// end
 
 		// Find Split points
 		let mut ysorted = vec![]; // indices
@@ -160,8 +427,8 @@ impl TriStrip {
 			*i = new;
 		}
 
-		// Step 3. Sort Vertices for each shape Along 2nd Axis (two_d.1)
-		/*for i in &mut self.points {
+		// Step 3. Sort Vertices for each shape Along 2nd Axis (two_d.1)*/
+		for i in &mut self.points {
 			i.sort_by(|x,y|
 				if x[two_d.1] < y[two_d.1] {
 					::std::cmp::Ordering::Greater
@@ -171,7 +438,7 @@ impl TriStrip {
 					::std::cmp::Ordering::Equal
 				}
 			);
-		}*/
+		}
 	}
 
 	fn polygon(&mut self, sh: usize, older: Option<(f32,f32)>,
