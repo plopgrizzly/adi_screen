@@ -210,10 +210,3 @@ impl Window {
 		(self.fps, self.fps_counter == 0)
 	}
 }
-
-impl Drop for Window {
-	fn drop(&mut self) -> () {
-//		renderer::close(&mut self.vw);
-		println!("adi_screen: Quit.");
-	}
-}

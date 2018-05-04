@@ -26,10 +26,10 @@ impl Button {
 	pub fn new(window: &mut Window, pos: (f32,f32)) -> Button {
 		let model = ModelBuilder::new()
 			.shape(&[
-				(1.0, 0.0, 0.0, 1.0),
-				(0.0, 0.0, 0.0, 1.0),
-				(1.0, 1.0, 0.0, 1.0),
-				(0.0, 1.0, 0.0, 1.0)])
+				[1.0, 0.0, 0.0, 1.0],
+				[0.0, 0.0, 0.0, 1.0],
+				[1.0, 1.0, 0.0, 1.0],
+				[0.0, 1.0, 0.0, 1.0]])
 			.finish(window);
 
 		let tc = TexCoords::new(window, &[

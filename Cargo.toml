@@ -37,8 +37,7 @@ exclude = [
 
 [dependencies]
 adi_clock = "^0.3"
-ami = "^0.6"
+ami = { path = "../ami" } # "^0.6"
 adi_gpu = { path = "../adi_gpu" } # "^0.5"
 aci_png = "^0.6"
-# rusttype = "^0.5.2"
-font = "^0.3.2"
+fonterator = { path = "../fonterator" } #

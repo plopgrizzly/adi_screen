@@ -2,9 +2,7 @@
 // Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 // Licensed under the MIT LICENSE
 
-use font;
-//use rusttype;
-//use rusttype::FontCollection;
+use fonterator;
 
 // use Texture;
 use Sprite;
@@ -31,7 +29,7 @@ use Transform;
 
 /// A font that's built into the library.
 pub const DEFAULT_FONT: &'static [u8] =
-	include_bytes!("res/font/SourceCodePro-Regular.ttf");
+	include_bytes!("res/font/DejaVuSansMono.ttf");
 
 /// Text on the screen.
 pub struct Text(Option<Sprite>, (f32, f32), (f32, f32));
@@ -49,7 +47,6 @@ impl Text {
 		let win_size = window.wh();
 		let w = ((win_size.0 as f32 * self.2 .0) as u32) * (text.len() as u32) / 2;
 		let h = (win_size.0 as f32 * self.2 .1) as u32;
-		let mut vertices = vec![];
 		/*let model = Model::new(window,
 			(&[0, 1, 2, 1, 0, 3],
 			&[
@@ -65,23 +62,17 @@ impl Text {
 			1.0, 0.0, 1.0, 1.0,
 			0.0, 1.0, 1.0, 1.0,
 		]);*/
-		font.unwrap_or(&window.font).render(w as usize, h as f32,
-			&mut vertices, text);
+		let model = font
+			.unwrap_or(&window.font)
+			.render(w as usize, h as f32, text);
 
-		vertices.extend(vec![
-			(0.0, 0.0, 0.0, 1.0),
-			(1.0, 1.0, 0.0, 1.0),
-			(1.0, 0.0, 0.0, 1.0),
-			(0.0, 1.0, 0.0, 1.0),
-		]);
+//		println!("{:?}", vertices);
 
-		let model = ModelBuilder::new()
-			.shape(vertices.as_slice())
-			.finish(window);
+		let model = model.finish(window);
 
 		let sprite = SpriteList::new(model)
 			.transform(Transform::new()
-				.scale(0.0002, 0.0002, 0.0002)
+				.scale(0.2, 0.2, 0.2)
 				.translate(self.1 .0, self.1 .1 + 1.0, 0.0)
 			)
 			.gui()
@@ -101,40 +92,97 @@ impl Text {
 	}
 }
 
-//
-fn normalize(oa: font::Offset) -> font::Offset {
-	let magnitude = ((oa.0 * oa.0) + (oa.1 * oa.1)).sqrt();
-
-	font::Offset(oa.0 / magnitude, oa.1 / magnitude)
-}
-
-fn dot_product(oa: font::Offset, ob: font::Offset) -> f32 {
-	(oa.0 * ob.0) + (oa.1 * ob.1)
-}
-
-fn perp(oa: font::Offset) -> font::Offset {
-	font::Offset(-oa.1, oa.0)
-}
+use fonterator::{ PathOp, Scale };
 
 /// A font.
 pub struct Font(
-//	rusttype::Font<'a>,
-	font::Font,
+	fonterator::Font<'static>,
 );
 
 impl Font {
-	pub fn new(font_data: &[u8]) -> Font {
-//		Font(FontCollection::from_bytes(font_data).unwrap()
-//			.into_font().unwrap())
-		let mut reader = ::std::io::Cursor::new(font_data);
+	pub fn new(font_data: &'static [u8]) -> Font {
+		Font(
+			fonterator::FontCollection::from_bytes(font_data)
+				.unwrap()
+				.into_font()
+				.unwrap()
+		)
+//		let mut reader = ::std::io::Cursor::new(font_data);
 
-		Font(font::Font::read(&mut reader).unwrap())
+//		Font(fonterator::Font::read(&mut reader).unwrap())
 	}
 
 	fn render(&self, _width: usize, _height: f32, // TODO
-		vertices: &mut Vec<(f32,f32,f32,f32)>, text: &str)
+		text: &str) -> ModelBuilder
 	{
-		let mut wv = 0;
+		let mut model = ModelBuilder::new();
+		let mut verts = vec![];
+
+		let size = (1.0f32).ceil();
+		let scale = Scale { x: size, y: size };
+		let v_metrics = self.0.v_metrics(scale);
+		let offset = fonterator::point(0.0, v_metrics.ascent);
+
+		for glyph in self.0.layout(text, scale, offset) {
+			for i in glyph.draw() {
+				match i {
+					PathOp::MoveTo(x, y) => {
+						verts.push([x, y, 0.0, 0.0]);
+						println!("Move({}, {})", x, y)
+					},
+					PathOp::LineTo(x, y) => {
+						verts.push([x, y, 0.0, 0.0]);
+						println!("Line({}, {})", x, y)
+					},
+					PathOp::QuadTo(x, y, cx, cy) => {
+						let sx = verts[verts.len() - 1][0];
+						let sy = verts[verts.len() - 1][1];
+
+						for i in 0+1..8+1 {
+							let t = i as f32 / 8.0; // 0 - 1
+
+							let dx = (1.0 - t) * (1.0 - t) * sx + 2.0 * (1.0 - t) * t * cx + t * t * x;
+							let dy = (1.0 - t) * (1.0 - t) * sy + 2.0 * (1.0 - t) * t * cy + t * t * y;
+
+							verts.push([dx, dy, 0.0, 0.0]);
+						}
+
+						println!("Quad({}, {}, {}, {})", x, y, cx, cy)
+					},
+					PathOp::LineClose => {
+						model=model.v(verts.as_slice())
+							.f();
+						verts.clear();
+					},
+					PathOp::QuadClose(cx, cy) => {
+						let x = verts[0][0];
+						let y = verts[0][1];
+						let sx = verts[verts.len() - 1][0];
+						let sy = verts[verts.len() - 1][1];
+
+						for i in 0+1..7+1 {
+							let t = i as f32 / 8.0; // 0 - 1
+
+							let dx = (1.0 - t) * (1.0 - t) * sx + 2.0 * (1.0 - t) * t * cx + t * t * x;
+							let dy = (1.0 - t) * (1.0 - t) * sy + 2.0 * (1.0 - t) * t * cy + t * t * y;
+
+							verts.push([dx, dy, 0.0, 0.0]);
+						}
+
+						model=model.v(verts.as_slice())
+							.f();
+						verts.clear();
+					},
+				}
+			}
+		}
+
+		model
+
+
+
+
+/*//		let mut wv = 0;
 		let mut s = -1.0;
 
 		// iterate over the characters in the string.
@@ -143,30 +191,36 @@ impl Font {
 			let glyph = self.0.draw(i).unwrap();
 			if glyph.is_none() { continue }
 			let glyph = glyph.unwrap();
-			let mut a = font::Offset::default()
-				+ (font::Offset(glyph.advance_width(), 0.0) * s);
-			for contour in glyph.iter() {
-				let mut prev = font::Offset(0.0, 0.0);
+//			let mut a = font::Offset::default()
+//				+ (font::Offset(glyph.advance_width(), 0.0) * s);
+			let mut z = (0.0, 0.0);
+			'a: for contour in glyph.iter() {
+				let mut a = (
+					glyph.advance_width() * s + contour.offset.0,
+					contour.offset.1
+				);
+
+//				let offset = contour.offset;
+				println!("new contour {:?}", a);*/
+//				let mut prev = font::Offset(0.0, 0.0);
 //				let mut direction = None;
-				a += contour.offset;
-//				vertices.push(a.0);
-//				vertices.push(-a.1);
-//				vertices.push(0.0);
-//				vertices.push(0.0);
-				let mut origin = wv;
-				wv += 1;
-				let mut side = true;
-				for segment in contour.iter() {
-					use font::Segment;
-					use font::Offset;
+//				z+= (0.0, contour.offset.1);
+//				a = z;
+				// vertices.push([a.0, -a.1, 0.0, 0.0]);
+//				let mut origin = wv;
+//				wv += 1;
+//				let mut side = true;
+/*				for segment in contour.iter() {
 					match segment {
 						&Segment::Linear(xy) => {
-							a += xy;
-							/*vertices.push(a.0);
-							vertices.push(-a.1);
-							vertices.push(0.0);
-							vertices.push(0.0);
-							if side == false {
+							a.0 += xy.0;
+							a.1 += xy.1;
+							println!("linear [{}, {}]", a.0, -a.1);
+							vertices.push([a.0,
+								-a.1,
+								0.0,
+								0.0]);*/
+							/*if side == false {
 								let normalized = normalize(a - xy);
 								let new_d = dot_product(normalized, perp(prev));
 								if let Some(d) = direction {
@@ -184,25 +238,39 @@ impl Font {
 								prev = normalize(a - xy);
 								side = false;
 							}
-							wv += 1;*/
+							wv += 1;*//*
 						},
 						&Segment::Quadratic(xy, pa) => {
 							let c = a;
-							let b = a + xy;
-							let pa = pa + xy;
-							a += pa;
+							let b = {
+								(a.0 + xy.0, a.1 + xy.1)
+							};
+							let pa = {
+								(pa.0 + xy.0, pa.1 + xy.1)
+							};
+							a = {
+								(a.0 + pa.0, a.1 + pa.1)
+							};
+
+							vertices.push([
+								a.0,
+								-a.1,
+								0.0,
+								0.0]);
 
 							// interpolation size 8
-							/*for i in 0+1..8+1 {
+							for i in 0+1..8+1 {
 								let i = i as f32;
 								let d = (Offset(c.0*i/8.0,c.1*i/8.0)+Offset(b.0*(1.0-i/8.0),b.1*(1.0-i/8.0))
 								 + Offset(b.0*i/8.0,b.1*i/8.0)+Offset(a.0*(1.0-i/8.0),a.1*(1.0-i/8.0))) / 2.0;
 
-								vertices.push(d.0);
-								vertices.push(-d.1);
-								vertices.push(0.0);
-								vertices.push(0.0);
-								if side == false {
+								*///vertices.push([
+								//	d.0,
+								//	-d.1,
+								//	0.0,
+								//	0.0]);
+
+								/*if side == false {
 									let normalized = normalize(a - xy);
 									let new_d = dot_product(normalized, perp(prev));
 									if let Some(d) = direction {
@@ -220,8 +288,8 @@ impl Font {
 									prev = normalize(a - xy);
 									side = false;
 								}
-								wv += 1;
-							}*/
+								wv += 1;*//*
+							}
 						},
 						&Segment::Cubic(_, _, _) => {
 							panic!("cubic curve in \
@@ -230,8 +298,17 @@ impl Font {
 						},
 					}
 				}
+				// Last vertex = first vertex in a contour
+				//if *vertices.last().unwrap() == vertices[0] {
+				//	vertices.pop();
+				//}
+				model = model.v(vertices.as_slice()).f();
+				vertices.clear();
+//				break 'a;
 			}
 		}
+
+		model*/
 
 		/*let pixel_height = height.ceil() as usize;
 		let scale = rusttype::Scale { x: height, y: height };

@@ -25,9 +25,9 @@ pub use gpu_data::{ Model, ModelBuilder, Gradient, TexCoords };
 extern crate ami;
 extern crate adi_gpu;
 extern crate aci_png;
-// extern crate rusttype;
-extern crate font;
+extern crate fonterator;
 
 pub extern crate adi_clock;
 
 pub use adi_gpu::{ afi, Input, Key, Click, Msg };
+pub use ami::{ Mat4 };
