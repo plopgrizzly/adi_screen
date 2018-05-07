@@ -28,7 +28,7 @@ impl TriStrip {
 	}
 
 	pub fn push(&mut self, vertices: &[[f32; 4]]) {
-		println!("V: {:?}", vertices);
+//		println!("V: {:?}", vertices);
 
 		// Step 1. Which side has least change not included in 2D.
 /*		let mut xmin = vertices[0][0];
@@ -350,7 +350,7 @@ impl TriStrip {
 			&mut i);
 
 		for i in &self.points {
-			println!("POLYGON: {:?}", i);
+//			println!("POLYGON: {:?}", i);
 		}
 
 		for i in &mut self.points {
@@ -415,7 +415,7 @@ impl TriStrip {
 				}
 			}
 
-			println!("LENGHT {:?}", ysorted);
+//			println!("LENGHT {:?}", ysorted);
 
 			// Actually re-order the vertices.
 			let mut new: Vec<[f32; 4]> = vec![];
@@ -467,7 +467,7 @@ impl TriStrip {
 //				if (y1 < y - ::std::f32::EPSILON && y2 < y - ::std::f32::EPSILON) || (y1 > y + ::std::f32::EPSILON && y2 > y + ::std::f32::EPSILON)
 //					|| (y == y1 || y == y2)
 				{
-					println!("Found split point: {} {} {}", x, y, j);
+					// println!("Found split point: {} {} {}", x, y, j);
 
 					// Add new convex polygon
 					let next_sh = self.points.len();
@@ -507,7 +507,7 @@ impl TriStrip {
 	fn shape(&mut self, vertices: &[[f32; 4]], mut older: Option<(f32,f32)>,
 		sh: usize, two_d: (usize, usize)) -> usize
 	{
-		println!("shape");
+//		println!("shape");
 		if sh > 100 { panic!("too many"); }
 
 		self.points.push(vec![]);

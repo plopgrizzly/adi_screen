@@ -37,7 +37,7 @@ exclude = [
 
 [dependencies]
 adi_clock = "^0.3"
-ami = { path = "../ami" } # "^0.6"
-adi_gpu = { path = "../adi_gpu" } # "^0.5"
+ami = { git = "https://github.com/PlopGrizzly/ami.git" }
+adi_gpu = { git = "https://github.com/PlopGrizzly/adi_gpu.git" }
 aci_png = "^0.6"
-fonterator = { path = "../fonterator" } #
+fonterator = { git = "https://github.com/PlopGrizzly/fonterator.git" }

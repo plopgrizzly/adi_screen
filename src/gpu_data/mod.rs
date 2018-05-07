@@ -41,7 +41,7 @@ impl ModelBuilder {
 		self.ts = tristrip::TriStrip::new();
 		self.ts.push(vertices);
 
-		println!("Face split in {}", self.ts.points.len());
+//		println!("Face split in {}", self.ts.points.len());
 
 		self
 	}
@@ -49,9 +49,9 @@ impl ModelBuilder {
 	/// Add a face to the model, this unapplies the transformation matrix.
 	pub fn f(mut self) -> Self {
 		for i in 0..self.ts.points.len() {
-			println!("{}", self.ts.points[i].len());
+//			println!("{}", self.ts.points[i].len());
 			let points = self.ts.points[i].clone();
-			println!("{:?}", points);
+//			println!("{:?}", points);
 			self = self.shape(points.as_slice());
 		}
 
@@ -109,7 +109,7 @@ impl ModelBuilder {
 
 	/// Create the model
 	pub fn finish(self, window: &mut Window) -> Model {
-		println!("RAW:{:?}", self.vertices);
+//		println!("RAW:{:?}", self.vertices);
 
 		Model(window.window.model(self.vertices.as_slice()))
 	}
