@@ -18,7 +18,6 @@ pub use adi_gpu::TextureTrait;
 }
 
 /// A reference to an image in GPU memory.
-#[derive(Copy,Clone)]
 pub struct Texture(pub(crate) adi_gpu::Texture);
 
 impl Texture {

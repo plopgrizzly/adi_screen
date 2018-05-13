@@ -4,7 +4,7 @@
 
 use adi_clock::{ Timer, Pulse, Clock };
 use Input;
-use adi_gpu::{ Display, DisplayTrait };
+use adi_gpu::{ Display, DisplayTrait, new_display };
 use aci_png;
 use Texture;
 use afi::Graphic;
@@ -43,12 +43,12 @@ impl WindowBuilder {
 	/// Finish building the `Window`.
 	pub fn finish(self) -> Window {
 		let mut native = if let Some(i) = self.icon {
-			Display::new(&self.name, i)
+			new_display(&self.name, i)
 		} else {
 			let logo = aci_png::decode(
 				include_bytes!("res/logo.png"))
 				.unwrap();
-			Display::new(&self.name, logo)
+			new_display(&self.name, logo)
 		}.unwrap();
 
 		let button = Texture(native.texture(

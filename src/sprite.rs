@@ -11,7 +11,7 @@ use ami::Mat4;
 
 #[must_use]
 /// Sprite represents anything that is rendered onto the screen.
-pub struct Sprite(Shape);
+pub struct Sprite(pub(crate) Shape);
 
 #[must_use]
 /// Builder for a `Sprite`.
@@ -92,11 +92,11 @@ impl SpriteList {
 
 	/// Create a sprite with a texture and texture coordinates.
 	#[inline(always)]
-	pub fn texture(mut self, window: &mut Window, texture: Texture,
+	pub fn texture(mut self, window: &mut Window, texture: &Texture,
 		tc: TexCoords) -> Self
 	{
 		self.0.push(Sprite(window.window.shape_texture(&self.1,
-			self.2, texture.0, tc.0, self.3,
+			self.2, &texture.0, tc.0, self.3,
 			self.4, self.5)));
 		self
 	}
@@ -104,22 +104,22 @@ impl SpriteList {
 	/// Create a sprite with a texture, texture coordinates and alpha.
 	/// Automatically Enables Alpha Blending. (no need to call `alpha()`)
 	#[inline(always)]
-	pub fn faded(mut self, window: &mut Window, texture: Texture,
+	pub fn faded(mut self, window: &mut Window, texture: &Texture,
 		tc: TexCoords, alpha: f32) -> Self
 	{
 		self.0.push(Sprite(window.window.shape_faded(&self.1,
-			self.2, texture.0, tc.0, alpha,
+			self.2, &texture.0, tc.0, alpha,
 			self.4, self.5)));
 		self
 	}
 
 	/// Create a sprite with a texture and texture coordinates and tint.
 	#[inline(always)]
-	pub fn tinted(mut self, window: &mut Window, texture: Texture,
+	pub fn tinted(mut self, window: &mut Window, texture: &Texture,
 		tc: TexCoords, tint: [f32; 4]) -> Self
 	{
 		self.0.push(Sprite(window.window.shape_tinted(&self.1,
-			self.2, texture.0, tc.0, tint,
+			self.2, &texture.0, tc.0, tint,
 			self.3, self.4, self.5)));
 		self
 	}
@@ -127,11 +127,11 @@ impl SpriteList {
 	/// Create a sprite with a texture and texture coordinates and tint per
 	/// vertex.
 	#[inline(always)]
-	pub fn complex(mut self, window: &mut Window, texture: Texture,
+	pub fn complex(mut self, window: &mut Window, texture: &Texture,
 		tc: TexCoords, tint_pv: Gradient) -> Self
 	{
 		self.0.push(Sprite(window.window.shape_complex(&self.1, self.2,
-			texture.0, tc.0, tint_pv.0, self.3, self.4, self.5)));
+			&texture.0, tc.0, tint_pv.0, self.3, self.4, self.5)));
 
 		self
 	}
@@ -187,7 +187,7 @@ impl SpriteBuilder {
 
 	/// Create a sprite with a texture and texture coordinates.
 	#[inline(always)]
-	pub fn texture(&self, window: &mut Window, texture: Texture, tc: TexCoords)
+	pub fn texture(&self, window: &mut Window, texture: &Texture, tc: TexCoords)
 		-> Sprite
 	{
 		Sprite(self.0.push_texture(&mut window.window, texture.0, tc.0,
@@ -197,7 +197,7 @@ impl SpriteBuilder {
 	/// Create a sprite with a texture, texture coordinates and alpha.
 	/// Automatically Enables Alpha Blending. (no need to call `alpha()`)
 	#[inline(always)]
-	pub fn faded(&self, window: &mut Window, texture: Texture, tc: TexCoords,
+	pub fn faded(&self, window: &mut Window, texture: &Texture, tc: TexCoords,
 		alpha: f32) -> Sprite
 	{
 		Sprite(self.0.push_faded(&mut window.window, texture.0, tc.0,
@@ -206,7 +206,7 @@ impl SpriteBuilder {
 
 	/// Create a sprite with a texture and texture coordinates and tint.
 	#[inline(always)]
-	pub fn tinted(&self, window: &mut Window, texture: Texture,
+	pub fn tinted(&self, window: &mut Window, texture: &Texture,
 		tc: TexCoords, tint: [f32; 4]) -> Sprite
 	{
 		Sprite(self.0.push_tinted(&mut window.window, texture.0, tc.0,
@@ -216,7 +216,7 @@ impl SpriteBuilder {
 	/// Create a sprite with a texture and texture coordinates and tint per
 	/// vertex.
 	#[inline(always)]
-	pub fn complex(&self, window: &mut Window, texture: Texture,
+	pub fn complex(&self, window: &mut Window, texture: &Texture,
 		tc: TexCoords, tint_pv: Gradient) -> Sprite
 	{
 		Sprite(self.0.push_complex(&mut window.window, texture.0, tc.0,

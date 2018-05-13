@@ -11,6 +11,9 @@ use Transform;
 use ModelBuilder;
 use TexCoords;
 
+use ami::Mat4;
+use adi_gpu::DisplayTrait;
+
 /// A GUI Button Sprite.
 pub struct Button {
 	sprite: Sprite,
@@ -42,9 +45,14 @@ impl Button {
 //		let style = Shape::Texture(&v, 0/*include_bytes!("res/button.ppm")*/,&tc);
 //		let spr = Sprite::create(window, style, 1);
 
-		let button = window.button;
-		let spr = SpriteList::new(model).texture(window, button, tc)
-			.only();
+//		let button = &window.button;
+//		let spr = SpriteList::new(model).texture(window, button, tc)
+//			.only();
+
+		let spr = Sprite(window.window.shape_texture(&model.0,
+			Mat4::new(), &window.button.0, tc.0, false, true, true));
+
+
 		let size = window.unit_size();
 
 		let button = Button {

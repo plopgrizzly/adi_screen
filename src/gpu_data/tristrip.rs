@@ -424,6 +424,8 @@ impl TriStrip {
 				new.push(i[*k]);
 			}
 
+			new.reverse();
+
 			*i = new;
 		}
 
