@@ -1,7 +1,6 @@
-// lib.rs -- Aldaron's Device Interface / Screen
-// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
-// Licensed under the MIT LICENSE
-
+// "adi_screen" crate - Licensed under the MIT LICENSE
+//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
+//
 //! Aldaron's Device Interface / Screen is a library developed by Plop Grizzly
 //! for interfacing with a computer screen or phone screen to render graphics.
 

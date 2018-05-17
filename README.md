@@ -1,4 +1,4 @@
-# Aldaron's Device Interface - Screen (adi_screen 0.7)
+# Aldaron's Device Interface / Screen
 [Aldaron's Device Interface / Screen (adi_screen)](http://plopgrizzly.com/adi_screen)
 is a library developed by [Plop Grizzly](http://plopgrizzly.com)
 for interfacing with a computer screen or phone screen to render graphics.
@@ -24,6 +24,7 @@ It can be used for either making video games or applications.
 * WinAPI + Vulkan, WinAPI Input (except TouchPad)
 * WinAPI + OpenGL, WinAPI Input
 * XCB + OpenGLES, XCB Input
+* XCB + OpenGL, XCB Input
 
 **adi_screen**'s planned support:
 * MacOS Window + OpenGL

@@ -1,29 +1,27 @@
-// texture.rs -- Aldaron's Device Interface / Screen
-// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
-// Licensed under the MIT LICENSE
+// "adi_screen" crate - Licensed under the MIT LICENSE
+//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
 use afi::GraphicBuilder;
 use adi_gpu;
 use Window;
 
-pub use adi_gpu::DisplayTrait;
-pub use adi_gpu::TextureTrait;
-
 /// Macro to load multiple textures into an array.
 #[macro_export] macro_rules! textures {
-	( $window:expr, $decode:expr, $( $x:expr ),*) => {
-		&[ $( $crate::Texture::new($window,
-			$decode(include_bytes!($x)).unwrap()) ),* ]
+	($textures:ident, $window:expr, $decode:expr, $( $x:expr ),*) => {
+		let $textures = &[ $( $crate::Texture::new(&mut $window,
+			$decode(include_bytes!($x)).unwrap()) ),* ];
 	}
 }
 
 /// A reference to an image in GPU memory.
-pub struct Texture(pub(crate) adi_gpu::Texture);
+pub struct Texture(pub(crate) adi_gpu::Texture, pub(crate) u32, pub(crate) u32);
 
 impl Texture {
-	/// Load a texture from graphic data into gpu memory.
+	#[doc(hidden)]
 	pub fn new(window: &mut Window, image_data: ::afi::Graphic) -> Texture {
-		Texture(window.window.texture(image_data))
+		let (w, h, _) = image_data.as_slice();
+
+		Texture(window.window.texture(&image_data), w, h)
 	}
 
 	/// Load an empty texture into gpu memory.
@@ -31,7 +29,7 @@ impl Texture {
 		let size = (w as usize) * (h as usize);
 		let graphic = GraphicBuilder::new().rgba(w, h, vec![0; size]);
 
-		Texture(window.window.texture(graphic))
+		Texture(window.window.texture(&graphic), w, h)
 	}
 
 	/// Load multiple texture from graphic data into gpu memory.
@@ -51,7 +49,7 @@ impl Texture {
 
 	/// Get the width and height of the texture.
 	pub fn wh(&self) -> (u32, u32) {
-		self.0.wh()
+		(self.1, self.2)
 	}
 
 	/// Set the pixels for the texture.

@@ -1,6 +1,5 @@
-// gui/button.rs -- Aldaron's Device Interface / Screen
-// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
-// Licensed under the MIT LICENSE
+// "adi_screen" crate - Licensed under the MIT LICENSE
+//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
 use SpriteList;
 
@@ -12,7 +11,6 @@ use ModelBuilder;
 use TexCoords;
 
 use ami::Mat4;
-use adi_gpu::DisplayTrait;
 
 /// A GUI Button Sprite.
 pub struct Button {

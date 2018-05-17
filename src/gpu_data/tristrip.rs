@@ -1,6 +1,5 @@
-// gpu_data/tristrip.rs -- Aldaron's Device Interface / Screen
-// Copyright (c) 2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
-// Licensed under the MIT LICENSE
+// "adi_screen" crate - Licensed under the MIT LICENSE
+//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
 fn normalize(oa: (f32, f32)) -> (f32, f32) {
 	let magnitude = ((oa.0 * oa.0) + (oa.1 * oa.1)).sqrt();

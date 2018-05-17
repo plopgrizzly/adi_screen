@@ -1,12 +1,10 @@
-// sprite.rs -- Aldaron's Device Interface / Screen
-// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
-// Licensed under the MIT LICENSE
+// "adi_screen" crate - Licensed under the MIT LICENSE
+//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
 use Window;
 use { Texture, Model, Gradient, TexCoords };
 use adi_gpu::{ Shape };
 use adi_gpu;
-use adi_gpu::DisplayTrait;
 use ami::Mat4;
 
 #[must_use]

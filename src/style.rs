@@ -1,6 +1,5 @@
-// style.rs -- Aldaron's Device Interface / Screen
-// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
-// Licensed under the MIT LICENSE
+// "adi_screen" crate - Licensed under the MIT LICENSE
+//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
 /*const SHADER_COLOR : usize = 0;
 const SHADER_TEXTURE : usize = 1;

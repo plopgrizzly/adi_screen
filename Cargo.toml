@@ -1,6 +1,5 @@
-# Cargo.toml -- Aldaron's Device Interface / Screen
-# Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
-# Licensed under the MIT LICENSE
+# "adi_screen" crate - Licensed under the MIT LICENSE
+#  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 #                             _        _
 #                            /@\——————/@\
 # .———  .                   |   o    o   |     .————      .            .
@@ -37,7 +36,7 @@ exclude = [
 
 [dependencies]
 adi_clock = "^0.3"
-ami = { path = "../ami" }
-adi_gpu = { path = "../adi_gpu" }
+ami = "^0.7"
+adi_gpu = "^0.6"
 aci_png = "^0.6"
 fonterator = { path = "../fonterator" }

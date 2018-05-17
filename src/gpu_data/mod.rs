@@ -1,6 +1,5 @@
-// gpu_data/mod.rs -- Aldaron's Device Interface / Screen
-// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
-// Licensed under the MIT LICENSE
+// "adi_screen" crate - Licensed under the MIT LICENSE
+//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
 mod tristrip;
 
@@ -8,7 +7,16 @@ use adi_gpu;
 use Window;
 use ami::{ Mat4, Vec4 };
 
-use adi_gpu::DisplayTrait;
+/// Macro to load multiple models into an array.
+#[macro_export] macro_rules! models {
+	($models:ident, $window:expr, $( $x:expr ),*) => {
+		let $models = {
+			use $crate::ModelBuilder as model;
+
+			&[ $( include!($x).finish(&mut $window) ),* ]
+		};
+	}
+}
 
 /// The builder for `Model`.
 pub struct ModelBuilder {
@@ -19,7 +27,7 @@ pub struct ModelBuilder {
 }
 
 impl ModelBuilder {
-	/// Generate builder for `Model`.
+	#[doc(hidden)]
 	pub fn new() -> Self {
 		ModelBuilder {
 			vertices: vec![],
@@ -40,8 +48,6 @@ impl ModelBuilder {
 	pub fn v(mut self, vertices: &[[f32;4]]) -> Self {
 		self.ts = tristrip::TriStrip::new();
 		self.ts.push(vertices);
-
-//		println!("Face split in {}", self.ts.points.len());
 
 		self
 	}
@@ -109,8 +115,6 @@ impl ModelBuilder {
 
 	/// Create the model
 	pub fn finish(self, window: &mut Window) -> Model {
-//		println!("RAW:{:?}", self.vertices);
-
 		Model(window.window.model(self.vertices.as_slice()))
 	}
 }

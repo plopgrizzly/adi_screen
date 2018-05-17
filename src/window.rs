@@ -1,10 +1,9 @@
-// window.rs -- Aldaron's Device Interface / Screen
-// Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
-// Licensed under the MIT LICENSE
+// "adi_screen" crate - Licensed under the MIT LICENSE
+//  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
 use adi_clock::{ Timer, Pulse, Clock };
 use Input;
-use adi_gpu::{ Display, DisplayTrait, new_display };
+use adi_gpu::{ Display, new_display };
 use aci_png;
 use Texture;
 use afi::Graphic;
@@ -51,9 +50,10 @@ impl WindowBuilder {
 			new_display(&self.name, logo)
 		}.unwrap();
 
-		let button = Texture(native.texture(
-			aci_png::decode(include_bytes!("gui/res/button.png"))
-				.unwrap()));
+		let img = aci_png::decode(include_bytes!("gui/res/button.png"))
+			.unwrap();
+		let info = img.as_slice();
+		let button = Texture(native.texture(&img), info.0, info.1);
 
 		native.color(self.rgb);
 		native.fog(self.fog);
@@ -70,7 +70,7 @@ impl WindowBuilder {
 
 /// Window represents a connection to a display that can also recieve input.
 pub struct Window {
-	pub(crate) window: Display,
+	pub(crate) window: Box<Display>,
 	time: (Timer, f32),
 	clock: Clock,
 	since_clock: f32,
