@@ -16,7 +16,7 @@ mod texture;
 mod gpu_data;
 
 pub use window::{ WindowBuilder, Window };
-pub use sprite::{ Sprite, SpriteList, Transform };
+pub use sprite::{ Sprite, Transform };
 pub use gui::{ Text };
 pub use texture::Texture;
 pub use gpu_data::{ Model, ModelBuilder };

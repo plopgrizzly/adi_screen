@@ -4,149 +4,85 @@
 use Window;
 use { Texture, Model };
 use adi_gpu::{ Shape };
-use adi_gpu;
 use ami::Mat4;
+
+/// Macro to create multiple sprites into an array.
+#[macro_export] macro_rules! sprites {
+	($sprites:ident, $window:expr, $( $x:expr ),*) => {
+		let $sprites = {
+			[ $( $crate::Sprite::new(&mut $window, $x.0, $x.1,
+				$x.2, $x.3, false, true) ),* ]
+		};
+	}
+}
+
+/// Macro to create multiple sprites into an array.
+#[macro_export] macro_rules! sprites_fog {
+	($sprites:ident, $window:expr, $( $x:expr ),*) => {
+		let $sprites = {
+			[ $( $crate::Sprite::new(&mut $window, $x.0, $x.1,
+				$x.2, $x.3, true, true) ),* ]
+		};
+	}
+}
+
+/// Macro to create multiple sprites into an array.
+#[macro_export] macro_rules! sprites_gui {
+	($sprites:ident, $window:expr, $( $x:expr ),*) => {
+		let $sprites = {
+			[ $( $crate::Sprite::new(&mut $window, $x.0, $x.1,
+				$x.2, $x.3, false, false) ),* ]
+		};
+	}
+}
 
 #[must_use]
 /// Sprite represents anything that is rendered onto the screen.
 pub struct Sprite(pub(crate) Shape);
 
-/// Builder for multiple `Sprite`s.
-#[must_use]
-pub struct SpriteList(Vec<Sprite>, adi_gpu::Model, Mat4, bool, bool, bool,
-	Option<adi_gpu::Gradient>, // 6
-	Option<adi_gpu::TexCoords>, // 7
-);
-
-impl SpriteList {
-	/// Create a new list of `Sprite`s.
-	#[inline(always)]
-	pub fn new(model: Model) -> SpriteList {
-		SpriteList(vec![], model.0, Mat4::new(), false, true, true,
-			// TODO: better
-			if let Some(colors) = model.1 {
-				Some(colors)
-			} else { None },
-			if let Some(tc) = model.2 {
-				Some(tc)
-			} else { None })
-	}
-
-	/// Set the transform.
-	#[inline(always)]
-	pub fn transform(self, transform: Transform) -> SpriteList {
-		// TODO: better
-		SpriteList(self.0, self.1, transform.0, self.3, self.4, self.5, self.6, self.7)
-	}
-
-	/// Set the model.
-	#[inline(always)]
-	pub fn model(self, model: Model) -> SpriteList {
-		SpriteList(self.0, model.0, self.2, self.3, self.4, self.5, self.6, self.7)
-	}
-
-	/// Enable alpha blending for following sprites.
-	#[inline(always)]
-	pub fn alpha(self) -> Self {
-		SpriteList(self.0, self.1, self.2, true, self.4, self.5, self.6, self.7)
-	}
-
-	/// Disable all alpha blending for following sprites.
-	#[inline(always)]
-	pub fn opaque(self) -> Self {
-		SpriteList(self.0, self.1, self.2, false, self.4, self.5, self.6, self.7)
-	}
-
-	/// Enable fog and camera.
-	#[inline(always)]
-	pub fn fog_cam(self) -> Self {
-		SpriteList(self.0, self.1, self.2, self.3, true, true, self.6, self.7)
-	}
-
-	/// Disable fog and camera.
-	#[inline(always)]
-	pub fn gui(self) -> Self {
-		SpriteList(self.0, self.1, self.2, self.3, false, false, self.6, self.7)
-	}
-
-	/// Camera without fog.
-	#[inline(always)]
-	pub fn camera(self) -> Self {
-		SpriteList(self.0, self.1, self.2, self.3, false, true, self.6, self.7)
-	}
-
-	/// Create a sprite with a solid color.
-	#[inline(always)]
-	pub fn solid(mut self, window: &mut Window, color: [f32; 4]) -> Self {
-		self.0.push(Sprite(window.window.shape_solid(&self.1,
-			self.2, color, self.3, self.4,
-			self.5)));
-		self
-	}
-
-	/// Create a sprite shaded by a gradient (1 color per vertex).
-	#[inline(always)]
-	pub fn gradient(mut self, window: &mut Window) -> Self {
-		self.0.push(Sprite(window.window.shape_gradient(&self.1,
-			self.2, self.6.unwrap(), self.3, self.4,
-			self.5)));
-		self
-	}
-
-	/// Create a sprite with a texture and texture coordinates.
-	#[inline(always)]
-	pub fn texture(mut self, window: &mut Window, texture: &Texture) -> Self
+impl Sprite {
+	#[doc(hidden)]
+	pub fn new(window: &mut Window, model: &Model,
+		texture: Option<&Texture>, transform: Transform, alpha: bool,
+		fog: bool, camera: bool) -> Self
 	{
-		self.0.push(Sprite(window.window.shape_texture(&self.1,
-			self.2, &texture.0, self.7.unwrap(), self.3,
-			self.4, self.5)));
-		self
-	}
-
-	/// Create a sprite with a texture, texture coordinates and alpha.
-	/// Automatically Enables Alpha Blending. (no need to call `alpha()`)
-	#[inline(always)]
-	pub fn faded(mut self, window: &mut Window, texture: &Texture,
-		alpha: f32) -> Self
-	{
-		self.0.push(Sprite(window.window.shape_faded(&self.1,
-			self.2, &texture.0, self.7.unwrap(), alpha,
-			self.4, self.5)));
-		self
-	}
-
-	/// Create a sprite with a texture and texture coordinates and tint.
-	#[inline(always)]
-	pub fn tinted(mut self, window: &mut Window, texture: &Texture,
-		tint: [f32; 4]) -> Self
-	{
-		self.0.push(Sprite(window.window.shape_tinted(&self.1,
-			self.2, &texture.0, self.7.unwrap(), tint,
-			self.3, self.4, self.5)));
-		self
-	}
-
-	/// Create a sprite with a texture and texture coordinates and tint per
-	/// vertex.
-	#[inline(always)]
-	pub fn complex(mut self, window: &mut Window, texture: &Texture) -> Self
-	{
-		self.0.push(Sprite(window.window.shape_complex(&self.1, self.2,
-			&texture.0, self.7.unwrap(), self.6.unwrap(), self.3, self.4, self.5)));
-
-		self
-	}
-
-	/// Convert into a `Vec` of `Sprite`s
-	#[inline(always)]
-	pub fn to_vec(self) -> Vec<Sprite> {
-		self.0
-	}
-
-	/// Convert into 1 `Sprite` if there's only 1 in the list.
-	#[inline(always)]
-	pub fn only(mut self) -> Sprite {
-		self.0.pop().unwrap()
+		if let Some(gradient) = model.1 {
+			if let Some(texcoords) = model.2 {
+				// Complex
+				Sprite(window.window.shape_complex(
+					&model.0, transform.0, &texture.unwrap().0,
+					texcoords, gradient,
+					alpha, fog, camera))
+			} else {
+				// Gradient
+				Sprite(window.window.shape_gradient(
+					&model.0, transform.0, gradient,
+					alpha, fog, camera))
+			}
+		} else if let Some(texcoords) = model.2 {
+			if let Some(color) = model.3 {
+				// Tinted
+				Sprite(window.window.shape_tinted(
+					&model.0, transform.0, &texture.unwrap().0,
+					texcoords, color, alpha, fog, camera))
+			} else if let Some(opacity) = model.4 {
+				// Faded
+				Sprite(window.window.shape_faded(
+					&model.0, transform.0, &texture.unwrap().0,
+					texcoords, opacity, fog, camera))
+			} else {
+				// Texture
+				Sprite(window.window.shape_texture(&model.0,
+					transform.0, &texture.unwrap().0, texcoords,
+					alpha, fog, camera))
+			}
+		} else if let Some(color) = model.3 {
+			// Solid
+			Sprite(window.window.shape_solid(&model.0,
+				transform.0, color, alpha, fog, camera))
+		} else {
+			panic!("Not enough information to make Sprite!")
+		}
 	}
 }
 

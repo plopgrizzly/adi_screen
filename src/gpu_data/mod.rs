@@ -32,6 +32,11 @@ pub struct ModelBuilder {
 	tcs: Vec<f32>,
 	// Build a tristrip
 	tcs_ts: Vec<[f32; 4]>,
+	//
+	color: Option<[f32; 4]>,
+	//
+	opacity: Option<f32>,
+	//
 	mat4: Mat4,
 }
 
@@ -45,6 +50,8 @@ impl ModelBuilder {
 			colors_ts: vec![],
 			tcs: vec![],
 			tcs_ts: vec![],
+			color: None,
+			opacity: None,
 			mat4: Mat4::new(),
 		}
 	}
@@ -56,11 +63,22 @@ impl ModelBuilder {
 		self
 	}
 
+	/// Set one color for the whole model.
+	pub fn c(mut self, color: [f32;4]) -> Self {
+		self.color = Some(color);
+		self
+	}
+
+	/// Set the opacity for the whole model.
+	pub fn o(mut self, opacity: f32) -> Self {
+		self.opacity = Some(opacity);
+		self
+	}
+
 	/// Set the colors for the following faces.
-	pub fn c(mut self, vertices: &[[f32;4]]) -> Self {
+	pub fn g(mut self, vertices: &[[f32;4]]) -> Self {
 		self.colors_ts = vec![];
 		self.colors_ts.extend(vertices);
-
 		self
 	}
 
@@ -68,7 +86,6 @@ impl ModelBuilder {
 	pub fn t(mut self, vertices: &[[f32;4]]) -> Self {
 		self.tcs_ts = vec![];
 		self.tcs_ts.extend(vertices);
-
 		self
 	}
 
@@ -200,7 +217,7 @@ impl ModelBuilder {
 				println!("{} {}", self.tcs.len() / 4, self.vertices.len() / 4);
 				assert_eq!(self.tcs.len(), self.vertices.len());
 				Some(window.window.texcoords(self.tcs.as_slice()))
-			})
+			}, self.color, self.opacity)
 	}
 }
 
@@ -208,4 +225,6 @@ impl ModelBuilder {
 #[derive(Copy,Clone)]
 pub struct Model(pub(crate) adi_gpu::Model,
 	pub(crate) Option<adi_gpu::Gradient>,
-	pub(crate) Option<adi_gpu::TexCoords>);
+	pub(crate) Option<adi_gpu::TexCoords>,
+	pub(crate) Option<[f32; 4]>,
+	pub(crate) Option<f32>);
