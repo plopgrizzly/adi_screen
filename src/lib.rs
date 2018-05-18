@@ -16,10 +16,10 @@ mod texture;
 mod gpu_data;
 
 pub use window::{ WindowBuilder, Window };
-pub use sprite::{ Sprite, SpriteBuilder, SpriteList, Transform };
-pub use gui::{ Text, Button as GuiButton };
+pub use sprite::{ Sprite, SpriteList, Transform };
+pub use gui::{ Text };
 pub use texture::Texture;
-pub use gpu_data::{ Model, ModelBuilder, Gradient, TexCoords };
+pub use gpu_data::{ Model, ModelBuilder };
 
 extern crate ami;
 extern crate adi_gpu;

@@ -20,9 +20,18 @@ use ami::{ Mat4, Vec4 };
 
 /// The builder for `Model`.
 pub struct ModelBuilder {
+	// Final output
 	vertices: Vec<f32>,
-	face: Vec<f32>,
-	ts: tristrip::TriStrip,
+	// Build a tristrip
+	ts: Vec<[f32; 4]>,
+	// Final output
+	colors: Vec<f32>,
+	// Build a tristrip
+	colors_ts: Vec<[f32; 4]>,
+	// Final output
+	tcs: Vec<f32>,
+	// Build a tristrip
+	tcs_ts: Vec<[f32; 4]>,
 	mat4: Mat4,
 }
 
@@ -31,8 +40,11 @@ impl ModelBuilder {
 	pub fn new() -> Self {
 		ModelBuilder {
 			vertices: vec![],
-			face: vec![],
-			ts: tristrip::TriStrip::new(),
+			ts: vec![],
+			colors: vec![],
+			colors_ts: vec![],
+			tcs: vec![],
+			tcs_ts: vec![],
 			mat4: Mat4::new(),
 		}
 	}
@@ -44,22 +56,39 @@ impl ModelBuilder {
 		self
 	}
 
+	/// Set the colors for the following faces.
+	pub fn c(mut self, vertices: &[[f32;4]]) -> Self {
+		self.colors_ts = vec![];
+		self.colors_ts.extend(vertices);
+
+		self
+	}
+
+	/// Set the texture coordinates for the following faces.
+	pub fn t(mut self, vertices: &[[f32;4]]) -> Self {
+		self.tcs_ts = vec![];
+		self.tcs_ts.extend(vertices);
+
+		self
+	}
+
 	/// Set the vertices for the following faces.
 	pub fn v(mut self, vertices: &[[f32;4]]) -> Self {
-		self.ts = tristrip::TriStrip::new();
-		self.ts.push(vertices);
+		self.ts = vec![];
+		self.ts.extend(vertices);
+
+		tristrip::convert(self.ts.as_mut_slice(),
+			if self.colors_ts.is_empty() { None }
+			else { Some(self.colors_ts.as_mut_slice()) },
+			if self.tcs_ts.is_empty() { None }
+			else { Some(self.tcs_ts.as_mut_slice()) });
 
 		self
 	}
 
 	/// Add a face to the model, this unapplies the transformation matrix.
 	pub fn f(mut self) -> Self {
-		for i in 0..self.ts.points.len() {
-//			println!("{}", self.ts.points[i].len());
-			let points = self.ts.points[i].clone();
-//			println!("{:?}", points);
-			self = self.shape(points.as_slice());
-		}
+		self = self.shape();
 
 		self.mat4 = Mat4::new();
 
@@ -67,8 +96,8 @@ impl ModelBuilder {
 	}
 
 	/// Add a shape to the model.
-	pub fn shape(mut self, vertices: &[[f32;4]]) -> Self {
-		if vertices.len() == 0 { return self; }
+	pub fn shape(mut self) -> Self {
+		if self.ts.len() == 0 { return self; }
 
 		// If there's already a shape, separate by a degenerate triangle
 		let s = if self.vertices.is_empty() == false {
@@ -79,11 +108,36 @@ impl ModelBuilder {
 			}
 			// Finish the degenerate triangle (next vertex).
 			let v = self.mat4 * Vec4::new(
-				vertices[0][0],
-				vertices[0][1],
-				vertices[0][2],
-				vertices[0][3],
+				self.ts[0][0],
+				self.ts[0][1],
+				self.ts[0][2],
+				self.ts[0][3],
 			);
+
+			if self.colors_ts.len() != 0 {
+				for _ in 0..4 {
+					let v = self.colors[self.colors.len()-4];
+					self.colors.push(v);
+				}
+				for _ in 0..2 {
+					self.colors.push(self.colors_ts[0][0]);
+					self.colors.push(self.colors_ts[0][1]);
+					self.colors.push(self.colors_ts[0][2]);
+					self.colors.push(self.colors_ts[0][3]);
+				}
+			}
+			if self.tcs_ts.len() != 0 {
+				for _ in 0..4 {
+					let v = self.tcs[self.tcs.len()-4];
+					self.tcs.push(v);
+				}
+				for _ in 0..2 {
+					self.tcs.push(self.tcs_ts[0][0]);
+					self.tcs.push(self.tcs_ts[0][1]);
+					self.tcs.push(self.tcs_ts[0][2]);
+					self.tcs.push(self.tcs_ts[0][3]);
+				}
+			}
 
 			for _ in 0..2 {
 				self.vertices.push(v.x);
@@ -96,7 +150,7 @@ impl ModelBuilder {
 		} else { 0 };
 
 		// Add the vertices
-		for i in vertices.iter().skip(s) {
+		for i in self.ts.iter().skip(s) {
 			let v = self.mat4 * Vec4::new(
 				i[0],
 				i[1],
@@ -109,38 +163,49 @@ impl ModelBuilder {
 			self.vertices.push(v.z);
 			self.vertices.push(v.w);
 		}
+
+		if self.colors_ts.len() != 0 {
+			for i in self.colors_ts.iter().skip(s) {
+				self.colors.push(i[0]);
+				self.colors.push(i[1]);
+				self.colors.push(i[2]);
+				self.colors.push(i[3]);
+			}
+		}
+
+		if self.tcs_ts.len() != 0 {
+			for i in self.tcs_ts.iter().skip(s) {
+				self.tcs.push(i[0]);
+				self.tcs.push(i[1]);
+				self.tcs.push(i[2]);
+				self.tcs.push(i[3]);
+			}
+		}
 	
 		self
 	}
 
 	/// Create the model
 	pub fn finish(self, window: &mut Window) -> Model {
-		Model(window.window.model(self.vertices.as_slice()))
+		Model(window.window.model(self.vertices.as_slice()),
+			if self.colors.is_empty() {
+				None
+			} else {
+				assert!(self.colors.len() == self.vertices.len());
+				Some(window.window.gradient(self.colors.as_slice()))
+			},
+			if self.tcs.is_empty() {
+				None
+			} else {
+				println!("{} {}", self.tcs.len() / 4, self.vertices.len() / 4);
+				assert_eq!(self.tcs.len(), self.vertices.len());
+				Some(window.window.texcoords(self.tcs.as_slice()))
+			})
 	}
 }
 
 /// A collection of indices and vertices
 #[derive(Copy,Clone)]
-pub struct Model(pub(crate) adi_gpu::Model);
-
-/// A collection of colors, one for each vertex.
-#[derive(Copy,Clone)]
-pub struct Gradient(pub(crate) adi_gpu::Gradient);
-
-impl Gradient {
-	/// Create new `Gradient` based on `data`.
-	pub fn new(window: &mut Window, data: &[f32]) -> Gradient {
-		Gradient(window.window.gradient(data))
-	}
-}
-
-/// Texture Coordinates for a `Model`.
-#[derive(Copy,Clone)]
-pub struct TexCoords(pub(crate) adi_gpu::TexCoords);
-
-impl TexCoords {
-	/// Create new texture coordinates based on `data`.
-	pub fn new(window: &mut Window, data: &[f32]) -> TexCoords {
-		TexCoords(window.window.texcoords(data))
-	}
-}
+pub struct Model(pub(crate) adi_gpu::Model,
+	pub(crate) Option<adi_gpu::Gradient>,
+	pub(crate) Option<adi_gpu::TexCoords>);

@@ -1,17 +1,15 @@
 // "adi_screen" crate - Licensed under the MIT LICENSE
 //  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
-use SpriteList;
-
-use Input;
+/*use Input;
 use Window;
 use Sprite;
 use Transform;
 use ModelBuilder;
-use TexCoords;
 
-use ami::Mat4;
+use ami::Mat4;*/
 
+/*
 /// A GUI Button Sprite.
 pub struct Button {
 	sprite: Sprite,
@@ -30,15 +28,15 @@ impl Button {
 				[1.0, 0.0, 0.0, 1.0],
 				[0.0, 0.0, 0.0, 1.0],
 				[1.0, 1.0, 0.0, 1.0],
-				[0.0, 1.0, 0.0, 1.0]])
+				[0.0, 1.0, 0.0, 1.0]],
+				&[],
+				&[
+					[0.0, 0.0, 1.0, 1.0],
+					[1.0 / 3.0, 1.0, 1.0, 1.0],
+					[1.0 / 3.0, 0.0, 1.0, 1.0],
+					[0.0, 1.0, 1.0, 1.0],
+				])
 			.finish(window);
-
-		let tc = TexCoords::new(window, &[
-			0.0, 0.0, 1.0, 1.0,
-			1.0 / 3.0, 1.0, 1.0, 1.0,
-			1.0 / 3.0, 0.0, 1.0, 1.0,
-			0.0, 1.0, 1.0, 1.0,
-		]);
 
 //		let style = Shape::Texture(&v, 0/*include_bytes!("res/button.ppm")*/,&tc);
 //		let spr = Sprite::create(window, style, 1);
@@ -48,7 +46,7 @@ impl Button {
 //			.only();
 
 		let spr = Sprite(window.window.shape_texture(&model.0,
-			Mat4::new(), &window.button.0, tc.0, false, true, true));
+			Mat4::new(), &window.button.0, false, true, true));
 
 
 		let size = window.unit_size();
@@ -154,4 +152,4 @@ impl Button {
 			false
 		}
 	}
-}
+}*/
