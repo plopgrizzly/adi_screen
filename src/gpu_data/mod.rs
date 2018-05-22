@@ -5,21 +5,24 @@ mod tristrip;
 
 use adi_gpu;
 use Window;
-use ami::{ Mat4, Vec4 };
+use ami::{ Mat4, IDENTITY, Vec4 };
 
 /// Macro to load multiple models into an array.
 #[macro_export] macro_rules! models {
 	($models:ident, $window:expr, $( $x:expr ),*) => {
 		let $models = {
 			use $crate::ModelBuilder as model;
+			use $crate::IDENTITY;
 
-			&[ $( include!($x).finish(&mut $window) ),* ]
+			&[ $( include!($x).finish($window) ),* ]
 		};
 	}
 }
 
 /// The builder for `Model`.
 pub struct ModelBuilder {
+	// Should face double?
+	double: bool,
 	// Final output
 	vertices: Vec<f32>,
 	// Build a tristrip
@@ -44,6 +47,7 @@ impl ModelBuilder {
 	#[doc(hidden)]
 	pub fn new() -> Self {
 		ModelBuilder {
+			double: false,
 			vertices: vec![],
 			ts: vec![],
 			colors: vec![],
@@ -52,7 +56,7 @@ impl ModelBuilder {
 			tcs_ts: vec![],
 			color: None,
 			opacity: None,
-			mat4: Mat4::new(),
+			mat4: IDENTITY,
 		}
 	}
 
@@ -77,6 +81,7 @@ impl ModelBuilder {
 
 	/// Set the colors for the following faces.
 	pub fn g(mut self, vertices: &[[f32;4]]) -> Self {
+		self.double = false;
 		self.colors_ts = vec![];
 		self.colors_ts.extend(vertices);
 		self
@@ -84,6 +89,7 @@ impl ModelBuilder {
 
 	/// Set the texture coordinates for the following faces.
 	pub fn t(mut self, vertices: &[[f32;4]]) -> Self {
+		self.double = false;
 		self.tcs_ts = vec![];
 		self.tcs_ts.extend(vertices);
 		self
@@ -91,8 +97,19 @@ impl ModelBuilder {
 
 	/// Set the vertices for the following faces.
 	pub fn v(mut self, vertices: &[[f32;4]]) -> Self {
+		let double = self.double;
+		self.double = false;
+
 		self.ts = vec![];
 		self.ts.extend(vertices);
+
+		if double {
+			let half_colors = self.colors_ts.len() / 2;
+			let half_tcs = self.tcs_ts.len() / 2;
+
+			self.colors_ts.truncate(half_colors);
+			self.tcs_ts.truncate(half_tcs);
+		}
 
 		tristrip::convert(self.ts.as_mut_slice(),
 			if self.colors_ts.is_empty() { None }
@@ -103,17 +120,54 @@ impl ModelBuilder {
 		self
 	}
 
+	/// Set the vertices for a double-sided face (actually 2 faces)
+	pub fn d(mut self, vertices: &[[f32;4]]) -> Self {
+		let single = !self.double;
+		self.double = true;
+
+		self.ts = vec![];
+		self.ts.extend(vertices);
+		self.ts.reverse();
+		self.ts.extend(vertices);
+
+		if single {
+			self.colors_ts = [self.colors_ts.as_slice(), self.colors_ts.as_slice()].concat();
+			self.tcs_ts = [self.tcs_ts.as_slice(), self.tcs_ts.as_slice()].concat();
+		}
+
+		tristrip::convert(&mut self.ts[0..vertices.len()],
+			if self.colors_ts.is_empty() { None }
+			else { Some(&mut self.colors_ts[..vertices.len()]) },
+			if self.tcs_ts.is_empty() { None }
+			else { Some(&mut self.tcs_ts[..vertices.len()]) });
+
+		tristrip::convert(&mut self.ts[vertices.len()..],
+			if self.colors_ts.is_empty() { None }
+			else { Some(&mut self.colors_ts[vertices.len()..]) },
+			if self.tcs_ts.is_empty() { None }
+			else { Some(&mut self.tcs_ts[vertices.len()..]) });
+
+		self
+	}
+
 	/// Add a face to the model, this unapplies the transformation matrix.
 	pub fn f(mut self) -> Self {
-		self = self.shape();
+		let len = self.ts.len();
+//		if self.double {
+//			let sidelen = len / 2;
+//			self = self.shape(0, sidelen);
+//			self = self.shape(sidelen, len);
+//		} else {
+			self = self.shape(0, len);
+//		}
 
-		self.mat4 = Mat4::new();
+		self.mat4 = IDENTITY;
 
 		self
 	}
 
 	/// Add a shape to the model.
-	pub fn shape(mut self) -> Self {
+	pub fn shape(mut self, b: usize, e: usize) -> Self {
 		if self.ts.len() == 0 { return self; }
 
 		// If there's already a shape, separate by a degenerate triangle
@@ -167,12 +221,12 @@ impl ModelBuilder {
 		} else { 0 };
 
 		// Add the vertices
-		for i in self.ts.iter().skip(s) {
+		for i in s+b..e {
 			let v = self.mat4 * Vec4::new(
-				i[0],
-				i[1],
-				i[2],
-				i[3],
+				self.ts[i][0],
+				self.ts[i][1],
+				self.ts[i][2],
+				self.ts[i][3],
 			);
 
 			self.vertices.push(v.x);
@@ -182,20 +236,20 @@ impl ModelBuilder {
 		}
 
 		if self.colors_ts.len() != 0 {
-			for i in self.colors_ts.iter().skip(s) {
-				self.colors.push(i[0]);
-				self.colors.push(i[1]);
-				self.colors.push(i[2]);
-				self.colors.push(i[3]);
+			for i in s+b..e {
+				self.colors.push(self.colors_ts[i][0]);
+				self.colors.push(self.colors_ts[i][1]);
+				self.colors.push(self.colors_ts[i][2]);
+				self.colors.push(self.colors_ts[i][3]);
 			}
 		}
 
 		if self.tcs_ts.len() != 0 {
-			for i in self.tcs_ts.iter().skip(s) {
-				self.tcs.push(i[0]);
-				self.tcs.push(i[1]);
-				self.tcs.push(i[2]);
-				self.tcs.push(i[3]);
+			for i in s+b..e {
+				self.tcs.push(self.tcs_ts[i][0]);
+				self.tcs.push(self.tcs_ts[i][1]);
+				self.tcs.push(self.tcs_ts[i][2]);
+				self.tcs.push(self.tcs_ts[i][3]);
 			}
 		}
 	

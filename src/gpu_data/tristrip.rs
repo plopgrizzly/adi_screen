@@ -4,6 +4,8 @@
 pub fn convert(vertices: &mut [[f32; 4]],
 	colors: Option<&mut [[f32; 4]]>, tcs: Option<&mut [[f32; 4]]>)
 {
+	assert!(vertices.len() > 2);
+
 	// Sort alternating sides
 	let mut ysorted = vec![0]; // indices, start at 0
 

@@ -29,4 +29,4 @@ extern crate fonterator;
 pub extern crate adi_clock;
 
 pub use adi_gpu::{ afi, Input, Key, Click, Msg };
-pub use ami::{ Mat4 };
+pub use ami::{ Mat4, IDENTITY };

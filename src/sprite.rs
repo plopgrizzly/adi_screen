@@ -4,13 +4,13 @@
 use Window;
 use { Texture, Model };
 use adi_gpu::{ Shape };
-use ami::Mat4;
+use ami::{ Mat4, IDENTITY };
 
 /// Macro to create multiple sprites into an array.
 #[macro_export] macro_rules! sprites {
 	($sprites:ident, $window:expr, $( $x:expr ),*) => {
 		let $sprites = {
-			[ $( $crate::Sprite::new(&mut $window, $x.0, $x.1,
+			[ $( $crate::Sprite::new($window, $x.0, $x.1,
 				$x.2, $x.3, false, true) ),* ]
 		};
 	}
@@ -20,7 +20,7 @@ use ami::Mat4;
 #[macro_export] macro_rules! sprites_fog {
 	($sprites:ident, $window:expr, $( $x:expr ),*) => {
 		let $sprites = {
-			[ $( $crate::Sprite::new(&mut $window, $x.0, $x.1,
+			[ $( $crate::Sprite::new($window, $x.0, $x.1,
 				$x.2, $x.3, true, true) ),* ]
 		};
 	}
@@ -30,7 +30,7 @@ use ami::Mat4;
 #[macro_export] macro_rules! sprites_gui {
 	($sprites:ident, $window:expr, $( $x:expr ),*) => {
 		let $sprites = {
-			[ $( $crate::Sprite::new(&mut $window, $x.0, $x.1,
+			[ $( $crate::Sprite::new($window, $x.0, $x.1,
 				$x.2, $x.3, false, false) ),* ]
 		};
 	}
@@ -93,7 +93,7 @@ impl Transform {
 	/// Create a transform that does nothing. ( Underneath, this is an
 	/// identity matrix ).
 	pub fn new() -> Transform {
-		Transform (Mat4::new())
+		Transform (IDENTITY)
 	}
 
 	/// Translate self by x, y and z.
