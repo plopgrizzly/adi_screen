@@ -7,10 +7,12 @@ use Window;
 
 /// Macro to load multiple textures into an array.
 #[macro_export] macro_rules! textures {
-	($textures:ident, $window:expr, $decode:expr, $( $x:expr ),*) => {
-		let $textures = &[ $( $crate::Texture::new($window,
+	($window:expr, $decode:expr, $( $x:expr ),*) => { {
+		let a = vec![ $( $crate::Texture::new($window,
 			$decode(include_bytes!($x)).unwrap()) ),* ];
-	}
+
+		$window.textures(a);
+	} }
 }
 
 /// A reference to an image in GPU memory.

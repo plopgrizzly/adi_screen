@@ -2,17 +2,14 @@
 //  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
 use Window;
-use { Texture, Model };
 use adi_gpu::{ Shape };
 use ami::{ Mat4, IDENTITY };
 
 /// Macro to create multiple sprites into an array.
 #[macro_export] macro_rules! sprites {
-	($sprites:ident, $window:expr, $( $x:expr ),*) => {
-		let $sprites = {
-			[ $( $crate::Sprite::new($window, $x.0, $x.1,
-				$x.2, $x.3, false, true) ),* ]
-		};
+	($window:expr, $( $x:expr ),*) => {
+		[ $( $crate::Sprite::new($window, $x.0, $x.1, $x.2, $x.3, false,
+			true) ),* ]
 	}
 }
 
@@ -42,43 +39,48 @@ pub struct Sprite(pub(crate) Shape);
 
 impl Sprite {
 	#[doc(hidden)]
-	pub fn new(window: &mut Window, model: &Model,
-		texture: Option<&Texture>, transform: Transform, alpha: bool,
+	pub fn new(window: &mut Window, model: usize,
+		texture: Option<usize>, transform: Transform, alpha: bool,
 		fog: bool, camera: bool) -> Self
 	{
-		if let Some(gradient) = model.1 {
-			if let Some(texcoords) = model.2 {
+		if let Some(gradient) = window.models[model].1 {
+			if let Some(texcoords) = window.models[model].2 {
 				// Complex
 				Sprite(window.window.shape_complex(
-					&model.0, transform.0, &texture.unwrap().0,
-					texcoords, gradient,
-					alpha, fog, camera))
+					&window.models[model].0, transform.0,
+					&window.textures[texture.unwrap()].0,
+					texcoords, gradient, alpha, fog, camera)
+				)
 			} else {
 				// Gradient
 				Sprite(window.window.shape_gradient(
-					&model.0, transform.0, gradient,
-					alpha, fog, camera))
+					&window.models[model].0, transform.0,
+					gradient, alpha, fog, camera)
+				)
 			}
-		} else if let Some(texcoords) = model.2 {
-			if let Some(color) = model.3 {
+		} else if let Some(texcoords) = window.models[model].2 {
+			if let Some(color) = window.models[model].3 {
 				// Tinted
 				Sprite(window.window.shape_tinted(
-					&model.0, transform.0, &texture.unwrap().0,
+					&window.models[model].0, transform.0,
+					&window.textures[texture.unwrap()].0,
 					texcoords, color, alpha, fog, camera))
-			} else if let Some(opacity) = model.4 {
+			} else if let Some(opacity) = window.models[model].4 {
 				// Faded
 				Sprite(window.window.shape_faded(
-					&model.0, transform.0, &texture.unwrap().0,
+					&window.models[model].0, transform.0,
+					&window.textures[texture.unwrap()].0,
 					texcoords, opacity, fog, camera))
 			} else {
 				// Texture
-				Sprite(window.window.shape_texture(&model.0,
-					transform.0, &texture.unwrap().0, texcoords,
-					alpha, fog, camera))
+				Sprite(window.window.shape_texture(
+					&window.models[model].0, transform.0,
+					&window.textures[texture.unwrap()].0,
+					texcoords, alpha, fog, camera))
 			}
-		} else if let Some(color) = model.3 {
+		} else if let Some(color) = window.models[model].3 {
 			// Solid
-			Sprite(window.window.shape_solid(&model.0,
+			Sprite(window.window.shape_solid(&window.models[model].0,
 				transform.0, color, alpha, fog, camera))
 		} else {
 			panic!("Not enough information to make Sprite!")

@@ -8,8 +8,6 @@ use Sprite;
 use ModelBuilder;
 // use TexCoords;
 use Window;
-use window::WindowFunctions;
-use Transform;
 
 /// Macro to set text.
 #[macro_export] macro_rules! text {
@@ -39,10 +37,10 @@ impl Text {
 	}
 
 	/// Update the texture.
-	pub fn update(&mut self, window: &mut Window, text: &str,
-		font: Option<&Font>)
+	pub fn update(&mut self, _window: &mut Window, _text: &str,
+		_font: Option<&Font>)
 	{
-		let win_size = window.wh();
+/*		let win_size = window.wh();
 		let w = ((win_size.0 as f32 * self.2 .0) as u32) * (text.len() as u32) / 2;
 		let h = (win_size.0 as f32 * self.2 .1) as u32;
 
@@ -58,7 +56,7 @@ impl Text {
 				.translate(self.1 .0, self.1 .1 + 1.0, 0.0),
 			false, false, false);
 
-		self.0 = Some(sprite);
+		self.0 = Some(sprite);*/
 	}
 
 	/// Set the position for the text.
@@ -85,6 +83,7 @@ impl Font {
 //		Font(fonterator::Font::read(&mut reader).unwrap())
 	}
 
+	#[allow(unused)]
 	fn render(&self, _width: usize, _height: f32, // TODO
 		text: &str) -> ModelBuilder
 	{
@@ -104,6 +103,10 @@ impl Font {
 						verts.push([x, y, 0.0, 0.0]);
 					},
 					PathOp::QuadTo(x, y, cx, cy) => {
+						let x = x;
+						let y = y;
+						let cx = cx;
+						let cy = cy;
 						let sx = verts[verts.len() - 1][0];
 						let sy = verts[verts.len() - 1][1];
 

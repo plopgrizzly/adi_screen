@@ -9,7 +9,7 @@ pub use self::text::Text;
 
 use Texture;
 
-// A GUI Widget
+/// A GUI Widget
 pub enum Widget<'a> {
 	/// An empty widget.
 	None,
@@ -39,7 +39,7 @@ pub enum Widget<'a> {
 	TextField(&'a str, &'a usize),
 }
 
-// A Graphical User Interface
+/// A Graphical User Interface
 pub struct Gui<'a>(Widget<'a>);
 
 impl<'a> Gui<'a> {

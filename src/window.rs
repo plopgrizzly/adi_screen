@@ -7,6 +7,7 @@ use adi_gpu::{ Display, new_display };
 use aci_png;
 use Texture;
 use afi::Graphic;
+use Model;
 
 /// A builder for `Window`.
 pub struct WindowBuilder {
@@ -53,7 +54,7 @@ impl WindowBuilder {
 		let img = aci_png::decode(include_bytes!("gui/res/button.png"))
 			.unwrap();
 		let info = img.as_slice();
-		let button = Texture(native.texture(&img), info.0, info.1);
+		let _button = Texture(native.texture(&img), info.0, info.1);
 
 		native.color(self.rgb);
 		native.fog(self.fog);
@@ -61,9 +62,10 @@ impl WindowBuilder {
 		Window {
 			window: native, time: (Timer::new(1.0 / 60.0), 0.0),
 			clock: Clock::new(), since_clock: 0.0, since_frame: 0.0,
-			minsize: (64, (0.0, 0.0)), aspect: 0.0, button: button,
+			minsize: (64, (0.0, 0.0)), aspect: 0.0, _button,
 			seconds: 0.0, fps_counter: 0, fps: 0,
-			font: ::gui::Font::new(::gui::DEFAULT_FONT)
+			_font: ::gui::Font::new(::gui::DEFAULT_FONT),
+			textures: vec![], models: vec![],
 		}
 	}
 }
@@ -82,9 +84,12 @@ pub struct Window {
 	fps_counter: u16,
 	fps: u16,
 	// Button Texture
-	pub(crate) button: Texture,
+	pub(crate) _button: Texture,
 	// Default Font
-	pub(crate) font: ::gui::Font,
+	pub(crate) _font: ::gui::Font,
+	// 
+	pub(crate) textures: Vec<Texture>,
+	pub(crate) models: Vec<Model>,
 }
 
 pub trait WindowFunctions {
@@ -208,5 +213,15 @@ impl Window {
 	/// Return the current number of FPS the window is running at.
 	pub fn fps(&self) -> (u16, bool) {
 		(self.fps, self.fps_counter == 0)
+	}
+
+	#[doc(hidden)]
+	pub fn models(&mut self, models: Vec<Model>) {
+		self.models = models;
+	}
+
+	#[doc(hidden)]
+	pub fn textures(&mut self, textures: Vec<Texture>) {
+		self.textures = textures;
 	}
 }

@@ -17,7 +17,7 @@ mod gpu_data;
 
 pub use window::{ WindowBuilder, Window };
 pub use sprite::{ Sprite, Transform };
-pub use gui::{ Text };
+pub use gui::{ Text, Gui, Widget };
 pub use texture::Texture;
 pub use gpu_data::{ Model, ModelBuilder };
 
@@ -28,5 +28,5 @@ extern crate fonterator;
 
 pub extern crate adi_clock;
 
-pub use adi_gpu::{ afi, Input, Key, Click, Msg };
+pub use adi_gpu::{ afi, Input };
 pub use ami::{ Mat4, IDENTITY };
