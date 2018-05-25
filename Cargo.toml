@@ -39,4 +39,4 @@ adi_clock = "^0.3"
 ami = "^0.8"
 adi_gpu = { path = "../adi_gpu" } # "^0.6"
 aci_png = "^0.6"
-fonterator = { path = "../fonterator" }
+fonterator = "^0.1"
