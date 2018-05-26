@@ -5,7 +5,6 @@ mod button;
 mod text;
 pub use self::text::Font;
 pub(crate) use self::text::DEFAULT_FONT;
-pub use self::text::Text;
 
 use Texture;
 

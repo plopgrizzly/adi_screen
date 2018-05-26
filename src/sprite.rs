@@ -5,7 +5,25 @@ use Window;
 use adi_gpu::{ Shape };
 use ami::{ Mat4, IDENTITY };
 
-/// Macro to create multiple sprites into an array.
+/// Macro to create multiple sprites in an array.
+///
+/// # Example
+/// ```
+/// let mut window = WindowBuilder::new("Window Name", None).finish();
+/// 
+/// textures!(window, aci_png::decode,
+/// 	"res/texture0.png", // 0
+/// 	"res/texture1.png", // 1
+/// );
+/// 
+/// models!(window, "res/model.data");
+/// 
+/// let sprites = sprites!(window,
+/// 		(0/*model 0*/, Some(0/*texture 0*/),
+/// 	Transform::new().translate(0.0, -0.5, 2.0), false),
+/// 		(0/*model 0*/, Some(0/*texture 0*/),
+/// 	Transform::new().translate(0.0, -4.5, 2.0), false));
+/// ```
 #[macro_export] macro_rules! sprites {
 	($window:expr, $( $x:expr ),*) => {
 		[ $( $crate::Sprite::new($window, $x.0, $x.1, $x.2, $x.3, false,
@@ -13,23 +31,23 @@ use ami::{ Mat4, IDENTITY };
 	}
 }
 
-/// Macro to create multiple sprites into an array.
+/// Macro to create multiple fog-affected sprites in an array.
+/// # Example
+/// See [`sprites!()`](macro.sprites.html)
 #[macro_export] macro_rules! sprites_fog {
-	($sprites:ident, $window:expr, $( $x:expr ),*) => {
-		let $sprites = {
-			[ $( $crate::Sprite::new($window, $x.0, $x.1,
-				$x.2, $x.3, true, true) ),* ]
-		};
+	($window:expr, $( $x:expr ),*) => {
+		[ $( $crate::Sprite::new($window, $x.0, $x.1, $x.2, $x.3, true,
+			true) ),* ]
 	}
 }
 
-/// Macro to create multiple sprites into an array.
+/// Macro to create multiple non-camera affected sprites in an array.
+/// # Example
+/// See [`sprites!()`](macro.sprites.html)
 #[macro_export] macro_rules! sprites_gui {
-	($sprites:ident, $window:expr, $( $x:expr ),*) => {
-		let $sprites = {
-			[ $( $crate::Sprite::new($window, $x.0, $x.1,
-				$x.2, $x.3, false, false) ),* ]
-		};
+	($window:expr, $( $x:expr ),*) => {
+		[ $( $crate::Sprite::new($window, $x.0, $x.1, $x.2, $x.3, false,
+			false) ),* ]
 	}
 }
 

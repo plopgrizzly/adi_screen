@@ -4,12 +4,12 @@
 use fonterator;
 
 // use Texture;
-use Sprite;
+// use Sprite;
 use ModelBuilder;
 // use TexCoords;
-use Window;
+// use Window;
 
-/// Macro to set text.
+/*/// Macro to set text.
 #[macro_export] macro_rules! text {
 	( $window:expr, $text:expr, $font:expr, $( $x:expr ),*) => {
 		let text: Text = $text;
@@ -21,13 +21,13 @@ use Window;
 //		&[ $( $crate::Texture::new($window,
 //			$decode(include_bytes!($x)).unwrap()) ),* ]
 	}
-}
+}*/
 
 /// A font that's built into the library.
 pub const DEFAULT_FONT: &'static [u8] =
 	include_bytes!("res/font/DejaVuSansMono.ttf");
 
-/// Text on the screen.
+/*/// Text on the screen.
 pub struct Text(Option<Sprite>, (f32, f32), (f32, f32));
 
 impl Text {
@@ -40,7 +40,7 @@ impl Text {
 	pub fn update(&mut self, _window: &mut Window, _text: &str,
 		_font: Option<&Font>)
 	{
-/*		let win_size = window.wh();
+		let win_size = window.wh();
 		let w = ((win_size.0 as f32 * self.2 .0) as u32) * (text.len() as u32) / 2;
 		let h = (win_size.0 as f32 * self.2 .1) as u32;
 
@@ -56,14 +56,14 @@ impl Text {
 				.translate(self.1 .0, self.1 .1 + 1.0, 0.0),
 			false, false, false);
 
-		self.0 = Some(sprite);*/
+		self.0 = Some(sprite);
 	}
 
 	/// Set the position for the text.
 	pub fn position(&mut self, x: f32, y: f32) {
 		self.1 = (x, y);
 	}
-}
+}*/
 
 use fonterator::{ PathOp };
 

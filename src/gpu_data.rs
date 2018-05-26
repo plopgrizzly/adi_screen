@@ -5,7 +5,10 @@ use adi_gpu;
 use Window;
 use ami::{ Mat4, IDENTITY, Vec4 };
 
-/// Macro to load multiple models into an array.
+/// Macro to load models from files for the window.
+///
+/// The first model file listed is indexed 0, and each subsequent model
+/// increases by 1.  See: [`sprites!()`](macro.sprites.html) for example.
 #[macro_export] macro_rules! models {
 	($window:expr, $( $x:expr ),*) => { {
 		use $crate::ModelBuilder as model;

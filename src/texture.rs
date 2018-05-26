@@ -1,11 +1,16 @@
 // "adi_screen" crate - Licensed under the MIT LICENSE
 //  * Copyright (c) 2017-2018  Jeron A. Lau <jeron.lau@plopgrizzly.com>
 
-use afi::GraphicBuilder;
+use Graphic;
+use GraphicBuilder;
+use GraphicDecodeErr;
 use adi_gpu;
 use Window;
 
-/// Macro to load multiple textures into an array.
+/// Macro to load textures from files for the window.
+///
+/// The first texture file listed is indexed 0, and each subsequent texture
+/// increases by 1.  See: [`sprites!()`](macro.sprites.html) for example.
 #[macro_export] macro_rules! textures {
 	($window:expr, $decode:expr, $( $x:expr ),*) => { {
 		let a = vec![ $( $crate::Texture::new($window,
@@ -20,7 +25,7 @@ pub struct Texture(pub(crate) adi_gpu::Texture, pub(crate) u32, pub(crate) u32);
 
 impl Texture {
 	#[doc(hidden)]
-	pub fn new(window: &mut Window, image_data: ::afi::Graphic) -> Texture {
+	pub fn new(window: &mut Window, image_data: Graphic) -> Texture {
 		let (w, h, _) = image_data.as_slice();
 
 		Texture(window.window.texture(&image_data), w, h)
@@ -37,8 +42,8 @@ impl Texture {
 	/// Load multiple texture from graphic data into gpu memory.
 	pub fn new_vec<F>(window: &mut Window,
 		loader: F, files: &[&[u8]])
-		-> Result<Vec<Texture>, ::afi::GraphicDecodeErr>
-		where F: Fn(&[u8]) -> Result<::afi::Graphic, ::afi::GraphicDecodeErr>
+		-> Result<Vec<Texture>, GraphicDecodeErr>
+		where F: Fn(&[u8]) -> Result<Graphic, GraphicDecodeErr>
 	{
 		let mut textures = Vec::new();
 

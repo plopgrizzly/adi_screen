@@ -6,7 +6,7 @@ use Input;
 use adi_gpu::{ Display, new_display };
 use aci_png;
 use Texture;
-use afi::Graphic;
+use Graphic;
 use Model;
 
 /// A builder for `Window`.
