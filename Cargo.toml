@@ -13,7 +13,7 @@
 
 [package]
 name = "adi_screen"
-version = "0.7.0"
+version = "0.8.0"
 authors = [
 	"Jeron A. Lau <jeron.lau@plopgrizzly.com>",
 ]
@@ -23,20 +23,20 @@ documentation = "https://docs.rs/adi_screen"
 homepage = "http://plopgrizzly.com/adi_screen"
 repository = "https://github.com/plopgrizzly/adi_screen"
 
-readme = "README.md"
+readme = "readme.md"
 description = "Interface with a computer/phone screen screen to render graphics."
 keywords = [ "vulkan", "graphics", "gui", "hardware", "rendering" ]
 categories = ["gui", "game-engines", "hardware-support", "multimedia::video",
 	"rendering::graphics-api"]
 
 exclude = [
-	"examples/*", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", ".gitignore",
+	"examples/*", "code_of_conduct.md", "contributing.md", ".gitignore",
 	"_config.yml", "ISSUE_TEMPLATE.md", "icon.png", "icon.ico"
 ]
 
 [dependencies]
 adi_clock = "^0.3"
 ami = "^0.8"
-adi_gpu = { path = "../adi_gpu" } # "^0.6"
+adi_gpu = "^0.7"
 aci_png = "^0.6"
 fonterator = "^0.1"

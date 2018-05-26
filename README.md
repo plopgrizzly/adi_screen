@@ -5,7 +5,8 @@ for interfacing with a computer screen or phone screen to render graphics.
 It can be used for either making video games or applications.
 
 [Cargo](https://crates.io/crates/adi_screen) /
-[Documentation](https://docs.rs/adi_screen)
+[Documentation](https://docs.rs/adi_screen) /
+[Change Log](http://plopgrizzly.com/adi_screen/changelog.html)
 
 ## Features
 **adi_screen**'s current features:
